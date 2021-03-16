@@ -29,19 +29,4 @@ python XLM/train.py \
 --lgs 'cpp_sa-java_sa-python_sa'\
  --encoder_only=False
 /
---encoder_only=False\
---data_path 'path_to_TransCoder_folder/data/XLM-cpp-java-python-with-comments'  
---eval_computation true 
---batch_size 32 
---reload_model 'model_1.pth,model_1.pth'  
---amp 2  
---max_batch_size 128 
---ae_steps 'cpp_sa,python_sa,java_sa' 
---emb_dim 1024 
---eval_only True 
---beam_size 10 
---retry_mistmatching_types 1 
---dump_path '/tmp/' 
---exp_name='eval_final_model_wc_30' 
---lgs 'cpp_sa-java_sa-python_sa' 
---encoder_only=False
+
