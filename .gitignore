@@ -2,3 +2,4 @@ venv
 .env
 .gitattributes
 model_1.pth
+.idea
