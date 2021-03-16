@@ -3,3 +3,5 @@ venv
 .gitattributes
 model_1.pth
 .idea
+/XLM/tools/fastBPE
+/apex/
