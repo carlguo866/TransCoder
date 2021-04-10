@@ -84,8 +84,7 @@ def fromty(ty):
     assert False
 
 if __name__ == '__main__':
-    fn = open("../../data/llvm/O3.txt", 'r').read().strip().split('\n')[0]
-    fn = open(fn, 'r').read()
+    fn = open("../../data/test_dataset/llvm/O3.txt", 'r').read()
     res = tokenize_llvm(fn)
     print(res)
     print(len(res))
