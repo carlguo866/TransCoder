@@ -21,7 +21,7 @@ from preprocessing.src.timeout import timeout, TimeoutError
 from sacrebleu import tokenize_v14_international
 
 TOK_NO_SPACE_BEFORE = {',', ';'}
-clang.cindex.Config.set_library_path('/usr/lib/llvm-10/lib/')
+clang.cindex.Config.set_library_file('/usr/lib/llvm-10/lib/libclang-10.so')
 STRINGS_AND_COMMENTS_TOKEN_KINDS = {TokenKind.LITERAL, TokenKind.COMMENT}
 logging.basicConfig(
     filename='timeout_cpp_tokenizer_examples.log', level=logging.DEBUG)
@@ -382,7 +382,6 @@ def tokenize_java(s, keep_comments=False):
         return tokens
     except:
         return []
-
 
 def detokenize_cpp(s):
     assert isinstance(s, str) or isinstance(s, list)

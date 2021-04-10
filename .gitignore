@@ -5,3 +5,5 @@ model_1.pth
 .idea
 /XLM/tools/fastBPE
 /apex/
+.DS_Store
+
