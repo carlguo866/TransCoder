@@ -2,14 +2,16 @@ import pyllvm
 
 
 def tokenize_llvm(s, keep_comments=False):
-    try:
+   # try:
         tokens = []
         assert isinstance(s, str)
         s = s.replace(r'\r', '')
+        print(s)
         lex = pyllvm.lexer(s)
         while True:
-            tok = lex.Lex()
 
+            tok = lex.Lex()
+            print(tok)
             if tok in strings():
                 tok = (tok, lex.getStrVal())
             elif tok in uints():
@@ -21,13 +23,11 @@ def tokenize_llvm(s, keep_comments=False):
             elif tok == pyllvm.lltok.APSInt:
                 tok = (tok, lex.getAPSIntVal())
 
-            print(tokens)
             tokens.append(tok)
-            if tok == pyllvm.lltok.Eof or tok == pyllvm.lltok.Error:
+            if tok == pyllvm.lltok.Eof: # or tok == pyllvm.lltok.Error:
                 return tokens
-        return tokens
-    except:
-        return []
+  #  except:
+  #      return []
 
 
 def strings():
@@ -61,8 +61,8 @@ def fromty(ty):
         return "half"
     elif ty.isFloatTy():
         return "float"
-    elif ty.isBFloatTy():
-        return "bfloat"
+    #elif ty.isBFloatTy():
+    #    return "bfloat"
     elif ty.isDoubleTy():
         return "double"
     elif ty.isX86_FP80Ty():
@@ -75,8 +75,8 @@ def fromty(ty):
         return "x86_mmx"
     elif ty.isLabelTy():
         return "label"
-    elif ty.isMetadataTy():
-        return "metadata"
+   # elif ty.isMetadataTy():
+   #     return "metadata"
     elif ty.isTokenTy():
         return "token"
     elif ty.isIntegerTy():
