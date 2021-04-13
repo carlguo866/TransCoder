@@ -191,6 +191,7 @@ if ( a != b ) {
 def test_tokenizer(test_examples, keep_comments):
     for i, (x, y) in enumerate(test_examples):
         y_ = tokenize_cpp(x, keep_comments=keep_comments)
+        print(y_)
         if y_ != y:
             line_diff = [j for j, (line, line_) in enumerate(
                 zip(y, y_)) if line != line_]
@@ -282,3 +283,6 @@ def test_tokenize_twice_equal_tokenize_remove_comments():
 def test_tokenize_twice_equal_tokenize_keep_comments():
     test_tokenize_twice(TESTS + TESTS_STRINGS + TESTS_CHARS +
                         TESTS_KEEP_COMMENTS, keep_comments=True)
+
+if __name__ == "__main__":
+    test_cpp_tokenizer_discarding_comments();
