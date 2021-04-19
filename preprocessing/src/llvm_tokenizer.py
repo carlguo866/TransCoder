@@ -22,9 +22,7 @@ def tokenize_llvm(s, keep_comments=False):
                 tok = (tok, lex.getAPFloatVal())
             elif tok == pyllvm.lltok.APSInt:
                 tok = (tok, lex.getAPSIntVal())
-            elif tok != pyllvm.lltok.Eof or tok == pyllvm.lltok.Error:
-                tok = (tok, lex.getStrVal())
-            else:
+            elif tok != pyllvm.lltok.Eof and tok != pyllvm.lltok.Error:
                 tok = (tok, lex.Lex2())
             tokens.append(tok)
             if tok == pyllvm.lltok.Eof or tok == pyllvm.lltok.Error:
