@@ -1,6 +1,8 @@
 import pyllvm
+import preprocessing.src.code_tokenizer as tokenizer
 
-
+LLVM_TOKEN2CHAR = {}
+LLVM_CHAR2TOKEN = {}
 def tokenize_llvm(s, keep_comments=False):
    try:
         tokens = []
@@ -9,81 +11,54 @@ def tokenize_llvm(s, keep_comments=False):
         print(s)
         lex = pyllvm.lexer(s)
         while True:
+            toktype = lex.Lex()
+            print(toktype)
+            if toktype in strings():
+                tok = tokenizer.process_string(lex.getStrVal(),LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments)
+            elif toktype in uints():
+                tok = lex.getUIntVal()
+            elif toktype in [pyllvm.lltok.Type]:
+                tok = fromty(lex.getTypeVal())
+            elif toktype == pyllvm.lltok.APFloat:
+                tok = lex.getAPFloatVal()
+            elif toktype == pyllvm.lltok.APSInt:
+                tok = lex.getAPSIntVal()
+            elif toktype != pyllvm.lltok.Eof and tok != pyllvm.lltok.Error:
+                tok = lex.Lex2().strip()
 
-            tok = lex.Lex()
-            print(tok)
-            if tok in strings():
-                tok = (tok, lex.getStrVal())
-            elif tok in uints():
-                tok = (tok, lex.getUIntVal())
-            elif tok in [pyllvm.lltok.Type]:
-                tok = (tok, fromty(lex.getTypeVal()))
-            elif tok == pyllvm.lltok.APFloat:
-                tok = (tok, lex.getAPFloatVal())
-            elif tok == pyllvm.lltok.APSInt:
-                tok = (tok, lex.getAPSIntVal())
-            elif tok != pyllvm.lltok.Eof and tok != pyllvm.lltok.Error:
-                tok = (tok, lex.Lex2())
             tokens.append(tok)
-            if tok == pyllvm.lltok.Eof or tok == pyllvm.lltok.Error:
+            if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
+                tokens.append("EOF")
                 return tokens
+   except KeyboardInterrupt:
+       raise
    except:
        return []
 
-# def detokenize_llvm(s):
-#     assert isinstance(s, str) or isinstance(s, list)
-#     if isinstance(s, list):
-#         s = ' '.join(s)
-#     # the ▁ character created bugs in the cpp tokenizer
-#     s = s.replace('ENDCOM', '\n').replace('▁', ' SPACETOKEN ')
-#     try:
-#         tokens_and_types = get_cpp_tokens_and_types(s)
-#     except:
-#         return ''
-#     new_tokens = []
-#     i = 0
-#     while i < len(tokens_and_types):
-#         token, type = tokens_and_types[i]
-#         if type in STRINGS_AND_COMMENTS_TOKEN_KINDS:
-#             new_tokens.append(token.replace('STRNEWLINE', '\n').replace(
-#                 'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
-#             if type == TokenKind.COMMENT:
-#                 new_tokens.append('NEW_LINE')
-#         elif token == '}':
-#             if i < len(tokens_and_types) - 1 and tokens_and_types[i + 1][0] == ';':
-#                 new_tokens += ['CB_COLON', 'NEW_LINE']
-#                 i += 2
-#                 continue
-#             if i < len(tokens_and_types) - 1 and tokens_and_types[i + 1][0] == ',':
-#                 new_tokens += ['CB_COMA', 'NEW_LINE']
-#                 i += 2
-#                 continue
-#             new_tokens += ['CB_', 'NEW_LINE']
-#         elif token == '{':
-#             new_tokens += ['OB_', 'NEW_LINE']
-#         elif token == '*/':
-#             new_tokens += ['*/', 'NEW_LINE']
-#         elif token == ';':
-#             new_tokens += [';', 'NEW_LINE']
-#         else:
-#             new_tokens.append(token)
-# 
-#         if i < len(tokens_and_types) - 1 and tokens_and_types[i + 1][0] in TOK_NO_SPACE_BEFORE:
-#             next_token = tokens_and_types[i + 1][0]
-#             new_tokens[len(new_tokens) - 1] += next_token
-#             if next_token == ';':
-#                 new_tokens.append('NEW_LINE')
-#             i += 2
-#             continue
-#         i += 1
-# 
-#     lines = re.split('NEW_LINE', ' '.join(new_tokens))
-# 
-#     untok_s = indent_lines(lines)
-#     untok_s = untok_s.replace('CB_COLON', '};').replace(
-#         'CB_COMA', '},').replace('CB_', '}').replace('OB_', '{')
-#     return untok_s
-#     return
+def detokenize_llvm(s):
+    assert isinstance(s, str) or isinstance(s, list)
+    if isinstance(s, list):
+        s = ' '.join(s)
+    # the ▁ character created bugs in the cpp tokenizer
+    s = s.replace('ENDCOM', '\n').replace('▁', ' SPACETOKEN ')
+    try:
+        lex = pyllvm.lexer(s)
+    except:
+        return ''
+
+    new_tokens = []
+    while True:
+        toktype = lex.Lex()
+        if toktype in strings():
+            token = lex.Lex2().strip()
+            new_tokens.append(token.replace('STRNEWLINE', '\n').replace(
+                'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
+        else:
+            new_tokens.append(token)
+
+    lines = re.split('NEW_LINE', ' '.join(new_tokens))
+    untok_s = tokenizer.indent_lines(lines)
+    return untok_s
 
 
 
