@@ -13,7 +13,8 @@ def tokenize_llvm(s, keep_comments=False):
         print(s)
         lex = pyllvm.lexer(s)
         while True:
-            toktype = lex.getTokType()
+            toktype, tok = lex.getTok()
+            tok = tok.strip()
             #print(toktype)
             if toktype in strings():
                 tok = tokenizer.process_string(lex.getStrVal(),LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments)
@@ -25,8 +26,6 @@ def tokenize_llvm(s, keep_comments=False):
                 tok = lex.getAPFloatVal()
             elif toktype == pyllvm.lltok.APSInt:
                 tok = lex.getAPSIntVal()
-            elif toktype != pyllvm.lltok.Eof and toktype != pyllvm.lltok.Error:
-                tok = lex.getTokStr().strip()
 
             tokens.append(tok)
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
@@ -49,10 +48,10 @@ def detokenize_llvm(s):
 
     new_tokens = []
     while True:
-        toktype = lex.getTokType()
+        toktype, tok = lex.getTok()
+        tok = tok.strip()
         if toktype == pyllvm.lltok.Eof:
             break
-        token = lex.getTokStr().strip()
         print((toktype,token))
         if toktype in strings():
             token = lex.getStrVal()
