@@ -1,8 +1,10 @@
 import pyllvm
 import preprocessing.src.code_tokenizer as tokenizer
+import re
 
 LLVM_TOKEN2CHAR = {}
 LLVM_CHAR2TOKEN = {}
+
 def tokenize_llvm(s, keep_comments=False):
    try:
         tokens = []
@@ -11,7 +13,7 @@ def tokenize_llvm(s, keep_comments=False):
         print(s)
         lex = pyllvm.lexer(s)
         while True:
-            toktype = lex.Lex()
+            toktype = lex.getTokType()
             print(toktype)
             if toktype in strings():
                 tok = tokenizer.process_string(lex.getStrVal(),LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments)
@@ -24,7 +26,7 @@ def tokenize_llvm(s, keep_comments=False):
             elif toktype == pyllvm.lltok.APSInt:
                 tok = lex.getAPSIntVal()
             elif toktype != pyllvm.lltok.Eof and tok != pyllvm.lltok.Error:
-                tok = lex.Lex2().strip()
+                tok = lex.getTokStr().strip()
 
             tokens.append(tok)
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
@@ -53,6 +55,8 @@ def detokenize_llvm(s):
             token = lex.Lex2().strip()
             new_tokens.append(token.replace('STRNEWLINE', '\n').replace(
                 'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
+            if token == "EOF":
+                break
         else:
             new_tokens.append(token)
 
@@ -116,8 +120,12 @@ def fromty(ty):
     assert False
 
 if __name__ == '__main__':
-    fn = open("../../data/test_dataset/llvm/O3.txt", 'r').read()
-    res = tokenize_llvm(fn)
-    print(res)
-    print(len(res))
-    print('hello world')
+    fn = open("~/TransCoder/data/test_dataset/llvm/O3.txt", 'r').read()
+    #test tokenizer
+    tokenized = tokenize_llvm(fn)
+    print(tokenized)
+    print(len(tokenized))
+    #test detokenizer
+    detokenized = detokenize_llvm(tokenized)
+    print(detokenized)
+
