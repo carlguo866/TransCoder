@@ -30,7 +30,6 @@ def tokenize_llvm(s, keep_comments=False):
 
             tokens.append(tok)
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
-                tokens.append("EOF")
                 return tokens
    except KeyboardInterrupt:
        raise
@@ -51,12 +50,14 @@ def detokenize_llvm(s):
     new_tokens = []
     while True:
         toktype = lex.getTokType()
+        if toktype == pyllvm.lltok.Eof:
+            break
+        token = lex.getTokStr().strip()
+        print((toktype,token))
         if toktype in strings():
-            token = lex.getTokStr().strip()
+            token = lex.getStrVal()
             new_tokens.append(token.replace('STRNEWLINE', '\n').replace(
                 'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
-            if token == "EOF":
-                break
         else:
             new_tokens.append(token)
 
