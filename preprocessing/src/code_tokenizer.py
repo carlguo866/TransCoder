@@ -14,6 +14,7 @@ import sys
 import tokenize
 from io import BytesIO
 
+import pyllvm
 import clang
 import preprocessing.src.javalang_tokenizer as javalang_tok
 from clang.cindex import TokenKind
