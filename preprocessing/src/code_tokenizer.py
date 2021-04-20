@@ -684,76 +684,76 @@ def extract_functions_cpp(s):
     except:
         return [], []
     while True:
-        # try:
+        try:
         # detect function
-        if token == ')' and ((tokens[i.i + 1][0] == '{' and tokens[i.i + 2][0] != '}') or (
-                tokens[i.i + 1][0] == 'throw' and tokens[i.i + 4][0] == '{' and tokens[i.i + 5][0] == '}')):
-            # go previous until the start of function
-            while token not in {';', '}', '{'}:
-                try:
-                    i.prev()
-                except StopIteration:
-                    break
-                token = tokens[i.i][0]
+            if token == ')' and ((tokens[i.i + 1][0] == '{' and tokens[i.i + 2][0] != '}') or (
+                    tokens[i.i + 1][0] == 'throw' and tokens[i.i + 4][0] == '{' and tokens[i.i + 5][0] == '}')):
+                # go previous until the start of function
+                while token not in {';', '}', '{'}:
+                    try:
+                        i.prev()
+                    except StopIteration:
+                        break
+                    token = tokens[i.i][0]
 
-            i.next()
-            token, token_type = tokens[i.i]
-            if token_type == TokenKind.COMMENT:
-                token = token.strip()
-                token += " ENDCOM"
-            function = [token]
-            token_types = [token_type]
-            while token != '{':
                 i.next()
                 token, token_type = tokens[i.i]
                 if token_type == TokenKind.COMMENT:
                     token = token.strip()
                     token += " ENDCOM"
-                function.append(token)
-                token_types.append(token_type)
+                function = [token]
+                token_types = [token_type]
+                while token != '{':
+                    i.next()
+                    token, token_type = tokens[i.i]
+                    if token_type == TokenKind.COMMENT:
+                        token = token.strip()
+                        token += " ENDCOM"
+                    function.append(token)
+                    token_types.append(token_type)
 
-            if token_types[function.index('(') - 1] != TokenKind.IDENTIFIER:
-                continue
-            if token == '{':
-                number_indent = 1
-                while not (token == '}' and number_indent == 0):
-                    try:
-                        i.next()
-                        token, token_type = tokens[i.i]
-                        if token == '{':
-                            number_indent += 1
-                        elif token == '}':
-                            number_indent -= 1
-                        if token_type == TokenKind.COMMENT:
-                            token = token.strip()
-                            token += " ENDCOM"
-                        function.append(token)
-                    except StopIteration:
-                        break
-                if 'static' in function[0:function.index('{')] or '::' not in function[0:function.index('(')]:
-                    function = ' '.join(function)
-                    function = re.sub(
-                        "[<][ ][D][O][C][U][M][E][N][T].*?[>] ", "", function)
-                    function = clean_hashtags_functions_cpp(function)
-                    function = function.strip()
-                    function = function.replace(
-                        '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
-                    if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{') and not function.startswith('#'):
-                        functions_standalone.append(function)
-                else:
-                    function = ' '.join(function)
-                    function = re.sub(
-                        "[<][ ][D][O][C][U][M][E][N][T].*?[>] ", "", function)
-                    function = clean_hashtags_functions_cpp(function)
-                    function = function.strip()
-                    function = function.replace(
-                        '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
-                    if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{') and not function.startswith('#'):
-                        functions_class.append(function)
-        i.next()
-        token = tokens[i.i][0]
-        # except:
-        #     break
+                if token_types[function.index('(') - 1] != TokenKind.IDENTIFIER:
+                    continue
+                if token == '{':
+                    number_indent = 1
+                    while not (token == '}' and number_indent == 0):
+                        try:
+                            i.next()
+                            token, token_type = tokens[i.i]
+                            if token == '{':
+                                number_indent += 1
+                            elif token == '}':
+                                number_indent -= 1
+                            if token_type == TokenKind.COMMENT:
+                                token = token.strip()
+                                token += " ENDCOM"
+                            function.append(token)
+                        except StopIteration:
+                            break
+                    if 'static' in function[0:function.index('{')] or '::' not in function[0:function.index('(')]:
+                        function = ' '.join(function)
+                        function = re.sub(
+                            "[<][ ][D][O][C][U][M][E][N][T].*?[>] ", "", function)
+                        function = clean_hashtags_functions_cpp(function)
+                        function = function.strip()
+                        function = function.replace(
+                            '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
+                        if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{') and not function.startswith('#'):
+                            functions_standalone.append(function)
+                    else:
+                        function = ' '.join(function)
+                        function = re.sub(
+                            "[<][ ][D][O][C][U][M][E][N][T].*?[>] ", "", function)
+                        function = clean_hashtags_functions_cpp(function)
+                        function = function.strip()
+                        function = function.replace(
+                            '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
+                        if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{') and not function.startswith('#'):
+                            functions_class.append(function)
+            i.next()
+            token = tokens[i.i][0]
+        except:
+            break
     return functions_standalone, functions_class
 
 
