@@ -891,23 +891,27 @@ def extract_functions_llvm(s):
                     token, token_type = tokens[i.i]
                     function.append(token)
                     token_types.append(token_type)
-                #not sure what this means
-                # if token_types[function.index('(') - 1] != TokenKind.IDENTIFIER:
-                #     continue
                 if token == '}':
                     function = ' '.join(function)
-                    function = re.sub(
-                        "[<][ ][D][O][C][U][M][E][N][T].*?[>] ", "", function)
                     function = function.strip()
                     function = function.replace(
                         '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
-                    if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
-                        functions.append(function)
+                    #do i need this?
+                    #if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
+                    functions.append(function)
             i.next()
             token = tokens[i.i][0]
         except:
             break
     return functions
+
+def get_function_name_llvm(s):
+    assert isinstance(s, str) or isinstance(s, list)
+    if isinstance(s, str):
+        s = s.split()
+    s = s[:s.index('{')]
+    return s[s.index('@') + 1]
+
 
 def get_first_token_before_first_parenthesis(s):
     assert isinstance(s, str) or isinstance(s, list)

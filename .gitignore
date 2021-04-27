@@ -7,3 +7,4 @@ model_1.pth
 /apex/
 .DS_Store
 
+data/test_dataset/.DS_Store
