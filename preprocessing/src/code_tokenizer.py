@@ -782,34 +782,40 @@ def remove_java_annotation(function):
 
 
 def tokenize_llvm(s, keep_comments=False):
-   try:
+#try: 
         tokens = []
+        toktypes = [] 
         assert isinstance(s, str)
         s = s.replace(r'\r', '')
-        print(s)
         lex = pyllvm.lexer(s)
         while True:
             toktype, tok = lex.getTok()
             tok = tok.strip()
-            #print(toktype)
-            if toktype in strings():
-                tok = process_string(lex.getStrVal(),LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments)
-            elif toktype in uints():
-                tok = str(lex.getUIntVal())
-            elif toktype in [pyllvm.lltok.Type]:
-                tok = fromty(lex.getTypeVal())
-            elif toktype == pyllvm.lltok.APFloat:
-                tok = lex.getAPFloatVal()
-            elif toktype == pyllvm.lltok.APSInt:
-                tok = lex.getAPSIntVal()
-
-            tokens.append(tok)
+            
+            toktypes.append(toktype)
+            if(tok != ''): 
+                tokens.append(tok)
+            if len(toktypes) >=2: 
+                if toktypes[-2] in strings():
+                    tokens[-1] = "\"" + str((process_string(lex.getStrVal(),LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments))) + "\""
+                elif toktypes[-2] in uints():
+                    print(toktypes[-2], tokens[-1], lex.getUIntVal())
+                    tokens[-1] = str(lex.getUIntVal())
+                # elif toktypes[-2] in [pyllvm.lltok.Type]:
+                #     print(toktypes[-2], tokens[-1], fromty(lex.getTypeVal()))
+                #     tokens[-1] += (fromty(lex.getTypeVal()))
+                # elif toktypes[-2] == pyllvm.lltok.APFloat:
+                #     print(toktypes[-2], tokens[-1], lex.getAPFloatVal())
+                #     tokens[-1] += (str(lex.getAPFloatVal()))
+                # elif toktypes[-2] == pyllvm.lltok.APSInt:
+                #     print(toktypes[-2], tokens[-1], lex.getAPSIntVal())
+                #     tokens[-1] += (str(lex.getAPSIntVal()))
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
-                return tokens
-   except KeyboardInterrupt:
-       raise
-   except:
-       return []
+                return tokens 
+#    except KeyboardInterrupt:
+#        raise
+#    except:
+#        return []
 
 def get_llvm_tokens_and_types(s):
     try:
@@ -821,23 +827,12 @@ def get_llvm_tokens_and_types(s):
         lex = pyllvm.lexer(s)
         while True:
             toktype, tok = lex.getTok()
-            tok = tok.strip()
-            # print(toktype)
-            if toktype in strings():
-                tok = lex.getStrVal();
-            elif toktype in uints():
-                tok = str(lex.getUIntVal())
-            elif toktype in [pyllvm.lltok.Type]:
-                tok = fromty(lex.getTypeVal())
-            elif toktype == pyllvm.lltok.APFloat:
-                tok = lex.getAPFloatVal()
-            elif toktype == pyllvm.lltok.APSInt:
-                tok = lex.getAPSIntVal()
-
-            toktypes.append(toktype)
-            tokens.append(tok)
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
                 return tokens, toktypes
+            tok = tok.strip()
+            toktypes.append(toktype)
+            if(tok != ''): 
+                tokens.append(tok)
     except KeyboardInterrupt:
         raise
     except:
@@ -848,25 +843,21 @@ def detokenize_llvm(s):
     if isinstance(s, list):
         s = ' '.join(s)
     # the ▁ character created bugs in the cpp tokenizer
-    s = s.replace('ENDCOM', '\n').replace('▁', ' SPACETOKEN ')
-    try:
-        lex = pyllvm.lexer(s)
-    except:
-        return ''
-
+    lex = pyllvm.lexer(s)
+    print(s)
     new_tokens = []
     while True:
         toktype, tok = lex.getTok()
         tok = tok.strip()
         if toktype == pyllvm.lltok.Eof:
             break
-        print((toktype,token))
-        if toktype in strings():
-            token = lex.getStrVal()
-            new_tokens.append(token.replace('STRNEWLINE', '\n').replace(
-                'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
-        else:
-            new_tokens.append(token)
+        print((toktype,tok))
+        # if toktype in strings():
+        #     token = lex.getStrVal()
+        #     new_tokens.append(token.replace('STRNEWLINE', '\n').replace(
+        #         'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
+        # else:
+        #     new_tokens.append(token)
 
     lines = re.split('NEW_LINE', ' '.join(new_tokens))
     untok_s = indent_lines(lines)

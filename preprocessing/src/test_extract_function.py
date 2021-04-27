@@ -7,7 +7,9 @@ if __name__ == '__main__':
     print(tokenized)
     print(len(tokenized))
     #test detokenizer
-    functions_standalone, functions_class = extract_functions_cpp(tokenized)
-    print(functions_standalone)
+    functions_standalone, functions_class = extract_functions_cpp(fn)
+    for each in functions_standalone: 
+        print(each)
+        print("\n")
     print(functions_class)
 
