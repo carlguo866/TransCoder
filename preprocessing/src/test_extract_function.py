@@ -1,15 +1,20 @@
-from preprocessing.src.code_tokenizer import tokenize_cpp, extract_functions_cpp
+from preprocessing.src.code_tokenizer import tokenize_llvm, extract_functions_llvm, get_function_name_llvm, extract_arguments_llvm
 
 if __name__ == '__main__':
-    fn = open("../../data/test_dataset/cpp/test.cpp", 'r').read()
+    fn = open("../../data/test_dataset/llvm/llvm2.txt", 'r').read()
     #test tokenizer
-    tokenized = tokenize_cpp(fn)
-    print(tokenized)
-    print(len(tokenized))
-    #test detokenizer
-    functions_standalone, functions_class = extract_functions_cpp(fn)
-    for each in functions_standalone: 
-        print(each)
-        print("\n")
-    print(functions_class)
+    tokenized = tokenize_llvm(fn)
+    #print(tokenized)
+    functions = extract_functions_llvm(tokenized)
+    outF = open("functions-output.txt", "w")
+    for line in functions:
+        # write line to output file
+        outF.write( get_function_name_llvm(line))
+        outF.write("\n")
+        args = extract_arguments_llvm(line)
+        outF.write(" ".join(args[0]))
+        outF.write("\n")
+        outF.write(" ".join(line))
+        outF.write("\n\n")
+    outF.close()
 

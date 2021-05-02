@@ -67,12 +67,7 @@ LLVM_TOKEN2CHAR = {}
 LLVM_CHAR2TOKEN = {}
 
 def strings():
-    return set([pyllvm.lltok.ComdatVar,
-                pyllvm.lltok.GlobalVar,
-                pyllvm.lltok.ComdatVar,
-                pyllvm.lltok.LocalVar,
-                pyllvm.lltok.MetadataVar,
-                pyllvm.lltok.StringConstant,
+    return set([pyllvm.lltok.StringConstant,
                 pyllvm.lltok.DwarfTag,
                 pyllvm.lltok.DwarfAttEncoding,
                 pyllvm.lltok.DwarfVirtuality,
@@ -158,6 +153,21 @@ def process_string(tok, char2tok, tok2char, is_comment):
         tok = tok.replace(special_token, char)
     tok = tok.replace('\r', '')
 
+    return tok
+
+def process_string_llvm(tok, char2tok, tok2char, is_comment):
+    if is_comment:
+        tok = re.sub(' +', ' ', tok)
+        tok = re.sub(r"(.)\1\1\1\1+", r"\1\1\1\1\1", tok)
+        if len(re.sub(r'\W', '', tok)) < 2:
+            return ''
+    tok = tok.replace(' ', ' ▁ ')
+    tok = tok.replace('\n', ' STRNEWLINE ')
+    tok = tok.replace('\t', ' TABSYMBOL ')
+    tok = re.sub(' +', ' ', tok)
+    tok = tokenize_v14_international(tok)
+    tok = re.sub(' +', ' ', tok)
+    tok = tok.replace('\r', '')
     return tok
 
 
@@ -780,9 +790,13 @@ def extract_functions_cpp_with_docstring(function):
 def remove_java_annotation(function):
     return re.sub('^(@ (Override|Deprecated|SuppressWarnings) (\( .* \) )?)*', '', function)
 
-
+def strip_llvm_comment(s):
+    if(s.find(';') != -1):
+        return s[:s.index('\n')]
+    return s
+        
 def tokenize_llvm(s, keep_comments=False):
-#try: 
+    #try: 
         tokens = []
         toktypes = [] 
         assert isinstance(s, str)
@@ -790,26 +804,32 @@ def tokenize_llvm(s, keep_comments=False):
         lex = pyllvm.lexer(s)
         while True:
             toktype, tok = lex.getTok()
+            #tok = strip_llvm_comment(tok.strip())
             tok = tok.strip()
-            
             toktypes.append(toktype)
             if(tok != ''): 
                 tokens.append(tok)
             if len(toktypes) >=2: 
                 if toktypes[-2] in strings():
-                    tokens[-1] = "\"" + str((process_string(lex.getStrVal(),LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments))) + "\""
-                elif toktypes[-2] in uints():
-                    print(toktypes[-2], tokens[-1], lex.getUIntVal())
-                    tokens[-1] = str(lex.getUIntVal())
+                    try:
+                        tokens[-1] = strip_llvm_comment(tokens[-1])
+                        tokens[-1] = process_string_llvm(tokens[-1],LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments)
+                    except UnicodeDecodeError:
+                        print(tokens[-1])
+                #get rid of comments
+                if(toktypes[-2] == pyllvm.lltok.rbrace):
+                    tokens[-1] = "}"
+                elif (toktypes[-2] == pyllvm.lltok.APSInt):
+                    tokens[-1] = (str(lex.getAPSIntVal()))
+                elif (toktypes[-2] in uints()):
+                    tokens[-1] = tokens[-1][0] + str(lex.getUIntVal())
+
                 # elif toktypes[-2] in [pyllvm.lltok.Type]:
                 #     print(toktypes[-2], tokens[-1], fromty(lex.getTypeVal()))
                 #     tokens[-1] += (fromty(lex.getTypeVal()))
                 # elif toktypes[-2] == pyllvm.lltok.APFloat:
                 #     print(toktypes[-2], tokens[-1], lex.getAPFloatVal())
                 #     tokens[-1] += (str(lex.getAPFloatVal()))
-                # elif toktypes[-2] == pyllvm.lltok.APSInt:
-                #     print(toktypes[-2], tokens[-1], lex.getAPSIntVal())
-                #     tokens[-1] += (str(lex.getAPSIntVal()))
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
                 return tokens 
 #    except KeyboardInterrupt:
@@ -818,100 +838,131 @@ def tokenize_llvm(s, keep_comments=False):
 #        return []
 
 def get_llvm_tokens_and_types(s):
-    try:
+    # try:
         tokens = []
-        toktypes = []
+        toktypes = [] 
         assert isinstance(s, str)
         s = s.replace(r'\r', '')
-        print(s)
         lex = pyllvm.lexer(s)
         while True:
             toktype, tok = lex.getTok()
-            if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
-                return tokens, toktypes
+            #tok = strip_llvm_comment(tok.strip())
             tok = tok.strip()
             toktypes.append(toktype)
             if(tok != ''): 
                 tokens.append(tok)
-    except KeyboardInterrupt:
-        raise
-    except:
-        return [],[]
+            if len(toktypes) >=2: 
+                if toktypes[-2] in strings():
+                    try:
+                        tokens[-1] = strip_llvm_comment(tokens[-1])
+                        tokens[-1] = process_string_llvm(tokens[-1],LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, False)
+                    except UnicodeDecodeError:
+                        print(tokens[-1])
+                #get rid of comments
+                if(toktypes[-2] == pyllvm.lltok.rbrace):
+                    tokens[-1] = "}"
+                elif (toktypes[-2] == pyllvm.lltok.APSInt):
+                    tokens[-1] = (str(lex.getAPSIntVal()))
+                elif (toktypes[-2] in uints()):
+                    tokens[-1] = tokens[-1][0] + str(lex.getUIntVal())
+            if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
+                return tokens, toktypes
+    # except KeyboardInterrupt:
+    #     raise
+    # except:
+    #     return [],[]
 
 def detokenize_llvm(s):
     assert isinstance(s, str) or isinstance(s, list)
     if isinstance(s, list):
         s = ' '.join(s)
     # the ▁ character created bugs in the cpp tokenizer
-    lex = pyllvm.lexer(s)
-    print(s)
-    new_tokens = []
-    while True:
-        toktype, tok = lex.getTok()
-        tok = tok.strip()
-        if toktype == pyllvm.lltok.Eof:
-            break
-        print((toktype,tok))
-        # if toktype in strings():
-        #     token = lex.getStrVal()
-        #     new_tokens.append(token.replace('STRNEWLINE', '\n').replace(
-        #         'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
-        # else:
-        #     new_tokens.append(token)
+    s = s.replace('ENDCOM', '\n').replace('▁', ' SPACETOKEN ')
 
+    tokens, toktypes = get_llvm_tokens_and_types(s)
+    # for i in range(len(tokens)):
+    #     print(tokens[i], toktypes[i])
+    #     print('\n')
+    new_tokens = []
+    for i in range(len(tokens)):
+        if toktypes[i] in strings():
+            new_tokens.append(tokens[i].replace('STRNEWLINE', '\n').replace(
+                'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
+        else:
+            new_tokens.append(tokens[i])
     lines = re.split('NEW_LINE', ' '.join(new_tokens))
     untok_s = indent_lines(lines)
     return untok_s
 
 
 def extract_functions_llvm(s):
-    try:
+    assert isinstance(s, str) or isinstance(s, list)
+    if isinstance(s, list):
+        tokens = s
+    else:
         s = s.replace('ENDCOM', '\n').replace('▁', 'SPACETOKEN')
-        lex = pyllvm.lexer(s)
-        tokens = get_llvm_tokens_and_types(s)
-    except:
-        return [], []
+        tokens = tokenize_llvm(s)
     i = ind_iter(len(tokens))
     functions = []
-    try:
-        token = tokens[i.i]
-    except:
-        return []
-
+    tok = tokens[i.i]
     while True:
         try:
             # detect function
-            if token == 'define':
+            if tok == 'define':
                 # go previous until the start of function
-                function = [token]
-                token_types = [token_type]
-
-                while token != '}':
+                function = [tok]
+                # toktypes = [toktype]
+                while tok != '}':
                     i.next()
-                    token, token_type = tokens[i.i]
-                    function.append(token)
-                    token_types.append(token_type)
-                if token == '}':
-                    function = ' '.join(function)
-                    function = function.strip()
-                    function = function.replace(
-                        '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
+                    tok = tokens[i.i]
+                    function.append(tok.replace(
+                        '\n', 'ENDCOM').replace('SPACETOKEN', '▁'))
+                if tok == '}':
+                    # function = ' '.join(function)
+                    # function = function.strip()
+                    # function = function.replace(
+                    #     '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
                     #do i need this?
                     #if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
                     functions.append(function)
             i.next()
-            token = tokens[i.i][0]
+            tok = tokens[i.i]
         except:
             break
     return functions
 
 def get_function_name_llvm(s):
-    assert isinstance(s, str) or isinstance(s, list)
-    if isinstance(s, str):
-        s = s.split()
-    s = s[:s.index('{')]
-    return s[s.index('@') + 1]
+    return get_first_token_before_first_parenthesis(s)
 
+def extract_arguments_llvm(f):
+
+    assert isinstance(f, str) or isinstance(f, list)
+    if isinstance(f, list):
+        f = ' '.join(f)
+    return extract_arguments_llvm_using_parentheses(f)
+
+def extract_arguments_llvm_using_parentheses(f):
+    f = f.split(' ')
+    types = []
+    names = []
+    par = 0
+    arguments = []
+    f = f[f.index('('):]
+    for tok in f:
+        if tok == '(':
+            par += 1
+        elif tok == ')':
+            par -= 1
+        arguments.append(tok)
+        if par == 0:
+            break
+    arguments = ' '.join(arguments[1:-1])
+    if arguments == '':
+        return ['None'], ['None']
+    arguments = arguments.split(',')
+    for i in range(len(arguments)): 
+        arguments[i] = arguments[i].strip()
+    return arguments, arguments
 
 def get_first_token_before_first_parenthesis(s):
     assert isinstance(s, str) or isinstance(s, list)
