@@ -1,6 +1,0 @@
-submitit INFO (2021-05-05 11:54:03,349) - Starting with JobEnvironment(job_id=89830, hostname=beast, local_rank=0(1), node=0(1), global_rank=0(1))
-submitit INFO (2021-05-05 11:54:03,349) - Loading pickle: /mnt/sabrent/carl/TransCoder/data/test_dataset/cpp-llvm-/log/89830_submitted.pkl
-extacting functions for /mnt/sabrent/carl/TransCoder/data/test_dataset/llvm/train.3.tok
-printing extracted functions to file /mnt/sabrent/carl/TransCoder/data/test_dataset/llvm/train.3.functions_standalone.tok
-  0%|          | 0/1 [00:00<?, ?it/s]
-submitit INFO (2021-05-05 11:54:38,823) - Job completed successfully

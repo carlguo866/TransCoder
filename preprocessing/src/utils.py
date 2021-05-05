@@ -43,7 +43,7 @@ def tokenize_json_helper(inpt):
 
 
 @timeout(3600)
-def output_all_tokenized_results(docs, language, f_tok):
+def output_all_tokenized_results(docs, f_tok):
     pool = Pool(cpu_count())
     result_content_tokenized = tqdm.tqdm(pool.imap_unordered(
         tokenize_json_helper, docs), total=len(docs))
@@ -52,10 +52,6 @@ def output_all_tokenized_results(docs, language, f_tok):
             continue
         else:
             content_tokenized = ' '.join(content_tokenized)
-            # if(language != "llvm"): 
-            #     s = f"<DOCUMENT_ID=\"{path}\"> {content_tokenized} </DOCUMENT>"
-            # else: 
-            #     s = content_tokenized
             s = f"<DOCUMENT_ID=\"{path}\"> {content_tokenized} </DOCUMENT>"
             # for some reason sometimes, some caracters of s
             # cannot be encoded into utf-8 and it failed to print, so use try/catch
@@ -80,7 +76,7 @@ def process_and_tokenize_json_file(input_path, language, keep_comments):
 
     f_tok = open(output_path, 'w', encoding='utf-8')
     try:
-        output_all_tokenized_results(docs,language, f_tok)
+         (docs, f_tok)
     except TimeoutError:
         # The tokenization process is sometimes killed and it makes the multiprocessing hang forever
         f_tok.close()
@@ -106,16 +102,10 @@ def extract_functions_file(input_path, language, test_size=None):
             # result_functions = pool.map(extract_auto_code, lines)
             result_functions = tqdm.tqdm(pool.imap_unordered(
                 extract_auto_code, lines), total=len(lines))
-            
-            print("printing extracted functions to file " + str(output_path_sa))
-            print(result_functions)
-            
             for func_standalone, func_class in result_functions:
                 for func in func_standalone:
                     f_sa.write(func)
                     f_sa.write('\n')
-                    if(func[0:5] == "define"): 
-                        print("func" + func + "\n")
                 for func in func_class:
                     f_class.write(func)
                     f_class.write('\n')
