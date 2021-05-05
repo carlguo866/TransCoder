@@ -15,27 +15,26 @@ from preprocessing.preprocess import preprocess
 
 root = Path(__file__).resolve().parents[1].joinpath("data/test_dataset")
 print(f"ROOT{root}")
-lang1 = "java"
-lang2 = "python"
-lang3 = 'cpp'
-keep_comments = True
+lang1 = "cpp"
+lang2 = "llvm"
+keep_comments = False
 suffix = ".with_comments"
 
 
 def copy_and_clean_folder():
     # clean existing folder/files
-    for l in [lang1, lang2, lang3]:
+    for l in [lang1, lang2]:
         for tokenized_file in root.joinpath(l).glob("*.tok"):
             tokenized_file.unlink()
-    langs = sorted([lang1, lang2, lang3])
+    langs = sorted([lang1, lang2])
     shutil.rmtree(str(root.joinpath(
-        f"{langs[0]}-{langs[1]}-{langs[2]}{suffix}")), ignore_errors=True)
+        f"{langs[0]}-{langs[1]}{suffix}")), ignore_errors=True)
     shutil.rmtree(str(root.joinpath(
-        f"{langs[0]}-{langs[1]}-{langs[2]}{suffix}.XLM-syml")), ignore_errors=True)
+        f"{langs[0]}-{langs[1]}{suffix}.XLM-syml")), ignore_errors=True)
     print(
-        str(root.joinpath(f"{langs[0]}-{langs[1]}-{langs[2]}{suffix}.XLM-syml")))
+        str(root.joinpath(f"{langs[0]}-{langs[1]}{suffix}.XLM-syml")))
     shutil.rmtree(
-        str(root.joinpath(f"{langs[0]}-{langs[1]}-{langs[2]}")), ignore_errors=True)
+        str(root.joinpath(f"{langs[0]}-{langs[1]}")), ignore_errors=True)
 
 
 def preprocess_(dataset, lang_executor=None, tok_executor=None, bpe_executor=None):
@@ -62,14 +61,13 @@ def preprocess_(dataset, lang_executor=None, tok_executor=None, bpe_executor=Non
 
 def test_run_pipeline_locally_3_langs_with_comments():
     copy_and_clean_folder()
-    preprocess(root, lang1, lang2, keep_comments, local=True,
-               lang3=lang3, test_size=10, size_gb=0)
+    preprocess(root, lang1, lang2, keep_comments, local=True, test_size=10, size_gb=0)
 
 
 def test_run_pipeline_submitit_3_langs_with_comments():
     copy_and_clean_folder()
     dataset = Dataset(root, lang1, lang2, keep_comments,
-                      test_size=10, lang3=lang3)
+                      test_size=10)
     mp_executor = ProcessPoolExecutor()
     cluster_ex1 = AutoExecutor(dataset.folder.joinpath('log'), cluster="local")
     cluster_ex1.update_parameters()
