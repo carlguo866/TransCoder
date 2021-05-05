@@ -1,3 +1,0 @@
-submitit INFO (2021-05-05 11:54:41,025) - Starting with JobEnvironment(job_id=91132, hostname=beast, local_rank=0(1), node=0(1), global_rank=0(1))
-submitit INFO (2021-05-05 11:54:41,025) - Loading pickle: /mnt/sabrent/carl/TransCoder/data/test_dataset/cpp-llvm-/log/91132_submitted.pkl
-submitit INFO (2021-05-05 11:54:41,132) - Job completed successfully
