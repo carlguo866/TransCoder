@@ -6,6 +6,5 @@ model_1.pth
 /XLM/tools/fastBPE
 /apex/
 .DS_Store
-preprocessing/src/input.txt
-data/test_dataset/llvm
-output.txt 
+
+data/test_dataset/.DS_Store
