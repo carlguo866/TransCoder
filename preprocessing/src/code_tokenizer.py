@@ -637,6 +637,9 @@ def extract_functions_java(s):
     return functions_standalone, functions_class
 
 
+def extract_functions_llvm_with_docstring(function):
+    return '', '' 
+
 def extract_functions_java_with_docstring(function):
     ds = re.findall('[/][*].*?[*][/][ ]', function, re.DOTALL)
     if len(ds) > 0:
@@ -791,12 +794,14 @@ def remove_java_annotation(function):
     return re.sub('^(@ (Override|Deprecated|SuppressWarnings) (\( .* \) )?)*', '', function)
 
 def strip_llvm_comment(s):
+    if(s.find('\n') != -1):
+        s = s[:s.index('\n')]
     if(s.find(';') != -1):
-        return s[:s.index('\n')]
+        s = s[:s.index(';')]
     return s
         
 def tokenize_llvm(s, keep_comments=False):
-    #try: 
+    try: 
         tokens = []
         toktypes = [] 
         assert isinstance(s, str)
@@ -816,6 +821,9 @@ def tokenize_llvm(s, keep_comments=False):
                         tokens[-1] = process_string_llvm(tokens[-1],LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments)
                     except UnicodeDecodeError:
                         print(tokens[-1])
+                #i dont know why "less" is causing issues "toktype = 10"
+                if(toktypes[-2] == pyllvm.lltok.less):
+                    tokens[-1] = "<"
                 #get rid of comments
                 if(toktypes[-2] == pyllvm.lltok.rbrace):
                     tokens[-1] = "}"
@@ -832,10 +840,10 @@ def tokenize_llvm(s, keep_comments=False):
                 #     tokens[-1] += (str(lex.getAPFloatVal()))
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
                 return tokens 
-#    except KeyboardInterrupt:
-#        raise
-#    except:
-#        return []
+    except KeyboardInterrupt:
+        raise
+    except:
+        return []
 
 def get_llvm_tokens_and_types(s):
     # try:
@@ -896,40 +904,46 @@ def detokenize_llvm(s):
 
 
 def extract_functions_llvm(s):
-    assert isinstance(s, str) or isinstance(s, list)
-    if isinstance(s, list):
-        tokens = s
-    else:
-        s = s.replace('ENDCOM', '\n').replace('▁', 'SPACETOKEN')
-        tokens = tokenize_llvm(s)
+    # assert isinstance(s, str) or isinstance(s, list)
+    # if isinstance(s, list):
+    #     tokens = s
+    # else:
+    if(s.find("DOCUMENT_ID")!= -1):
+        s = s[s.index("\">")+2:]
+        s = s[:s.index("</DOCUMENT>")]
+    tokens = tokenize_llvm(s)
+    if(tokens == []): print("炸了！")
+    # print("string is " + s)
+    # print("tokens is " "".join(tokens))
     i = ind_iter(len(tokens))
     functions = []
+    # print("index" + str(i.i) + "-------") 
     tok = tokens[i.i]
     while True:
         try:
             # detect function
             if tok == 'define':
-                # go previous until the start of function
                 function = [tok]
-                # toktypes = [toktype]
                 while tok != '}':
                     i.next()
                     tok = tokens[i.i]
                     function.append(tok.replace(
                         '\n', 'ENDCOM').replace('SPACETOKEN', '▁'))
                 if tok == '}':
-                    # function = ' '.join(function)
-                    # function = function.strip()
-                    # function = function.replace(
-                    #     '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
+                    function = ' '.join(function)
+                    function = function.strip()
+                    function = function.replace(
+                        '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
                     #do i need this?
                     #if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
                     functions.append(function)
             i.next()
             tok = tokens[i.i]
         except:
+            # print("stop condition" + str(i.i) + " " + str(len(tokens)))
             break
-    return functions
+    # print("func llvm" + " ".join(functions))
+    return functions, ["placeholder"]
 
 def get_function_name_llvm(s):
     return get_first_token_before_first_parenthesis(s)
@@ -937,12 +951,8 @@ def get_function_name_llvm(s):
 def extract_arguments_llvm(f):
 
     assert isinstance(f, str) or isinstance(f, list)
-    if isinstance(f, list):
-        f = ' '.join(f)
-    return extract_arguments_llvm_using_parentheses(f)
-
-def extract_arguments_llvm_using_parentheses(f):
-    f = f.split(' ')
+    if isinstance(f, str):
+        f = f.split(' ')
     types = []
     names = []
     par = 0
@@ -962,7 +972,11 @@ def extract_arguments_llvm_using_parentheses(f):
     arguments = arguments.split(',')
     for i in range(len(arguments)): 
         arguments[i] = arguments[i].strip()
-    return arguments, arguments
+    argtypes = arguments
+    argnames = [] 
+    for i in range(len(argtypes)):
+        argnames.append(f"%{i}")
+    return arguments, argnames
 
 def get_first_token_before_first_parenthesis(s):
     assert isinstance(s, str) or isinstance(s, list)
