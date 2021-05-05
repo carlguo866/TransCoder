@@ -1,0 +1,5 @@
+public static void main ( String [ ] args ) throws Exception { new PubExample ( ) . run ( ) ; }
+private static OnLayoutChangeListener sLayoutChangeListener = new OnLayoutChangeListener ( ) { @ Override public void onLayoutChange ( View v , int left , int top , int right , int bottom , int oldLeft , int oldTop , int oldRight , int oldBottom ) { v . setPivotX ( 0 ) ; v . setPivotY ( v . getMeasuredHeight ( ) / 2 ) ; } }
+public static org . apache . axis . description . TypeDesc getTypeDesc ( ) { return typeDesc ; }
+public static org . apache . axis . encoding . Serializer getSerializer ( java . lang . String mechType , java . lang . Class _javaType , javax . xml . namespace . QName _xmlType ) { return new org . apache . axis . encoding . ser . BeanSerializer ( _javaType , _xmlType , typeDesc ) ; }
+public static org . apache . axis . encoding . Deserializer getDeserializer ( java . lang . String mechType , java . lang . Class _javaType , javax . xml . namespace . QName _xmlType ) { return new org . apache . axis . encoding . ser . BeanDeserializer ( _javaType , _xmlType , typeDesc ) ; }
