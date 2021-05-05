@@ -1,3 +1,0 @@
-public static void value ( double newVal ) { val = newVal ; }
-private static void setInstanceofed ( Clazz clazz ) { ClassOptimizationInfo info = ClassOptimizationInfo . getClassOptimizationInfo ( clazz ) ; if ( info != null ) { info . setInstanceofed ( ) ; } }
-public static boolean isInstanceofed ( Clazz clazz ) { ClassOptimizationInfo info = ClassOptimizationInfo . getClassOptimizationInfo ( clazz ) ; return info == null || info . isInstanceofed ( ) ; }

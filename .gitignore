@@ -7,5 +7,5 @@ model_1.pth
 /apex/
 .DS_Store
 preprocessing/src/input.txt
-data/test_dataset/llvm
+data/test_dataset/
 output.txt 
