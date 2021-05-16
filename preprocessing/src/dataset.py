@@ -8,7 +8,7 @@
 import itertools
 import subprocess
 from pathlib import Path
-
+import os
 from preprocessing.src.utils import shuf_file, apply_bpe_file, get_vocab_file, learn_bpe_file, regroup_and_select_data, LocalExecutor, binarize_for_XLM_file, truncate_files, \
     get_nlines, process_and_tokenize_json_file, extract_functions_file
 
@@ -31,6 +31,8 @@ class Language:
             '*.json.gz') if not Path(str(json).replace('.json.gz', suffix + '.tok')).is_file()]
         print(f"{self.l}: tokenizing {len(jsons)} json files ...")
         if len(jsons) > 0:
+            for json in jsons:
+                print(f"json {str(json)}")
             jobs = executor.map_array(process_and_tokenize_json_file, jsons, itertools.repeat(
                 self.l), itertools.repeat(keep_comments))
             for job in jobs:
@@ -40,14 +42,16 @@ class Language:
 
     def split_train_test_valid(self, keep_comments, test_size=1000):
         suffix = '.with_comments' if keep_comments else ''
-
         # split train-test-valid
         # regroup
         all_tok = self.folder.joinpath(f'all{suffix}.tok')
+        print(all_tok)
         command = f"cd {self.folder}; cat *[0-4][0-9][0-9]{suffix}.tok > {all_tok}"
         proc = subprocess.run(command, shell=True, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, executable='/bin/bash')
-
+        print(os.getcwd())
+        if not all_tok.exists(): 
+            print("nothing exist for all.tok why??")
         size_gb = all_tok.stat().st_size
         n_lines = get_nlines(all_tok)
 
@@ -60,6 +64,7 @@ class Language:
         subprocess.run(f"cat {all_tok} | head -n {2 * test_size} | tail -n {test_size}  > {self.folder.joinpath(f'test{suffix}.tok')}", shell=True, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
         split_len = int((n_lines - 2 * test_size) / 8)
+        print(f"split_len = {split_len} n_lines = {n_lines}")
         for n, i in zip(range(8), range(2 * test_size, n_lines, split_len)):
             subprocess.run(f"cat {all_tok} | head -n {i + split_len} | tail -n {split_len}  > {self.folder.joinpath(f'train{suffix}.{n}.tok')}", shell=True, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE)

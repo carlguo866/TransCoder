@@ -911,6 +911,7 @@ def extract_functions_llvm(s):
     if(s.find("DOCUMENT_ID")!= -1):
         s = s[s.index("\">")+2:]
         s = s[:s.index("</DOCUMENT>")]
+    #print("does the error go above or below?")
     tokens = tokenize_llvm(s)
     if(tokens == []): print("炸了！")
     # print("string is " + s)
@@ -943,7 +944,7 @@ def extract_functions_llvm(s):
             # print("stop condition" + str(i.i) + " " + str(len(tokens)))
             break
     # print("func llvm" + " ".join(functions))
-    return functions, ["placeholder"]
+    return functions, []
 
 def get_function_name_llvm(s):
     return get_first_token_before_first_parenthesis(s)

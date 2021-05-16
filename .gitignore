@@ -8,4 +8,6 @@ model_1.pth
 .DS_Store
 preprocessing/src/input.txt
 data/test_dataset/
-output.txt 
+data/
+output/
+myoutput/
