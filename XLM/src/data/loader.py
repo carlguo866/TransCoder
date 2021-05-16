@@ -63,19 +63,28 @@ def load_binarized(path, params):
     assert path.endswith('.pth')
     if params.debug_train:
         path = path.replace('train', 'valid')
+    print("here-here2" + str(params.multi_gpu))
     if getattr(params, 'multi_gpu', False):
+        print("here-here")
         assert params.split_data_accross_gpu in ['local', 'global']
         if params.split_data_accross_gpu == 'local':
+            print("what is path[:-4] %s ?" % path[:-4])
             split_path = '%s.%i.pth' % (path[:-4], params.local_rank)
         else:
             split_path = '%s.%i.pth' % (path[:-4], params.global_rank)
-
+        print("split_path" + split_path)
         if os.path.isfile(split_path):
             assert params.split_data is False
             path = split_path
+
+    print("path" + path)
     assert os.path.isfile(path), path
     logger.info("Loading data from %s ..." % path)
     data = torch.load(path)
+    print("printing data")
+    for keys,values in data.items():
+        print("keys " + keys)
+        print("value " + str(values))
     data = process_binarized(data, params)
     return data
 
@@ -132,7 +141,8 @@ def load_mono_data(params, data):
                 continue
 
             # load data / update dictionary parameters / update data
-            mono_data = load_binarized(params.mono_dataset[lang][splt], params)
+            for i in range(len(params.mono_dataset[lang][splt])):
+                mono_data = load_binarized(params.mono_dataset[lang][splt][i], params)
             set_dico_parameters(params, data, mono_data['dico'])
 
             # create stream dataset
@@ -245,10 +255,12 @@ def check_data_params(params):
 
     # check languages
     params.langs = params.lgs.split('-') if params.lgs != 'debug' else ['en']
+    print(f"langs = {params.langs}")
     assert len(params.langs) == len(set(params.langs)) >= 1
     # assert sorted(params.langs) == params.langs
     params.id2lang = {k: v for k, v in enumerate(sorted(params.langs))}
     params.lang2id = {k: v for v, k in params.id2lang.items()}
+    print(f"id2lang = {params.id2lang}")
     params.n_langs = len(params.langs)
 
     # CLM steps
@@ -256,6 +268,7 @@ def check_data_params(params):
                  for s in params.clm_steps.split(',') if len(s) > 0]
     params.clm_steps = [(s[0], None) if len(s) == 1 else tuple(s)
                         for s in clm_steps]
+    print(f"clm_steps = {params.clm_steps}")
     assert all([(l1 in params.langs) and (l2 in params.langs or l2 is None)
                 for l1, l2 in params.clm_steps])
     assert len(params.clm_steps) == len(set(params.clm_steps))
@@ -265,6 +278,7 @@ def check_data_params(params):
                  for s in params.mlm_steps.split(',') if len(s) > 0]
     params.mlm_steps = [(s[0], None) if len(s) == 1 else tuple(s)
                         for s in mlm_steps]
+    print(f"mlm_steps = {params.mlm_steps}")
     assert all([(l1 in params.langs) and (l2 in params.langs or l2 is None)
                 for l1, l2 in params.mlm_steps])
     assert len(params.mlm_steps) == len(set(params.mlm_steps))
@@ -301,16 +315,32 @@ def check_data_params(params):
                          if l2 is None] + params.ae_steps + params.bt_src_langs)
     params.mono_dataset = {
         lang: {
-            splt: os.path.join(params.data_path, '%s.%s.pth' % (splt, lang))
-            for splt in ['train', 'valid', 'test']
+            # splt: os.path.join(params.data_path, '%s.%s.pth' % (splt, lang))
+            # for splt in ['valid', 'test']
         } for lang in params.langs if lang in required_mono
     }
+    #add path for trains: 
+    for lang in params.langs:  
+        if lang in required_mono:
+            for splt in ['valid', 'test']: 
+                params.mono_dataset[lang][splt] = [os.path.join(params.data_path, '%s.%s.pth' % (splt, lang))]
+            params.mono_dataset[lang]['train'] = [] 
+            for num in range(8): 
+                params.mono_dataset[lang]['train'].append(os.path.join(params.data_path, '%s.%s.%d.pth' % ("train", lang, num)))
+        
     for paths in params.mono_dataset.values():
         for p in paths.values():
-            if not os.path.isfile(p):
-                logger.error(f"{p} not found")
+            # if isinstance(p, str):  
+            #     print("file %s" % p)
+            #     if not os.path.isfile(p):
+            #         logger.error(f"{p} not found")
+            if isinstance(p, list):
+                print("file %s" % p)
+                for each in p: 
+                    if not os.path.isfile(each):
+                        logger.error(f"{each} not found")
     if not params.eval_only:
-        assert all([all([os.path.isfile(p) or os.path.isfile(p.replace('pth', '0.pth'))
+        assert all([all([os.path.isfile(each) for each in p 
                     for p in paths.values()]) for paths in params.mono_dataset.values()])
 
     # check parallel datasets

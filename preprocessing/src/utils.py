@@ -108,14 +108,11 @@ def extract_functions_file(input_path, language, test_size=None):
                 extract_auto_code, lines), total=len(lines))
             
             print("printing extracted functions to file " + str(output_path_sa))
-            print(result_functions)
             
             for func_standalone, func_class in result_functions:
                 for func in func_standalone:
                     f_sa.write(func)
                     f_sa.write('\n')
-                    if(func[0:5] == "define"): 
-                        print("func" + func + "\n")
                 for func in func_class:
                     f_class.write(func)
                     f_class.write('\n')
@@ -176,6 +173,7 @@ def apply_bpe_file(file_path, output, codes, vocab=None):
                              shell=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
+    
     assert Path(
         output).is_file and process.returncode == 0, f"failed to apply bpe on {file_path}, command: \n {FAST} applybpe {output} {file_path} {codes} {vocab}"
 

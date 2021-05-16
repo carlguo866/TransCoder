@@ -2,7 +2,7 @@ import json
 import sys
 import gzip 
 from distutils import util
-
+from pathlib import Path
 if __name__ == '__main__':
     with open(sys.argv[1], 'r') as input: 
         input = input.read()
@@ -18,10 +18,16 @@ if __name__ == '__main__':
             "content": input
         }
         y = json.dumps(x) 
+        folder_name = Path(f"data/{folder_name}/")
+        if not folder_name.is_dir(): 
+            folder_name.mkdir()
+        if not folder_name.joinpath(lang).is_dir():
+            print(folder_name.joinpath(lang))
+            folder_name.joinpath(lang).mkdir()
         if(sys.argv[2]=="1"): 
-            outF = gzip.open(f"data/{folder_name}/{lang}/{lang}.00{file_num}.json.gz", "wt")
+            outF = gzip.open(folder_name.joinpath(f"{lang}/{lang}.00{file_num}.json.gz"), "wt")
         else: 
-            outF = gzip.open(f"data/{folder_name}/{lang}/{lang}.00{file_num}.json.gz", "at")
+            outF = gzip.open(folder_name.joinpath(f"{lang}/{lang}.00{file_num}.json.gz"), "at")
         outF.write(y)
         outF.write("\n")
         outF.close
