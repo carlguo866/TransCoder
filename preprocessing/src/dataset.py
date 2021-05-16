@@ -61,28 +61,28 @@ class Language:
         # select test/valid/train and split train in 8
         subprocess.run(f"cat {all_tok} | head -n {test_size} > {self.folder.joinpath(f'valid{suffix}.tok')}",
                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        subprocess.run(f"cat {all_tok} | head -n {2 * test_size} | tail -n {test_size}  > {self.folder.joinpath(f'test{suffix}.tok')}", shell=True, stdout=subprocess.PIPE,
+        command = f"cat {all_tok} | head -n {2 * test_size} | tail -n {test_size}  > {self.folder.joinpath(f'test{suffix}.tok')}"
+        subprocess.run(command, shell=True, stdout=subprocess.PIPE,
                        stderr=subprocess.PIPE)
-        split_len = int((n_lines - 2 * test_size) / 8)
-        print(f"split_len = {split_len} n_lines = {n_lines}")
-        for n, i in zip(range(8), range(2 * test_size, n_lines, split_len)):
-            subprocess.run(f"cat {all_tok} | head -n {i + split_len} | tail -n {split_len}  > {self.folder.joinpath(f'train{suffix}.{n}.tok')}", shell=True, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-
+        # split_len = int((n_lines - 2 * test_size) / 8)
+        # print(f"split_len = {split_len} n_lines = {n_lines}")
+        
+        # for n, i in zip(range(8), range(2 * test_size, n_lines, split_len)):
+        # train
+        subprocess.run(f"cat {all_tok} | tail -n {test_size}  > {self.folder.joinpath(f'train{suffix}.tok')}",
+                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return n_lines, size_gb
 
     def process(self, keep_comments, tok_executor=None, test_size=1000, split_executor=None):
         suffix = '.with_comments' if keep_comments else ''
         print(f"{self.l}: process ...")
         self.process_json_and_tok(keep_comments, tok_executor)
-        if (all(self.folder.joinpath(f'train{suffix}.{n}.tok').is_file() for n in range(8)) and
-                self.folder.joinpath(f'test{suffix}.tok').is_file() and
-                self.folder.joinpath(f'valid{suffix}.tok').is_file()):
+        if (self.folder.joinpath(f'train{suffix}.tok').is_file() and
+            self.folder.joinpath(f'test{suffix}.tok').is_file() and
+            self.folder.joinpath(f'valid{suffix}.tok').is_file()):
             print(f"{self.l}: train, test and valid for already exist. ")
-            nlines = 8 * \
-                get_nlines(self.folder.joinpath(f'train{suffix}.{0}.tok'))
-            size_gb = 8 * \
-                self.folder.joinpath(f'train{suffix}.{0}.tok').stat().st_size
+            nlines = get_nlines(self.folder.joinpath(f'train{suffix}.tok'))
+            size_gb = self.folder.joinpath(f'train{suffix}.tok').stat().st_size
         else:
             print(f"{self.l}: split train, test and valid ... ")
             if split_executor is None:
@@ -98,7 +98,7 @@ class Language:
         if executor is None:
             executor = LocalExecutor()
         suffix = '.with_comments' if keep_comments else ''
-        files = list(self.folder.glob(f'train{suffix}.[01234567].tok'))
+        files = list(self.folder.glob(f'train{suffix}.tok'))
         files.append(self.folder.joinpath(f'test{suffix}.tok'))
         files.append(self.folder.joinpath(f'valid{suffix}.tok'))
         toks = [tok for tok in files if not (tok.with_suffix('.functions_standalone.tok').is_file(
@@ -113,15 +113,15 @@ class Language:
         if executor is None:
             executor = LocalExecutor()
         suffix = '.with_comments' if keep_comments else ''
+        # files = list(self.folder.glob(
+        #     f'train{suffix}.functions_class.tok'))
         files = list(self.folder.glob(
-            f'train{suffix}.[01234567].functions_class.tok'))
-        files += list(self.folder.glob(
-            f'train{suffix}.[01234567].functions_standalone.tok'))
-        files.append(self.folder.joinpath(f'test{suffix}.functions_class.tok'))
+            f'train{suffix}.functions_standalone.tok'))
+        # files.append(self.folder.joinpath(f'test{suffix}.functions_class.tok'))
         files.append(self.folder.joinpath(
             f'test{suffix}.functions_standalone.tok'))
-        files.append(self.folder.joinpath(
-            f'valid{suffix}.functions_class.tok'))
+        # files.append(self.folder.joinpath(
+        #     f'valid{suffix}.functions_class.tok'))
         files.append(self.folder.joinpath(
             f'valid{suffix}.functions_standalone.tok'))
         toks = [tok for tok in files if not (tok.with_suffix(
@@ -192,7 +192,7 @@ class Dataset:
             f"regroup and select data for training bpe in {data_train_bpe} ...")
         regroup_and_select_data(
             files=[l.folder.glob(
-                f'train{self.suffix}.[01234567].tok') for l in self.langs],
+                f'train{self.suffix}.tok') for l in self.langs],
             nlines=nlines,
             output=data_train_bpe)
 
@@ -218,7 +218,7 @@ class Dataset:
         print(f"regroup and select data in {data_get_vocab} to get vocab ...")
         regroup_and_select_data(
             files=[self.folder.glob(
-                f'{l.l}.train{self.suffix}.[01234567].bpe') for l in self.langs],
+                f'{l.l}.train{self.suffix}.bpe') for l in self.langs],
             nlines=nlines,
             output=data_get_vocab)
         print(f"computing vocab on {data_get_vocab}...")
@@ -264,13 +264,13 @@ class Dataset:
             job.result()
 
         for split in ['test', 'valid']:
-            for f_type in ['functions_standalone', 'functions_class']:
+            for f_type in ['functions_standalone']: #, 'functions_class'
                 truncate_files(l.folder.joinpath(
                     f'{split}{self.suffix}.{f_type}.tok') for l in self.langs)
 
         print("apply bpe on train ... ")
         self.apply_bpe(
-            f'train{self.suffix}.[01234567].functions_*.tok', use_vocab=False, executor=bpe_executor)
+            f'train{self.suffix}.functions_*.tok', use_vocab=False, executor=bpe_executor)
         print("apply bpe on test and valid ...")
         self.apply_bpe(f'test{self.suffix}.functions_*.tok',
                        use_vocab=False, executor=bpe_executor)
