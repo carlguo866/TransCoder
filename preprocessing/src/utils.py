@@ -91,9 +91,9 @@ def process_and_tokenize_json_file(input_path, language, keep_comments):
 def extract_functions_file(input_path, language, test_size=None):
     print(f"extacting functions for {str(input_path)}")
     output_path_sa = input_path.with_suffix('.functions_standalone.tok')
-    output_path_class = input_path.with_suffix('.functions_class.tok')
+    # output_path_class = input_path.with_suffix('.functions_class.tok')
 
-    if output_path_sa.is_file() and output_path_class.is_file():
+    if output_path_sa.is_file(): #and output_path_class.is_file()
         return
     with input_path.open('r', encoding="utf-8") as f:
         lines = f.readlines()
@@ -101,21 +101,19 @@ def extract_functions_file(input_path, language, test_size=None):
         code_tokenizer, f"extract_functions_{language}")
 
     with output_path_sa.open('w', encoding='utf-8') as f_sa:
-        with output_path_class.open('w', encoding='utf-8') as f_class:
             pool = Pool(cpu_count())
             # result_functions = pool.map(extract_auto_code, lines)
             result_functions = tqdm.tqdm(pool.imap_unordered(
                 extract_auto_code, lines), total=len(lines))
-            
             print("printing extracted functions to file " + str(output_path_sa))
             
             for func_standalone, func_class in result_functions:
                 for func in func_standalone:
                     f_sa.write(func)
                     f_sa.write('\n')
-                for func in func_class:
-                    f_class.write(func)
-                    f_class.write('\n')
+                # for func in func_class:
+                #     f_class.write(func)
+                #     f_class.write('\n')
 
 
 def get_nlines(file_path):
