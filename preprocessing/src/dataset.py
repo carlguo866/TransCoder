@@ -69,7 +69,7 @@ class Language:
         
         # for n, i in zip(range(8), range(2 * test_size, n_lines, split_len)):
         # train
-        subprocess.run(f"cat {all_tok} | tail -n {test_size}  > {self.folder.joinpath(f'train{suffix}.tok')}",
+        subprocess.run(f"cat {all_tok} | tail -n {n_lines-2*test_size}  > {self.folder.joinpath(f'train{suffix}.tok')}",
                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         return n_lines, size_gb
 
