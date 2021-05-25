@@ -1,6 +1,6 @@
 python XLM/train.py \
 --n_heads 8 \
---bt_steps 'python_sa-cpp_sa-python_sa,cpp_sa-python_sa-cpp_sa,java_sa-cpp_sa-java_sa,cpp_sa-java_sa-cpp_sa,python_sa-java_sa-python_sa,java_sa-python_sa-java_sa' \
+--bt_steps '' \
 --max_vocab '-1'  \
 --word_blank '0.1' \
 --n_layers 6  \
@@ -11,20 +11,21 @@ python XLM/train.py \
 --share_inout_emb true \
 --tokens_per_batch 6000 \
 --has_sentences_ids true \
+--mlm_steps 'cpp,llvm' \
 --eval_bleu true  \
 --split_data false  \
---data_path '/home/carl/TransCoder/data/XLM-cpp-java-python-with-comments'  \
+--data_path '/home/carl/TransCoder/data/data_try3'  \
 --eval_computation true \
 --batch_size 32 \
---reload_model 'model_1.pth,model_1.pth'  \
+--reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/bp5kf6zh4p/best-valid_mlm_ppl.pth, /home/carl/TransCoder/output/mlm_cpp_llvm/bp5kf6zh4p/best-valid_mlm_ppl.pth'  \
 --amp 2  \
 --max_batch_size 128 \
---ae_steps 'cpp_sa,python_sa,java_sa' \
+--ae_steps '' \
 --emb_dim 1024 \
 --eval_only True \
 --beam_size 10 \
 --retry_mistmatching_types 1 \
 --dump_path '/tmp/' \
 --exp_name='eval_final_model_wc_30' \
---lgs 'cpp_sa-java_sa-python_sa' \
---encoder_only=False \
+--lgs 'cpp-llvm' \
+--encoder_only=True 

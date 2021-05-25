@@ -4,7 +4,7 @@ python XLM/train.py \
     --max_vocab 64000 \
     --word_mask_keep_rand '0.8,0.1,0.1' \
     --word_blank 0 \
-    --data_path '/home/carl/TransCoder/data/data_try4/cpp-llvm-.XLM-syml' \
+    --data_path '/home/carl/TransCoder/data/data_try5/cpp-llvm-.XLM-syml' \
     --save_periodic 0 \
     --bptt 512 \
     --lambda_clm 1 \
@@ -18,7 +18,7 @@ python XLM/train.py \
     --attention_dropout 0 \
     --split_data false \
     --length_penalty 1 \
-    --max_epoch 100000 \
+    --max_epoch 25 \
     --stopping_criterion '_valid_mlm_ppl,10' \
     --lambda_bt 1 \
     --dump_path '/mnt/sabrent/carl/TransCoder/output' \

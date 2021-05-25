@@ -1,0 +1,302 @@
+INFO - 05/16/21 22:08:20 - 0:00:00 - ============ Initialized logger ============
+INFO - 05/16/21 22:08:20 - 0:00:00 - accumulate_gradients: 1
+                                     ae_steps: []
+                                     amp: 2
+                                     attention_dropout: 0.0
+                                     batch_size: 32
+                                     beam_size: 1
+                                     bptt: 512
+                                     bt_sample_temperature: 0
+                                     bt_src_langs: []
+                                     bt_steps: []
+                                     clip_grad_norm: 5.0
+                                     clm_steps: []
+                                     command: python XLM/train.py --n_heads 8 --bt_steps '' --max_vocab 64000 --word_mask_keep_rand '0.8,0.1,0.1' --word_blank 0 --data_path '/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml' --save_periodic 0 --bptt 512 --lambda_clm 1 --ae_steps '' --fp16 true --share_inout_emb true --lambda_mlm 1 --sinusoidal_embeddings false --word_shuffle 0 --mlm_steps 'cpp,llvm' --attention_dropout 0 --split_data false --length_penalty 1 --max_epoch 1 --stopping_criterion '_valid_mlm_ppl,10' --lambda_bt 1 --dump_path '/mnt/sabrent/carl/TransCoder/output' --lambda_mt 1 --epoch_size 100 --early_stopping false --gelu_activation false --n_layers 6 --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0003,weight_decay=0.01' --validation_metrics _valid_mlm_ppl --eval_bleu false --dropout '0.1' --mt_steps '' --reload_emb '' --batch_size 32 --context_size 0 --word_dropout 0 --reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/bp5kf6zh4p/best-valid_mlm_ppl.pth' --min_count 0 --lgs 'cpp-llvm' --sample_alpha 0 --word_pred '0.15' --amp 2 --max_batch_size 0 --clip_grad_norm 5 --emb_dim 1024 --encoder_only true --beam_size 1 --clm_steps '' --exp_name mlm_cpp_llvm --lambda_ae 1 --lg_sampling_factor '-1' --eval_only true --exp_id "pc87nvxra5"
+                                     context_size: 0
+                                     data_path: /home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml
+                                     debug: False
+                                     debug_slurm: False
+                                     debug_train: False
+                                     dropout: 0.1
+                                     dump_path: /mnt/sabrent/carl/TransCoder/output/mlm_cpp_llvm/pc87nvxra5
+                                     early_stopping: False
+                                     emb_dim: 1024
+                                     emb_dim_decoder: 1024
+                                     emb_dim_encoder: 1024
+                                     encoder_only: True
+                                     epoch_size: 100
+                                     eval_bleu: False
+                                     eval_bleu_test_only: False
+                                     eval_computation: False
+                                     eval_only: True
+                                     eval_temperature: None
+                                     exp_id: pc87nvxra5
+                                     exp_name: mlm_cpp_llvm
+                                     fp16: True
+                                     gelu_activation: False
+                                     gen_tpb_multiplier: 1
+                                     generate_hypothesis: False
+                                     global_rank: 0
+                                     group_by_size: True
+                                     has_sentences_ids: False
+                                     id2lang: {0: 'cpp', 1: 'llvm'}
+                                     is_master: True
+                                     is_slurm_job: False
+                                     lambda_ae: 1
+                                     lambda_bt: 1
+                                     lambda_clm: 1
+                                     lambda_mlm: 1
+                                     lambda_mt: 1
+                                     lang2id: {'cpp': 0, 'llvm': 1}
+                                     langs: ['cpp', 'llvm']
+                                     length_penalty: 1.0
+                                     lg_sampling_factor: -1.0
+                                     lgs: cpp-llvm
+                                     local_rank: 0
+                                     master_port: -1
+                                     max_batch_size: 0
+                                     max_epoch: 1
+                                     max_len: 100
+                                     max_vocab: 64000
+                                     min_count: 0
+                                     mlm_steps: [('cpp', None), ('llvm', None)]
+                                     mono_dataset: {'cpp': {'train': '/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/train.cpp.pth', 'valid': '/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/valid.cpp.pth', 'test': '/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/test.cpp.pth'}, 'llvm': {'train': '/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/train.llvm.pth', 'valid': '/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/valid.llvm.pth', 'test': '/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/test.llvm.pth'}}
+                                     mt_steps: []
+                                     multi_gpu: False
+                                     multi_node: False
+                                     n_gpu_per_node: 1
+                                     n_heads: 8
+                                     n_langs: 2
+                                     n_layers: 6
+                                     n_layers_decoder: 6
+                                     n_layers_encoder: 6
+                                     n_nodes: 1
+                                     n_share_dec: 0
+                                     node_id: 0
+                                     number_samples: 1
+                                     optimizer: adam_inverse_sqrt,warmup_updates=10000,lr=0.0003,weight_decay=0.01
+                                     para_dataset: {}
+                                     reload_checkpoint: 
+                                     reload_emb: 
+                                     reload_model: /home/carl/TransCoder/output/mlm_cpp_llvm/bp5kf6zh4p/best-valid_mlm_ppl.pth
+                                     retry_mistmatching_types: False
+                                     sample_alpha: 0.0
+                                     save_periodic: 0
+                                     separate_decoders: False
+                                     share_inout_emb: True
+                                     sinusoidal_embeddings: False
+                                     split_data: False
+                                     split_data_accross_gpu: local
+                                     stopping_criterion: _valid_mlm_ppl,10
+                                     tokens_per_batch: -1
+                                     use_lang_emb: True
+                                     validation_metrics: _valid_mlm_ppl
+                                     word_blank: 0.0
+                                     word_dropout: 0.0
+                                     word_keep: 0.1
+                                     word_mask: 0.8
+                                     word_mask_keep_rand: 0.8,0.1,0.1
+                                     word_pred: 0.15
+                                     word_rand: 0.1
+                                     word_shuffle: 0.0
+                                     world_size: 1
+INFO - 05/16/21 22:08:20 - 0:00:00 - The experiment will be stored in /mnt/sabrent/carl/TransCoder/output/mlm_cpp_llvm/pc87nvxra5
+                                     
+INFO - 05/16/21 22:08:20 - 0:00:00 - Running command: python XLM/train.py --n_heads 8 --bt_steps '' --max_vocab 64000 --word_mask_keep_rand '0.8,0.1,0.1' --word_blank 0 --data_path '/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml' --save_periodic 0 --bptt 512 --lambda_clm 1 --ae_steps '' --fp16 true --share_inout_emb true --lambda_mlm 1 --sinusoidal_embeddings false --word_shuffle 0 --mlm_steps 'cpp,llvm' --attention_dropout 0 --split_data false --length_penalty 1 --max_epoch 1 --stopping_criterion '_valid_mlm_ppl,10' --lambda_bt 1 --dump_path '/mnt/sabrent/carl/TransCoder/output' --lambda_mt 1 --epoch_size 100 --early_stopping false --gelu_activation false --n_layers 6 --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0003,weight_decay=0.01' --validation_metrics _valid_mlm_ppl --eval_bleu false --dropout '0.1' --mt_steps '' --reload_emb '' --batch_size 32 --context_size 0 --word_dropout 0 --reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/bp5kf6zh4p/best-valid_mlm_ppl.pth' --min_count 0 --lgs 'cpp-llvm' --sample_alpha 0 --word_pred '0.15' --amp 2 --max_batch_size 0 --clip_grad_norm 5 --emb_dim 1024 --encoder_only true --beam_size 1 --clm_steps '' --exp_name mlm_cpp_llvm --lambda_ae 1 --lg_sampling_factor '-1' --eval_only true
+
+WARNING - 05/16/21 22:08:20 - 0:00:00 - Signal handler installed.
+INFO - 05/16/21 22:08:20 - 0:00:00 - ============ Monolingual data (cpp)
+INFO - 05/16/21 22:08:20 - 0:00:00 - Loading data from /home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/valid.cpp.pth ...
+INFO - 05/16/21 22:08:20 - 0:00:00 - 43961843 words (48331 unique) in 1000 sentences. 231 unknown words (52 unique) covering 0.00% of the data.
+INFO - 05/16/21 22:08:20 - 0:00:00 - Selecting 64000 most frequent words ...
+INFO - 05/16/21 22:08:20 - 0:00:00 - Maximum vocabulary size: 64000. Dictionary size: 48331 -> 48331 (removed 0 words).
+INFO - 05/16/21 22:08:20 - 0:00:00 - Now 231 unknown words covering 0.00% of the data.
+
+INFO - 05/16/21 22:08:20 - 0:00:00 - Loading data from /home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/test.cpp.pth ...
+INFO - 05/16/21 22:08:21 - 0:00:00 - 43106628 words (48331 unique) in 1000 sentences. 234 unknown words (64 unique) covering 0.00% of the data.
+INFO - 05/16/21 22:08:21 - 0:00:00 - Selecting 64000 most frequent words ...
+INFO - 05/16/21 22:08:21 - 0:00:00 - Maximum vocabulary size: 64000. Dictionary size: 48331 -> 48331 (removed 0 words).
+INFO - 05/16/21 22:08:21 - 0:00:01 - Now 234 unknown words covering 0.00% of the data.
+
+INFO - 05/16/21 22:08:21 - 0:00:01 - ============ Monolingual data (llvm)
+INFO - 05/16/21 22:08:21 - 0:00:01 - Loading data from /home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/valid.llvm.pth ...
+INFO - 05/16/21 22:08:21 - 0:00:01 - 212373037 words (48331 unique) in 1000 sentences. 6106 unknown words (69 unique) covering 0.00% of the data.
+INFO - 05/16/21 22:08:21 - 0:00:01 - Selecting 64000 most frequent words ...
+INFO - 05/16/21 22:08:21 - 0:00:01 - Maximum vocabulary size: 64000. Dictionary size: 48331 -> 48331 (removed 0 words).
+INFO - 05/16/21 22:08:22 - 0:00:02 - Now 6106 unknown words covering 0.00% of the data.
+
+INFO - 05/16/21 22:08:23 - 0:00:02 - Loading data from /home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/test.llvm.pth ...
+INFO - 05/16/21 22:08:23 - 0:00:03 - 211431084 words (48331 unique) in 1000 sentences. 6245 unknown words (66 unique) covering 0.00% of the data.
+INFO - 05/16/21 22:08:23 - 0:00:03 - Selecting 64000 most frequent words ...
+INFO - 05/16/21 22:08:23 - 0:00:03 - Maximum vocabulary size: 64000. Dictionary size: 48331 -> 48331 (removed 0 words).
+INFO - 05/16/21 22:08:23 - 0:00:03 - Now 6245 unknown words covering 0.00% of the data.
+
+
+
+INFO - 05/16/21 22:08:24 - 0:00:04 - ============ Data summary
+INFO - 05/16/21 22:08:24 - 0:00:04 - Monolingual data   - valid -          cpp:      1000
+INFO - 05/16/21 22:08:24 - 0:00:04 - Monolingual data   -  test -          cpp:      1000
+INFO - 05/16/21 22:08:24 - 0:00:04 - Monolingual data   - valid -         llvm:      1000
+INFO - 05/16/21 22:08:24 - 0:00:04 - Monolingual data   -  test -         llvm:      1000
+
+INFO - 05/16/21 22:08:25 - 0:00:05 - Reloading model from /home/carl/TransCoder/output/mlm_cpp_llvm/bp5kf6zh4p/best-valid_mlm_ppl.pth ...
+INFO - 05/16/21 22:08:27 - 0:00:07 - Model: TransformerModel(
+                                       (position_embeddings): Embedding(1024, 1024)
+                                       (lang_embeddings): Embedding(2, 1024)
+                                       (embeddings): Embedding(48331, 1024, padding_idx=2)
+                                       (layer_norm_emb): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                       (attentions): ModuleList(
+                                         (0): MultiHeadAttention(
+                                           (q_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (k_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (v_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (out_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                         )
+                                         (1): MultiHeadAttention(
+                                           (q_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (k_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (v_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (out_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                         )
+                                         (2): MultiHeadAttention(
+                                           (q_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (k_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (v_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (out_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                         )
+                                         (3): MultiHeadAttention(
+                                           (q_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (k_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (v_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (out_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                         )
+                                         (4): MultiHeadAttention(
+                                           (q_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (k_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (v_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (out_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                         )
+                                         (5): MultiHeadAttention(
+                                           (q_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (k_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (v_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                           (out_lin): Linear(in_features=1024, out_features=1024, bias=True)
+                                         )
+                                       )
+                                       (layer_norm1): ModuleList(
+                                         (0): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (1): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (2): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (3): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (4): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (5): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                       )
+                                       (ffns): ModuleList(
+                                         (0): TransformerFFN(
+                                           (lin1): Linear(in_features=1024, out_features=4096, bias=True)
+                                           (lin2): Linear(in_features=4096, out_features=1024, bias=True)
+                                         )
+                                         (1): TransformerFFN(
+                                           (lin1): Linear(in_features=1024, out_features=4096, bias=True)
+                                           (lin2): Linear(in_features=4096, out_features=1024, bias=True)
+                                         )
+                                         (2): TransformerFFN(
+                                           (lin1): Linear(in_features=1024, out_features=4096, bias=True)
+                                           (lin2): Linear(in_features=4096, out_features=1024, bias=True)
+                                         )
+                                         (3): TransformerFFN(
+                                           (lin1): Linear(in_features=1024, out_features=4096, bias=True)
+                                           (lin2): Linear(in_features=4096, out_features=1024, bias=True)
+                                         )
+                                         (4): TransformerFFN(
+                                           (lin1): Linear(in_features=1024, out_features=4096, bias=True)
+                                           (lin2): Linear(in_features=4096, out_features=1024, bias=True)
+                                         )
+                                         (5): TransformerFFN(
+                                           (lin1): Linear(in_features=1024, out_features=4096, bias=True)
+                                           (lin2): Linear(in_features=4096, out_features=1024, bias=True)
+                                         )
+                                       )
+                                       (layer_norm2): ModuleList(
+                                         (0): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (1): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (2): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (3): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (4): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                         (5): LayerNorm((1024,), eps=1e-12, elementwise_affine=True)
+                                       )
+                                       (pred_layer): PredLayer(
+                                         (proj): Linear(in_features=1024, out_features=48331, bias=True)
+                                       )
+                                     )
+INFO - 05/16/21 22:08:27 - 0:00:07 - Number of parameters (model): 126169291
+INFO - 05/16/21 22:08:27 - 0:00:07 - Found 102 parameters in model.
+INFO - 05/16/21 22:08:27 - 0:00:07 - Optimizers: model
+Namespace(accumulate_gradients=1, ae_steps='', amp=2, attention_dropout=0.0, batch_size=32, beam_size=1, bptt=512, bt_sample_temperature='0', bt_steps='', clip_grad_norm=5.0, clm_steps='', context_size=0, data_path='/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml', debug=False, debug_slurm=False, debug_train=False, dropout=0.1, dump_path='/mnt/sabrent/carl/TransCoder/output', early_stopping=False, emb_dim=1024, emb_dim_decoder=0, emb_dim_encoder=0, encoder_only=True, epoch_size=100, eval_bleu=False, eval_bleu_test_only=False, eval_computation=False, eval_only=True, eval_temperature=None, exp_id='', exp_name='mlm_cpp_llvm', fp16=True, gelu_activation=False, gen_tpb_multiplier=1, generate_hypothesis=False, group_by_size=True, has_sentences_ids=False, lambda_ae='1', lambda_bt='1', lambda_clm='1', lambda_mlm='1', lambda_mt='1', length_penalty=1.0, lg_sampling_factor=-1.0, lgs='cpp-llvm', local_rank=-1, master_port=-1, max_batch_size=0, max_epoch=1, max_len=100, max_vocab=64000, min_count=0, mlm_steps='cpp,llvm', mt_steps='', n_heads=8, n_layers=6, n_layers_decoder=0, n_layers_encoder=0, n_share_dec=0, number_samples=1, optimizer='adam_inverse_sqrt,warmup_updates=10000,lr=0.0003,weight_decay=0.01', reload_checkpoint='', reload_emb='', reload_model='/home/carl/TransCoder/output/mlm_cpp_llvm/bp5kf6zh4p/best-valid_mlm_ppl.pth', retry_mistmatching_types=False, sample_alpha=0.0, save_periodic=0, separate_decoders=False, share_inout_emb=True, sinusoidal_embeddings=False, split_data=False, split_data_accross_gpu='local', stopping_criterion='_valid_mlm_ppl,10', tokens_per_batch=-1, use_lang_emb=True, validation_metrics='_valid_mlm_ppl', word_blank=0.0, word_dropout=0.0, word_mask_keep_rand='0.8,0.1,0.1', word_pred=0.15, word_shuffle=0.0)
+langs = ['cpp', 'llvm']
+id2lang = {0: 'cpp', 1: 'llvm'}
+clm_steps = []
+mlm_steps = [('cpp', None), ('llvm', None)]
+SLURM job: False
+0 - Number of nodes: 1
+0 - Node ID        : 0
+0 - Local rank     : 0
+0 - Global rank    : 0
+0 - World size     : 1
+0 - GPUs per node  : 1
+0 - Master         : True
+0 - Multi-node     : False
+0 - Multi-GPU      : False
+0 - Hostname       : beast
+here-here2False
+path/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/valid.cpp.pth
+here-here2False
+path/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/test.cpp.pth
+here-here2False
+path/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/valid.llvm.pth
+here-here2False
+path/home/carl/TransCoder/data/data_try3/cpp-llvm-.XLM-syml/test.llvm.pth
+Selected optimization level O2:  FP16 training with FP32 batchnorm and FP32 master weights.
+
+Defaults for this optimization level are:
+enabled                : True
+opt_level              : O2
+cast_model_type        : torch.float16
+patch_torch_functions  : False
+keep_batchnorm_fp32    : True
+master_weights         : True
+loss_scale             : dynamic
+Processing user overrides (additional kwargs that are not None)...
+After processing overrides, optimization options are:
+enabled                : True
+opt_level              : O2
+cast_model_type        : torch.float16
+patch_torch_functions  : False
+keep_batchnorm_fp32    : True
+master_weights         : True
+loss_scale             : dynamic
+Warning:  multi_tensor_applier fused unscale kernel is unavailable, possibly because apex was installed without --cuda_ext --cpp_ext. Using Python fallback.  Original ImportError was: ModuleNotFoundError("No module named 'amp_C'")
+Traceback (most recent call last):
+  File "XLM/train.py", line 341, in <module>
+    main(params)
+  File "XLM/train.py", line 262, in main
+    scores = evaluator.run_all_evals(trainer)
+  File "/mnt/sabrent/carl/TransCoder/XLM/src/evaluation/evaluator.py", line 222, in run_all_evals
+    self.evaluate_mlm(scores, data_set, lang1, lang2)
+  File "/mnt/sabrent/carl/TransCoder/XLM/src/evaluation/evaluator.py", line 360, in evaluate_mlm
+    tensor = model('fwd', x=x, lengths=lengths,
+  File "/home/carl/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 889, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/home/carl/anaconda3/lib/python3.8/site-packages/apex/amp/_initialize.py", line 196, in new_fwd
+    output = old_fwd(*applier(args, input_caster),
+  File "/mnt/sabrent/carl/TransCoder/XLM/src/model/transformer.py", line 328, in forward
+    return self.fwd(**kwargs)
+  File "/mnt/sabrent/carl/TransCoder/XLM/src/model/transformer.py", line 400, in fwd
+    attn = self.attentions[i](tensor, attn_mask, use_cache=use_cache)
+  File "/home/carl/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 889, in _call_impl
+    result = self.forward(*input, **kwargs)
+  File "/mnt/sabrent/carl/TransCoder/XLM/src/model/transformer.py", line 187, in forward
+    v = shape(self.v_lin(input))
+  File "/home/carl/anaconda3/lib/python3.8/site-packages/torch/nn/modules/module.py", line 866, in _call_impl
+    def _call_impl(self, *input, **kwargs):
+KeyboardInterrupt

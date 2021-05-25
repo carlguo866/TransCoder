@@ -22,9 +22,11 @@ class StreamDataset(object):
         """
         bptt = params.bptt
         self.eos = params.eos_index
-
+        # print("self.eos" + str(self.eos))
         # checks
         assert len(pos) == (sent == self.eos).sum()
+        # print("sent == self.eos" + str(sent == self.eos))
+        # print("(sent == self.eos).sum()" + str((sent == self.eos).sum()))
         assert len(pos) == (sent[pos[:, 1]] == self.eos).sum()
 
         n_tokens = len(sent)
@@ -32,8 +34,11 @@ class StreamDataset(object):
         t_size = n_batches * bptt * bs
 
         buffer = np.zeros(t_size, dtype=sent.dtype) + self.eos
+        # print("buffer")
+        # print(buffer)
         buffer[t_size - n_tokens:] = sent
         buffer = buffer.reshape((bs, n_batches * bptt)).T
+        # print("buffer.shape" + str(buffer.shape))
         self.data = np.zeros((n_batches * bptt + 1, bs),
                              dtype=sent.dtype) + self.eos
         self.data[1:] = buffer
@@ -72,6 +77,7 @@ class StreamDataset(object):
         """
         indexes = (np.random.permutation if shuffle else range)(
             self.n_batches // subsample)
+        print("n_batches" + str(self.n_batches))
         for i in indexes:
             a = self.bptt * i
             b = self.bptt * (i + 1)
@@ -337,10 +343,8 @@ class ParallelDataset(Dataset):
         assert len(self.pos1) == (self.sent1[self.pos1[:, 1]] == eos).sum()
         # check sentences indices
         assert len(self.pos2) == (self.sent2[self.pos2[:, 1]] == eos).sum()
-        assert eos <= self.sent1.min() < self.sent1.max(
-        )                    # check dictionary indices
-        assert eos <= self.sent2.min() < self.sent2.max(
-        )                    # check dictionary indices
+        assert eos <= self.sent1.min() < self.sent1.max()                    # check dictionary indices
+        assert eos <= self.sent2.min() < self.sent2.max()                    # check dictionary indices
         # check empty sentences
         assert self.lengths1.min() > 0
         # check empty sentences

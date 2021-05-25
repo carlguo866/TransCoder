@@ -236,6 +236,7 @@ class Evaluator(object):
                     scores['%s_clm_acc' % data_set] = np.mean(
                         [scores['%s_%s_clm_acc' % (data_set, lang)] for lang in _clm_mono])
                 _mlm_mono = [l1 for (l1, l2) in params.mlm_steps if l2 is None]
+                logger.info("langs:" + " ".join(_mlm_mono))
                 if len(_mlm_mono) > 0:
                     scores['%s_mlm_ppl' % data_set] = np.mean(
                         [scores['%s_%s_mlm_ppl' % (data_set, lang)] for lang in _mlm_mono])
@@ -313,6 +314,7 @@ class Evaluator(object):
         acc_name = '%s_%s_clm_acc' % (data_set, l1l2)
         scores[ppl_name] = np.exp(xe_loss / n_words)
         scores[acc_name] = 100. * n_valid / n_words
+        
 
     def evaluate_mlm(self, scores, data_set, lang1, lang2):
         """

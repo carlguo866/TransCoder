@@ -325,7 +325,6 @@ if __name__ == '__main__':
     # generate parser / parse parameters
     parser = get_parser()
     params = parser.parse_args()
-    print(params)
     # debug mode
     if params.debug:
         params.exp_name = 'debug'
