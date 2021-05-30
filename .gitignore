@@ -11,3 +11,4 @@ data/test_dataset/
 data/
 output/
 myoutput/
+XLM/src/data/test_parallel_data.py

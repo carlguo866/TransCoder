@@ -37,6 +37,7 @@ def bool_flag(s):
 
 
 def tokenize_json_helper(inpt):
+
     tokenizer, content, path, keep_comments = inpt
     content_tokenized = tokenizer(content, keep_comments)
     return content_tokenized, path
@@ -45,7 +46,7 @@ def tokenize_json_helper(inpt):
 @timeout(3600)
 def output_all_tokenized_results(docs, language, f_tok):
     pool = Pool(cpu_count())
-    result_content_tokenized = tqdm.tqdm(pool.imap_unordered(
+    result_content_tokenized = tqdm.tqdm(pool.imap(
         tokenize_json_helper, docs), total=len(docs))
     for content_tokenized, path in result_content_tokenized:
         if len(content_tokenized) == 0:
@@ -77,7 +78,6 @@ def process_and_tokenize_json_file(input_path, language, keep_comments):
         content = x['content']
         path = f"{x['repo_name']}/tree/master/{x['path']}"
         docs.append((tokenizer, content, path, keep_comments))
-
     f_tok = open(output_path, 'w', encoding='utf-8')
     try:
         output_all_tokenized_results(docs,language, f_tok)
@@ -99,17 +99,19 @@ def extract_functions_file(input_path, language, test_size=None):
         lines = f.readlines()
     extract_auto_code = getattr(
         code_tokenizer, f"extract_functions_{language}")
-
+    get_function_name = getattr(
+        code_tokenizer, f"get_function_name_{language}")
     with output_path_sa.open('w', encoding='utf-8') as f_sa:
             pool = Pool(cpu_count())
-            # result_functions = pool.map(extract_auto_code, lines)
-            result_functions = tqdm.tqdm(pool.imap_unordered(
+            result_functions = tqdm.tqdm(pool.imap(
                 extract_auto_code, lines), total=len(lines))
             print("printing extracted functions to file " + str(output_path_sa))
-            
             for func_standalone, func_class in result_functions:
+                # for i in range(5):
+                #     print("func_standalone[i][5]"+func_standalone[i][5])
                 for func in func_standalone:
-                    f_sa.write(func)
+                    name = get_function_name(func)
+                    f_sa.write(name + " | " + func)
                     f_sa.write('\n')
                 # for func in func_class:
                 #     f_class.write(func)
@@ -218,6 +220,8 @@ def regroup_and_select_data(files, output, nlines=None):
     """
     if output.is_file():
         return
+        
+    print(str(files))
 
     assert nlines is None or len(files) == len(nlines)
     if nlines is None:

@@ -31,8 +31,8 @@ DUMP_PATH = '/checkpoint/%s/dumped' % getpass.getuser()
 DYNAMIC_COEFF = ['lambda_clm', 'lambda_mlm', 'lambda_ae',
                  'lambda_mt', 'lambda_bt', 'bt_sample_temperature']
 
-EXT = {'python': 'py', 'java': 'java', 'cpp': 'cpp'}
-TOFILL = {'python': '#TOFILL', 'java': '//TOFILL', 'cpp': '//TOFILL'}
+EXT = {'python': 'py', 'java': 'java', 'cpp': 'cpp', 'llvm': 'll'}
+TOFILL = {'python': '#TOFILL', 'java': '//TOFILL', 'cpp': '//TOFILL', 'llvm':'!TOFILL' }
 
 primitive_types = {'short', 'int', 'long',
                    'float', 'double', 'boolean', 'char'}
