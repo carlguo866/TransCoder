@@ -980,10 +980,13 @@ def extract_arguments_llvm(f):
     return arguments, argnames
 
 def get_first_token_before_first_parenthesis(s):
-    assert isinstance(s, str) or isinstance(s, list)
-    if isinstance(s, str):
-        s = s.split()
-    return s[s.index('(') - 1]
+    try:
+        assert isinstance(s, str) or isinstance(s, list)
+        if isinstance(s, str):
+            s = s.split()
+        return s[s.index('(') - 1]
+    except: 
+        return "placeholder"
 
 
 def get_function_name_java(s):

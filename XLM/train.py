@@ -331,7 +331,7 @@ if __name__ == '__main__':
         params.exp_id = 'debug_%08i' % random.randint(0, 100000000)
         params.debug_slurm = True
         params.debug_train = True
-
+    print("type(params)" + str(type(params)))
     # check parameters
     check_data_params(params)
     check_model_params(params)
