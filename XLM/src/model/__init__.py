@@ -183,7 +183,7 @@ def build_model(params, dico):
                 if all([k.startswith('module.') for k in enc_reload.keys()]):
                     enc_reload = {k[len('module.'):]: v for k,
                                   v in enc_reload.items()}
-
+                #TO BE READ
                 # # HACK to reload models trained with less languages
                 n_langs = len(params.langs)
                 n_langs_reload = enc_reload['lang_embeddings.weight'].size()[0]

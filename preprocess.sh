@@ -5,5 +5,5 @@ python -m preprocessing.preprocess \
 --keep_comments False \
 --bpe_train_size 0 \
 --test_size 500 \
---parallel_size 200 \
+--parallel_size 250 \
 --local True \

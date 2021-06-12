@@ -18,7 +18,7 @@ python XLM/train.py \
     --attention_dropout 0 \
     --split_data false \
     --length_penalty 1 \
-    --max_epoch 25 \
+    --max_epoch 20 \
     --stopping_criterion '_valid_mlm_ppl,10' \
     --lambda_bt 1 \
     --dump_path '/mnt/sabrent/carl/TransCoder/output' \
