@@ -77,7 +77,7 @@ class StreamDataset(object):
         """
         indexes = (np.random.permutation if shuffle else range)(
             self.n_batches // subsample)
-        print("n_batches" + str(self.n_batches))
+        # print("n_batches" + str(self.n_batches))
         for i in indexes:
             a = self.bptt * i
             b = self.bptt * (i + 1)
@@ -298,13 +298,17 @@ class ParallelDataset(Dataset):
             sentences_WITH_IDS = sentences
             sentences = []
             ids_ = []
-            print("sentences_WITH_IDS" + str(sentences_WITH_IDS))
+            # print("sentences_WITH_IDS" + str(sentences_WITH_IDS))
+            # print("self.sep_index" + str(self.sep_index))
             for s in sentences_WITH_IDS:
+                #print("np.where(s == self.sep_index)" + str(np.where(s == self.sep_index)))
                 pos = np.where(s == self.sep_index)[0][0]
                 sentences.append(s[pos + 1:])
                 ids_.append(s[:pos])
-            print("ids " + str(ids_))
+            # print("ids " + str(ids_))
             lengths_ids = torch.LongTensor([len(i) + 2 for i in ids_])
+            # print("lengths_ids" + str(lengths_ids))
+            #print("self.pad_index" + str(self.pad_index))
             ids = torch.LongTensor(lengths_ids.max().item(), 
                                     lengths_ids.size(0)).fill_(self.pad_index)
 
@@ -314,7 +318,7 @@ class ParallelDataset(Dataset):
                     ids[1:lengths_ids[i] - 1,
                         i].copy_(torch.from_numpy(s.astype(np.int64)))
                 ids[lengths_ids[i] - 1, i] = self.eos_index
-
+            # print("idddds" + str(ids))
         else:
             #sentences = sorted(sentences, key=lambda x: len(x), reverse=True)
             ids = None
@@ -416,7 +420,9 @@ class ParallelDataset(Dataset):
         Return a sentences iterator, given the associated sentence batches.
         """
         assert type(return_indices) is bool
-
+        # print("batches.size()" + str(len(batches)))
+        # for i in batches: 
+        #     print("i.size()" + str(len(i)))
         for sentence_ids in batches:
             if 0 < self.max_batch_size < len(sentence_ids):
                 np.random.shuffle(sentence_ids)
@@ -437,9 +443,9 @@ class ParallelDataset(Dataset):
         assert type(shuffle) is bool and type(group_by_size) is bool
 
         # sentence lengths
-        print("type(self.lengths1)" + type(self.lengths1))
+        #print("type(self.lengths1)" + str(type(self.lengths1)))
         lengths = self.lengths1 + self.lengths2 + 4
-        print("lengths: " + str(lengths))
+        #print("lengths: " + str(lengths))
         # select sentences to iterate over
         if shuffle:
             indices = np.random.permutation(len(self.pos1))[:n_sentences]
@@ -456,7 +462,9 @@ class ParallelDataset(Dataset):
                 len(indices) * 1. / self.batch_size))
         else:
             batch_ids = np.cumsum(lengths[indices]) // tokens_per_batch
+            #print("batch_ids" + str(batch_ids))
             _, bounds = np.unique(batch_ids, return_index=True)
+            #print("bounds" + str(bounds))
             batches = [indices[bounds[i]:bounds[i + 1]]
                        for i in range(len(bounds) - 1)]
             if bounds[-1] < len(indices):
@@ -472,7 +480,8 @@ class ParallelDataset(Dataset):
                                               for x in batches])
         # assert set.union(*[set(x.tolist()) for x in batches]) == set(range(n_sentences))  # slow
 
+       #print("batchs pre get_batches_iterator" + str(list(batches)))
         # return the iterator
         batches = self.get_batches_iterator(batches, return_indices)
-        print("batchs in dataset" + str(batches))
+        #print("batchs in dataset" + str(list(batches)))
         return batches

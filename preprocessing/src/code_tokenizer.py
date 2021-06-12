@@ -807,6 +807,7 @@ def tokenize_llvm(s, keep_comments=False):
         assert isinstance(s, str)
         s = s.replace(r'\r', '')
         lex = pyllvm.lexer(s)
+        global_strings_index = [] 
         while True:
             toktype, tok = lex.getTok()
             #tok = strip_llvm_comment(tok.strip())
@@ -814,6 +815,7 @@ def tokenize_llvm(s, keep_comments=False):
             toktypes.append(toktype)
             if(tok != ''): 
                 tokens.append(tok)
+
             if len(toktypes) >=2: 
                 if toktypes[-2] in strings():
                     try:
@@ -831,7 +833,9 @@ def tokenize_llvm(s, keep_comments=False):
                     tokens[-1] = (str(lex.getAPSIntVal()))
                 elif (toktypes[-2] in uints()):
                     tokens[-1] = tokens[-1][0] + str(lex.getUIntVal())
-
+                elif (toktypes[-2] == pyllvm.lltok.GlobalVar):
+                    if(tokens[-1][:5] == '@.str'): 
+                        global_strings_index.append(len(tokens)-1)
                 # elif toktypes[-2] in [pyllvm.lltok.Type]:
                 #     print(toktypes[-2], tokens[-1], fromty(lex.getTypeVal()))
                 #     tokens[-1] += (fromty(lex.getTypeVal()))
@@ -839,6 +843,16 @@ def tokenize_llvm(s, keep_comments=False):
                 #     print(toktypes[-2], tokens[-1], lex.getAPFloatVal())
                 #     tokens[-1] += (str(lex.getAPFloatVal()))
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
+                print(global_strings_index)
+                for i in global_strings_index[:]: 
+                    temp_name = tokens[i]
+                    if toktypes[i+11] == pyllvm.lltok.StringConstant: 
+                        tokens[i] = '@\"str:' + str(tokens[i+11][1:])
+                        for j in global_strings_index[:]: 
+                            if tokens[j] == temp_name: 
+                                tokens[j] = tokens[i]
+                                global_strings_index.remove(j)
+                        global_strings_index.remove(i)
                 return tokens 
     except KeyboardInterrupt:
         raise
@@ -859,6 +873,8 @@ def get_llvm_tokens_and_types(s):
             toktypes.append(toktype)
             if(tok != ''): 
                 tokens.append(tok)
+
+            
             if len(toktypes) >=2: 
                 if toktypes[-2] in strings():
                     try:
@@ -873,6 +889,7 @@ def get_llvm_tokens_and_types(s):
                     tokens[-1] = (str(lex.getAPSIntVal()))
                 elif (toktypes[-2] in uints()):
                     tokens[-1] = tokens[-1][0] + str(lex.getUIntVal())
+                    
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
                 return tokens, toktypes
     # except KeyboardInterrupt:
@@ -944,7 +961,7 @@ def extract_functions_llvm(s):
             # print("stop condition" + str(i.i) + " " + str(len(tokens)))
             break
     # print("func llvm" + " ".join(functions))
-    return functions, []
+    return functions, [] 
 
 def get_function_name_llvm(s):
     return get_first_token_before_first_parenthesis(s)
@@ -986,7 +1003,7 @@ def get_first_token_before_first_parenthesis(s):
             s = s.split()
         return s[s.index('(') - 1]
     except: 
-        return "placeholder"
+        return ""
 
 
 def get_function_name_java(s):

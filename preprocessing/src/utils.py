@@ -11,6 +11,7 @@ from pathlib import Path
 import json
 import fileinput
 import os
+import random
 from multiprocessing import Pool, cpu_count
 import tqdm
 
@@ -99,23 +100,70 @@ def extract_functions_file(input_path, language, test_size=None):
         lines = f.readlines()
     extract_auto_code = getattr(
         code_tokenizer, f"extract_functions_{language}")
-    get_function_name = getattr(
-        code_tokenizer, f"get_function_name_{language}")
+    # get_function_name = getattr(
+    #     code_tokenizer, f"get_function_name_{language}")
     with output_path_sa.open('w', encoding='utf-8') as f_sa:
             pool = Pool(cpu_count())
             result_functions = tqdm.tqdm(pool.imap(
                 extract_auto_code, lines), total=len(lines))
             print("printing extracted functions to file " + str(output_path_sa))
-            for func_standalone, func_class in result_functions:
+            for func_standalone, _ in result_functions:
                 # for i in range(5):
                 #     print("func_standalone[i][5]"+func_standalone[i][5])
                 for func in func_standalone:
-                    name = get_function_name(func)
-                    f_sa.write(name + " | " + func)
+                    # name = get_function_name(func)
+                    # print("nammmmme" + str(name))
+                    f_sa.write(str(func))
                     f_sa.write('\n')
                 # for func in func_class:
                 #     f_class.write(func)
                 #     f_class.write('\n')
+
+def extract_functions_parallel(src_path, tgt_path, src_lang, tgt_lang , test_size=None):
+    print(f"extacting parallel functions for {str(src_path)} and {str(tgt_path)} ")
+    src_output_path_sa = src_path.with_suffix('.functions_standalone.tok')
+    tgt_output_path_sa = tgt_path.with_suffix('.functions_standalone.tok')
+
+    if src_output_path_sa.is_file() or tgt_output_path_sa.is_file(): 
+        return
+    with src_path.open('r', encoding="utf-8") as f:
+        src_lines = f.readlines()
+    with tgt_path.open('r', encoding="utf-8") as f:
+        tgt_lines = f.readlines()
+    src_extract_func = getattr(
+        code_tokenizer, f"extract_functions_{src_lang}")
+    tgt_extract_func = getattr(
+        code_tokenizer, f"extract_functions_{tgt_lang}")
+    src_function_name = getattr(
+        code_tokenizer, f"get_function_name_{src_lang}")
+    tgt_function_name = getattr(
+        code_tokenizer, f"get_function_name_{tgt_lang}")
+    
+    print(f"extracting parallel functions to {src_output_path_sa} and {tgt_output_path_sa}")
+    for i in range(len(src_lines)): 
+        print(f"extracting parallel function for line {i}")
+        src_functions = src_extract_func(src_lines[i])
+        # print("src_functions[0][0]" + str(src_functions[0][0]))
+        src_dict = {src_function_name(func) != "" and src_function_name(func) : func for func in src_functions[0] }
+        tgt_functions = tgt_extract_func(tgt_lines[i]) 
+        tgt_dict = {tgt_function_name(func) != "" and tgt_function_name(func) : func for func in tgt_functions[0] }
+        with src_output_path_sa.open('a+', encoding='utf-8') as src_sa:
+            with tgt_output_path_sa.open('a+', encoding='utf-8') as tgt_sa:
+                print("printing extracted functions to file " + str(src_output_path_sa) + "and" + str(tgt_output_path_sa))
+                for k, v in src_dict.items(): 
+                    # print("kkkkk" + str(k) )
+                    # print("str(tgt_dict.keys()))" + str(tgt_dict.keys()))
+                    if '@'+k in tgt_dict.keys(): 
+                        chars = 'abcdefghijklmnopqrstuvwxyz'
+                        name = k + ''.join(random.choice(chars) for _ in range(10)) 
+                        #print("type(name)" + str(type(name)))
+                        print("nameeeee " + name)
+                        #print("type(src_dict[k])" + str(type(src_dict[k])))
+                        
+                        src_sa.write(name + " | " + src_dict[k])
+                        src_sa.write('\n')
+                        tgt_sa.write(name + " | " + tgt_dict['@'+k])
+                        tgt_sa.write('\n')
 
 
 def get_nlines(file_path):
@@ -137,16 +185,21 @@ def head(file_path, n):
 
 def truncate_files(file_paths):
     all_lines = []
-    for f in file_paths:
-        with f.open('r', encoding='utf-8') as f:
-            lines = f.readlines()
-            all_lines.append(lines)
+    # print("file_paths" + str(file_paths))
+    for paths in file_paths:
+        # print("path" + str(paths))
+        for f in paths: 
+            with f.open('r', encoding='utf-8') as f:
+                lines = f.readlines()
+                all_lines.append(lines)
+        # print(all_lines)
     mini = min([len(lines) for lines in all_lines])
-    for f, i in enumerate(file_paths):
-        if len(all_lines[i]) > mini:
-            with f.open('w', encoding='utf-8') as f:
-                for j in range(mini):
-                    f.write(all_lines[i][j])
+    for paths in file_paths:
+        for f, i in enumerate(paths):
+            if len(all_lines[i]) > mini:
+                with f.open('w', encoding='utf-8') as f:
+                    for j in range(mini):
+                        f.write(all_lines[i][j])
 
 
 def write_head(file_path, n):
@@ -203,6 +256,7 @@ def get_vocab_file(file_path, vocab):
 
 
 def binarize_for_XLM_file(file_path, vocab):
+    print("the command" + f"python {XLM_PP} {vocab} {file_path}")
     process = subprocess.run(f"python {XLM_PP} {vocab} {file_path}",
                              shell=True,
                              stdout=subprocess.PIPE,

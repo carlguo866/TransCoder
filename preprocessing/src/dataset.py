@@ -11,7 +11,7 @@ from pathlib import Path
 import os
 import numpy as np
 from preprocessing.src.utils import shuf_file, apply_bpe_file, get_vocab_file, learn_bpe_file, regroup_and_select_data, LocalExecutor, binarize_for_XLM_file, truncate_files, \
-    get_nlines, process_and_tokenize_json_file, extract_functions_file
+    get_nlines, process_and_tokenize_json_file, extract_functions_file, extract_functions_parallel
 
 
 class Language:
@@ -117,8 +117,8 @@ class Language:
         files = list(self.folder.glob(f'train{suffix}.tok'))
         files.append(self.folder.joinpath(f'test{suffix}.tok'))
         files.append(self.folder.joinpath(f'valid{suffix}.tok'))
-        files.extend(list(self.folder.glob(f'valid.*.{self.l}.tok')))
-        files.extend(list(self.folder.glob(f'test.*.{self.l}.tok')))
+        # files.extend(list(self.folder.glob(f'valid.*.{self.l}.tok')))
+        # files.extend(list(self.folder.glob(f'test.*.{self.l}.tok')))
         print("files" + str(files))
         toks = [tok for tok in files if not tok.with_suffix('.functions_standalone.tok').is_file() ] # and tok.with_suffix('.functions_class.tok').is_file())
         if len(toks) > 0:
@@ -282,17 +282,26 @@ class Dataset:
             lang_executor = LocalExecutor()
         jobs = [lang_executor.submit(lang.extract_functions, self.keep_comments,
                                      self.test_size, function_executor) for lang in self.langs]
+        lang1 = self.langs[0]
+        lang2 = self.langs[1]
+        assert lang1.l == "cpp" and lang2.l =='llvm'
+        src_paths = list(lang1.folder.glob(f'valid.*.{lang1.l}.tok'))
+        src_paths.extend(list(lang1.folder.glob(f'test.*.{lang1.l}.tok')))
+        tgt_paths = list(lang2.folder.glob(f'valid.*.{lang2.l}.tok'))
+        tgt_paths.extend(list(lang2.folder.glob(f'test.*.{lang2.l}.tok')))
+        print("src_paths" + str(src_paths))             
+        print("tgt_paths" + str(src_paths))                                                    
+        for i in range(len(src_paths)): 
+            jobs.append(lang_executor.submit(extract_functions_parallel, src_paths[i], tgt_paths[i], 'cpp', 'llvm'))
         for job in jobs:
             job.result()
-        #why do i need to truncate the files??
-        for split in ['test', 'valid']:
-            truncate_files(l.folder.joinpath(
-                f'{split}{self.suffix}.functions_standalone.tok') for l in self.langs)
-            # temp =(np.array(l.folder.glob(
-            #     f'{split}.*.{l}.functions_standalone.tok')) for l in self.langs)
-            # for path in temp: 
-            #     print("path"+ str(path))
-            #     truncate_files(path) 
+        
+        # #why do i need to truncate the files??
+        # for split in ['test', 'valid']:
+        #     truncate_files(l.folder.glob(
+        #         f'{split}{self.suffix}.functions_standalone.tok') for l in self.langs)
+        #     truncate_files(l.folder.glob(
+        #         f'{split}.*.{l.l}.functions_standalone.tok') for l in self.langs)
 
         print("apply bpe on train ... ")
         self.apply_bpe(

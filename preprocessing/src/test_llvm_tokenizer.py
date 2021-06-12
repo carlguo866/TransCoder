@@ -1,16 +1,15 @@
-from preprocessing.src.code_tokenizer import tokenize_llvm, detokenize_llvm
+from preprocessing.src.code_tokenizer import tokenize_llvm, detokenize_llvm, get_llvm_tokens_and_types
 
 if __name__ == '__main__':
-    fn = open("../../data/test_dataset/llvm/llvm2.txt", 'r').read()
+    fn = open("/home/carl/TransCoder/test.ll", 'r').read()
     #test tokenizer
-    fn += '\0'
     tokenized = tokenize_llvm(fn)
     # print(tokenized)
     print(f"len{len(tokenized)}")
     outF = open("tokenized-output.txt", "w")
-    for line in tokenized:
+    for i in range(len(tokenized)):
         # write line to output file
-        outF.write(line)
+        outF.write(str(tokenized[i])   )# + ' ' + str(types[i])
         outF.write("\n")
     outF.close()
     detokenized = detokenize_llvm(tokenized)
