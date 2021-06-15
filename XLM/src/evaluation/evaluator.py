@@ -15,7 +15,7 @@ import torch
 import json
 from pathlib import Path
 
-from ..utils import to_cuda, restore_segmentation, concat_batches, vizualize_translated_files, eval_function_output
+from ..utils import to_cuda, restore_segmentation, concat_batches, vizualize_translated_files, eval_function_output, add_declarations_and_definitions
 
 BLEU_SCRIPT_URL = 'https://raw.githubusercontent.com/moses-smt/mosesdecoder/master/scripts/generic/multi-bleu.perl'
 BLEU_SCRIPT_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'multi-bleu.perl')
@@ -520,9 +520,12 @@ class EncDecEvaluator(Evaluator):
                 hyp_path = os.path.join(params.hyp_path, hyp_name)
                 hyp_paths.append(hyp_path)
                 print(f'outputing hypotheses in {hyp_path}')
+
                 with open(hyp_path, 'w', encoding='utf-8') as f:
-                    f.write('\n'.join([hyp[beam_number]
-                                       for hyp in hypothesis]) + '\n')
+                    for hyp in hypothesis: 
+                        hyp = add_declarations_and_definitions(hyp[beam_number])
+                        print("hyp" + str(hyp), flush=True)
+                        f.write('\n'.join(hyp) + '\n')
                 restore_segmentation(hyp_path)
 
         # check how many functions compiles + return same output as GT

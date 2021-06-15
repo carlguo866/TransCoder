@@ -13,6 +13,7 @@ import random
 import re
 import subprocess
 import sys
+import pyllvm
 from concurrent.futures import ProcessPoolExecutor
 from pathlib import Path
 
@@ -204,6 +205,32 @@ def convert_filled_arguments(script_model, f, lang, f_name=None):
     f = detokenizer(f.replace(f_name, inner_function_name))
     return '\n'.join(list(set(header))) + script_model.replace(TOFILL[lang], '\n'.join([f, '\n'] + new_function_lines))
 
+def add_declarations_and_definitions(s): 
+    llvm_toks_and_types = getattr(code_tokenizer, f"get_llvm_tokens_and_types")
+    toks, toktypes = llvm_toks_and_types(s, detok=True)
+    defs = dict()
+    for i in range(len(toks)): 
+        if not defs.contains_key(toks[i]): 
+            if(toktypes[i] == pyllvm.lltok.GlobalVar): 
+                if(toks[i][:6] == "@\".str"): 
+                    str_value = "\"" + toks[i].replace("~","\\").split(":")[1]
+                    str_length = len(str_value)
+                    expression = f"{toks[i]} = private unnamed_addr constant [{str_length} x i8] c{str_value} "
+                    defs[toks[i]] = expression
+                    s = expression + s
+                else:
+                    expression = toks[i].replace("\'","\"").split(":")[1][:-1]
+                    expression = toks[i] + " = internal global " + expression + " "
+                    defs[toks[i]] = expression
+                    s = expression + s
+            elif(toktypes[i] == pyllvm.lltok.LocalVar): 
+                expression = toks[i].split(":")[1][:-1]
+                expression = toks[i] + " =" + expression 
+                defs[toks[i]] = expression
+                s = expression + s
+
+            
+    return s
 
 def submit_functions(functions_list, id, ref, lang, outfolder, script_folder, retry_mismatching_types):
     detokenize = getattr(code_tokenizer, f"detokenize_{lang}")
