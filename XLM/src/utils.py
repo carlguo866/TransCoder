@@ -33,7 +33,7 @@ DYNAMIC_COEFF = ['lambda_clm', 'lambda_mlm', 'lambda_ae',
                  'lambda_mt', 'lambda_bt', 'bt_sample_temperature']
 
 EXT = {'python': 'py', 'java': 'java', 'cpp': 'cpp', 'llvm': 'll'}
-TOFILL = {'python': '#TOFILL', 'java': '//TOFILL', 'cpp': '//TOFILL', 'llvm':'!TOFILL' }
+TOFILL = {'python': '#TOFILL', 'java': '//TOFILL', 'cpp': '//TOFILL', 'llvm':';TOFILL' }
 
 primitive_types = {'short', 'int', 'long',
                    'float', 'double', 'boolean', 'char'}
@@ -73,23 +73,22 @@ def return_script_not_found():
 def eval_state(proc, proc_name):
     try:
         try:
-            result, stderr = proc.communicate(timeout=30)
+            result, stderr = proc.communicate(timeout=60)
         except subprocess.TimeoutExpired:
             c = "kill `ps aux | grep '" + proc_name + \
                 "' | grep -v jupyter | grep -v grep | awk '{print($2)}'`"
             subprocess.run(c, shell=True, stdout=subprocess.PIPE,
                            stderr=subprocess.PIPE)
             return 'timeout', None
-        results = result.decode('utf8', errors='replace')
-        success, n_test = results.split('#Results:')[-1].split(',')
-        if int(success) == int(n_test):
+        stderr = stderr.decode('utf8', errors='replace')
+        if result =='' and stderr.find("error:") == -1:
             return 'success', None
         else:
-            return 'failure', result.decode('utf-8', errors='replace')
+            return 'failure', stderr
     except KeyboardInterrupt:
         raise
     except:
-        return 'error', stderr.decode('utf-8', errors='replace')
+        return 'error', stderr
 
 
 def run_python_program(script_path, i):
@@ -114,6 +113,14 @@ def run_cpp_program(script_path, i):
     proc = subprocess.Popen(f'{limit_virtual_memory(MAX_VIRTUAL_MEMORY)}; cd {folder} && g++ {name}.cpp -o {name}_cpp && ./{name}_cpp',
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, executable='/bin/bash')
     res = eval_state(proc, f"{name}_cpp")
+    return res, i
+
+def run_llvm_program(script_path, i):
+    folder = os.path.dirname(script_path)
+    name = os.path.basename(script_path).split('.')[0]
+    proc = subprocess.Popen(f'{limit_virtual_memory(MAX_VIRTUAL_MEMORY)}; cd {folder} && clang {name}.ll -S',
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, executable='/bin/bash')
+    res = eval_state(proc, f"clang {name}")
     return res, i
 
 
@@ -207,29 +214,66 @@ def convert_filled_arguments(script_model, f, lang, f_name=None):
 
 def add_declarations_and_definitions(s): 
     llvm_toks_and_types = getattr(code_tokenizer, f"get_llvm_tokens_and_types")
-    toks, toktypes = llvm_toks_and_types(s, detok=True)
+    extract_args= getattr(code_tokenizer, f"extract_arguments_llvm")
+    toks, toktypes = llvm_toks_and_types(s)
     defs = dict()
+    s = s.replace("\n", "")
     for i in range(len(toks)): 
-        if not defs.contains_key(toks[i]): 
+        if not toks[i] in defs.keys(): 
             if(toktypes[i] == pyllvm.lltok.GlobalVar): 
                 if(toks[i][:6] == "@\".str"): 
+                    # counts of "~"
+                    counts = toks[i].count("~")
                     str_value = "\"" + toks[i].replace("~","\\").split(":")[1]
-                    str_length = len(str_value)
+                    str_length = len(str_value) - 3*counts - 1
                     expression = f"{toks[i]} = private unnamed_addr constant [{str_length} x i8] c{str_value} "
                     defs[toks[i]] = expression
                     s = expression + s
-                else:
-                    expression = toks[i].replace("\'","\"").split(":")[1][:-1]
-                    expression = toks[i] + " = internal global " + expression + " "
+                elif i-2 >= 0 and toktypes[i-1] == pyllvm.lltok.star:
+                    expression = ''
+                    if (toktypes[i-2] == pyllvm.lltok.rbrace or toktypes[i-2] == pyllvm.lltok.rsquare): 
+                        arg = ''
+                        par = 0 
+                        for index in range(i-2, 0, -1):
+                            tok = toks[index]
+                            if tok == ']' or tok == '}':
+                                par += 1
+                            elif tok == '[' or tok == '{':
+                                par -= 1
+                            arg = tok + ' ' + arg
+                            if par == 0:
+                                break
+                        expression = toks[i] + " = internal global " + arg.strip() + " zeroinitializer "
+                    elif toktypes[i-2] == pyllvm.lltok.Type: 
+                        expression = toks[i] + " = internal global " + toks[i-2] + " zeroinitializer "
                     defs[toks[i]] = expression
                     s = expression + s
-            elif(toktypes[i] == pyllvm.lltok.LocalVar): 
-                expression = toks[i].split(":")[1][:-1]
-                expression = toks[i] + " =" + expression 
-                defs[toks[i]] = expression
-                s = expression + s
-
-            
+        if (toktypes[i] == pyllvm.lltok.kw_call): 
+            index = i 
+            while index < len(toktypes) and toktypes[index] != pyllvm.lltok.GlobalVar: 
+                index+=1 
+            if index < len(toktypes) and not toks[index] in defs.keys(): 
+                func_name = toks[index] 
+                func=" ".join(toks[index:])
+                if func.find('(') != -1 and toktypes[index-1] == pyllvm.lltok.Type:
+                    args, ___ = extract_args(func)
+                    if args == []: 
+                        continue 
+                    expression = f" declare {toks[index-1]} {func_name} ( {' , '.join(args)} ) "
+                    defs[func_name] = expression
+                    s += expression
+                elif toktypes[index-1] == pyllvm.lltok.rparen:
+                    par = 0 
+                    args = ''
+                    while toktypes[index-1] != pyllvm.lltok.Type and index >=i: 
+                        args = toks[index-1] + " " + args
+                        index -=1
+                    if args == '': 
+                        continue 
+                    expression = f" declare {toks[index-1]} {func_name} ( {args} ) "
+                    defs[func_name] = expression
+                    s += expression
+    s = re.sub(' +', ' ', s) 
     return s
 
 def submit_functions(functions_list, id, ref, lang, outfolder, script_folder, retry_mismatching_types):
@@ -237,58 +281,25 @@ def submit_functions(functions_list, id, ref, lang, outfolder, script_folder, re
     get_name = getattr(code_tokenizer, f"get_function_name_{lang}")
     results_list = []
     i = id.rstrip()
-    for try_id, f_fill in enumerate(functions_list):
-        f = f_fill.rstrip()
-        script_model_path = os.path.join(
-            script_folder, f"{lang}/{i}.{EXT[lang]}")
-        if os.path.exists(script_model_path):
-            script_model = open(script_model_path, 'r',
-                                encoding='utf-8').read()
-            try:
-                f_name = get_name(f)
-                f = f.replace(f_name, 'f_filled')
-            except:
-                results_list.append(
-                    ('error', 'Could not replace function name'))
-            if f_fill == ref:
-                results_list.append(('success', 'identical to gold'))
-                return results_list, i
-            f = detokenize(f)
-            script = script_model.replace(TOFILL[lang], f)
-            if lang == 'python':
-                script = f"import numpy as np \nimport math\nfrom math import *\nimport collections\nfrom collections import *\nimport heapq\nimport itertools\nimport random\nimport sys\n\n{script}"
-            script_path = f"{outfolder}/{i}.{EXT[lang]}"
-            open(script_path, 'w', encoding='utf-8').write(script)
-            run_pg = globals()[f'run_{lang}_program']
-            result, _ = run_pg(script_path, i)
-            if result[0] == 'success':
-                results_list.append(result)
-                return results_list, i
-            elif retry_mismatching_types and lang in {'cpp', 'java'}:
-                try:
-                    script_transform_args = convert_filled_arguments(
-                        script_model, f_fill, lang, f_name=f_name)
-                except KeyboardInterrupt:
-                    raise
-                except:
-                    script_transform_args = None
-
-                if script_transform_args is not None:
-                    open(script_path, 'w',
-                         encoding='utf-8').write(script_transform_args)
-                    run_pg = globals()[f'run_{lang}_program']
-                    result2, _ = run_pg(script_path, i)
-                    if result2[0] == 'success':
-                        results_list.append(result2)
-                        return results_list, i
-                    else:
-                        result = (result2[0], ''.join(
-                            [result[1] if result[1] else '', f'|| second run handling types mismatch: ## function ## {script_transform_args} ## output ## {result2[1]}']))
-
-            results_list.append(result)
-        else:
-            return [return_script_not_found()], i
-    return results_list, i
+    if lang == 'llvm':
+        for try_id, f_fill in enumerate(functions_list):
+            f = f_fill.rstrip()
+            if lang == 'llvm':
+                if f_fill == ref:
+                    results_list.append(('success', 'identical to gold'))
+                    return results_list, i
+                script = detokenize(f)
+                script_path = f"{outfolder}/{i}.{EXT[lang]}"
+                open(script_path, 'w', encoding='utf-8').write(script)
+                run_pg = globals()[f'run_{lang}_program']
+                result, _ = run_pg(script_path, i)
+                if result[0] == 'success':
+                    results_list.append(result)
+                    return results_list, i
+                results_list.append(result)     
+        return results_list, i
+    else: 
+        return [return_script_not_found()], i
 
 
 def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder, script_folder, retry_mismatching_types):
@@ -320,10 +331,12 @@ def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder, script_
                 results_stats['identical_gold'] += 1
         else:
             results_stats[results_list[0][0]] += 1
+            
         results[ids.index(i+'\n')] = []
         for result, stderr in results_list:
             if stderr is not None:
                 stderr = stderr.replace('\n', ' ')
+                stderr = re.sub(' +', ' ', stderr)
             else:
                 stderr = 'None'
             results[ids.index(i+'\n')].append(f"{result} : {stderr}")
@@ -332,7 +345,7 @@ def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder, script_
     results_stats['total_evaluated'] = len(
         functions) - results_stats['script_not_found']
     results_stats = {k: results_stats[k] for k in sorted(results_stats.keys())}
-
+    # print("results for computation" + str(results))
     return results_stats, results
 
 

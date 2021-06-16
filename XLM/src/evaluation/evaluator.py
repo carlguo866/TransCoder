@@ -224,8 +224,7 @@ class Evaluator(object):
                 # machine translation task (evaluate perplexity and accuracy)
                 for lang1, lang2 in set(params.mt_steps + [(l2, l3) for _, l2, l3 in params.bt_steps]):
                     eval_bleu = params.eval_bleu and params.is_master and 'cl' not in lang1
-                    # eval_computation = params.eval_computation and params.is_master and 'cl' not in lang1
-                    eval_computation = False
+                    eval_computation = params.eval_computation and params.is_master and 'cl' not in lang1
                     self.evaluate_mt(scores, data_set, lang1,
                                      lang2, eval_bleu, eval_computation)
 
@@ -524,8 +523,8 @@ class EncDecEvaluator(Evaluator):
                 with open(hyp_path, 'w', encoding='utf-8') as f:
                     for hyp in hypothesis: 
                         hyp = add_declarations_and_definitions(hyp[beam_number])
-                        print("hyp" + str(hyp), flush=True)
-                        f.write('\n'.join(hyp) + '\n')
+                        #print("hyp" + str(hyp), flush=True)
+                        f.write(hyp + '\n')
                 restore_segmentation(hyp_path)
 
         # check how many functions compiles + return same output as GT
@@ -571,9 +570,9 @@ class EncDecEvaluator(Evaluator):
             bleu = eval_moses_bleu(ref_path, hyp_paths[0])
             logger.info("BLEU %s %s : %f" % (hyp_paths[0], ref_path, bleu))
             scores['%s_%s-%s_mt_bleu' % (data_set, lang1, lang2)] = bleu
-            if eval_computation:
-                for hyp_path in hyp_paths:
-                    Path(hyp_path).unlink()
+            # if eval_computation:
+            #     for hyp_path in hyp_paths:
+            #         Path(hyp_path).unlink()
 
 
 def convert_to_text(batch, lengths, dico, params, generate_several_reps=False):

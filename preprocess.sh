@@ -1,5 +1,5 @@
 python -m preprocessing.preprocess \
-	/mnt/sabrent/carl/TransCoder/data/proper_eval/ \
+	/mnt/sabrent/carl/TransCoder/data/proper_eval2/ \
 --lang1 llvm \
 --lang2 cpp \
 --keep_comments False \
