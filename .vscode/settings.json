@@ -1,5 +1,5 @@
 {
-    "python.pythonPath": "/home/carl/anaconda3/bin/python",
+    "python.pythonPath": "/usr/bin/python",
     "files.associations": {
         "algorithm": "cpp",
         "cctype": "cpp",
