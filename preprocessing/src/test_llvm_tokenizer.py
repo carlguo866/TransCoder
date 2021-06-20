@@ -1,22 +1,31 @@
-from preprocessing.src.code_tokenizer import tokenize_llvm, detokenize_llvm
+from preprocessing.src.code_tokenizer import detokenize_llvm, get_llvm_tokens_and_types, tokenize_llvm
+import pyllvm
+import re
 
 if __name__ == '__main__':
-    fn = open("../../data/test_dataset/llvm/llvm2.txt", 'r').read()
+    fn = open("/home/carl/TransCoder/input.txt", 'r').read()
     #test tokenizer
-    fn += '\0'
     tokenized = tokenize_llvm(fn)
-    # print(tokenized)
+    # # print(tokenized)
     print(f"len{len(tokenized)}")
     outF = open("tokenized-output.txt", "w")
-    for line in tokenized:
+    for i in range(len(tokenized)):
         # write line to output file
-        outF.write(line)
+        outF.write(tokenized[i] ) #+ " " + str(types[i]) + " "
         outF.write("\n")
     outF.close()
+    # tokens, types = get_llvm_tokens_and_types(fn)
+    # for i in range(len(tokens)): 
+    #     if tokens[i][:6] == "@\".str": 
+    #          tokens[i] = "@" + tokens[i][2:tokens[i].index(':')]
+
+
     detokenized = detokenize_llvm(tokenized)
+
     #print(detokenized)
-    outF = open("detokenized-output.txt", "w")
+    outF = open("detokenized-output.ll", "w")
     outF.write(detokenized)
     outF.close()
+
     
 

@@ -21,9 +21,8 @@ def check_files_and_symlink_for_XLM(dataset, langs):
     suffixs = {"": "", ".functions_standalone": "_sa"}
     for lang in langs:
         for cat in ["", ".functions_standalone"]:
-            for i in range(8):
-                assert dataset.folder.joinpath(
-                    f"{lang}.train{dataset.suffix}.{i}{cat}.bpe.pth").is_file()
+            assert dataset.folder.joinpath(
+                f"{lang}.train{dataset.suffix}{cat}.bpe.pth").is_file()
             assert dataset.folder.joinpath(
                 f"{lang}.test{dataset.suffix}{cat}.bpe.pth").is_file()
             assert dataset.folder.joinpath(
@@ -33,21 +32,30 @@ def check_files_and_symlink_for_XLM(dataset, langs):
     print("create symlinks for XLM ...")
     for lang in langs:
         for cat in ["", ".functions_standalone"]:
-            for i in range(8):
-                create_symlink(dataset.folder.joinpath(f"{lang}.train{dataset.suffix}.{i}{cat}.bpe.pth"),
-                               XLM_folder.joinpath(f"train.{lang}{suffixs[cat]}.{i}.pth"))
+            create_symlink(dataset.folder.joinpath(f"{lang}.train{dataset.suffix}{cat}.bpe.pth"),
+                            XLM_folder.joinpath(f"train.{lang}{suffixs[cat]}.pth"))
             create_symlink(dataset.folder.joinpath(f"{lang}.test{dataset.suffix}{cat}.bpe.pth"),
                            XLM_folder.joinpath(f"test.{lang}{suffixs[cat]}.pth"))
             create_symlink(dataset.folder.joinpath(f"{lang}.valid{dataset.suffix}{cat}.bpe.pth"),
                            XLM_folder.joinpath(f"valid.{lang}{suffixs[cat]}.pth"))
 
+        other_langs = [lang_temp for lang_temp in langs if lang != lang_temp]
+        print("other_langs" + str(other_langs))
+        for lang2 in other_langs: 
+            lang1_, lang2_ = (lang, lang2) if lang < lang2 else (lang2, lang)
+            create_symlink(dataset.folder.joinpath(f"{lang}.valid{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
+                        XLM_folder.joinpath(f"valid.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
+            create_symlink(dataset.folder.joinpath(f"{lang}.test{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
+                        XLM_folder.joinpath(f"test.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
 
-def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, test_size=1000, ncodes=100000, size_gb=50):
+
+def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, parallel_size=0, test_size=1000, ncodes=100000, size_gb=50):
     if size_gb < 1:
         size_gb = None
+    print("params.test_size" + str(test_size))
     dataset = Dataset(root, lang1, lang2, keep_comments,
-                      test_size=test_size, lang3=lang3)
-
+                      test_size=test_size, parallel_size=parallel_size, lang3=lang3)
+    print("here-here")
     mp_executor = ProcessPoolExecutor()
     if not local:
         dataset.folder.joinpath('log').mkdir()
@@ -65,16 +73,15 @@ def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, test_size=1
         lang_executor=mp_executor, tok_executor=cluster_ex1, split_executor=cluster_ex2)
     dataset.train_bpe(ncodes=ncodes, size_gb=size_gb)
     dataset.apply_bpe(
-        f'train{dataset.suffix}.[01234567].tok', use_vocab=False, executor=cluster_ex2)
+        f'train{dataset.suffix}.tok', use_vocab=False, executor=cluster_ex2)
     dataset.apply_bpe(f'test{dataset.suffix}.tok',
                       use_vocab=False, executor=None)
     dataset.apply_bpe(f'valid{dataset.suffix}.tok',
                       use_vocab=False, executor=None)
-
     dataset.get_vocab(size_gb=size_gb)
 
     dataset.binarize_for_XLM(
-        f'train{dataset.suffix}.[0123456789].bpe', executor=cluster_ex2)
+        f'train{dataset.suffix}.bpe', executor=cluster_ex2)
     dataset.binarize_for_XLM(f'test{dataset.suffix}.bpe', executor=None)
     dataset.binarize_for_XLM(f'valid{dataset.suffix}.bpe', executor=None)
 
@@ -83,12 +90,16 @@ def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, test_size=1
 
     #dataset.binarize_for_XLM(f'train{dataset.suffix}.[0123456789].functions_class.bpe', executor=cluster_ex2)
     dataset.binarize_for_XLM(
-        f'train{dataset.suffix}.[0123456789].functions_standalone.bpe', executor=cluster_ex2)
+        f'train{dataset.suffix}.functions_standalone.bpe', executor=cluster_ex2)
 
     dataset.binarize_for_XLM(
         f'test{dataset.suffix}.functions_*.bpe', executor=None)
     dataset.binarize_for_XLM(
         f'valid{dataset.suffix}.functions_*.bpe', executor=None)
+    dataset.binarize_for_XLM(
+        f'valid.*.*.functions_*.bpe', executor=None)
+    dataset.binarize_for_XLM(
+        f'test.*.*.functions_*.bpe', executor=None)
 
     langs = [lang1, lang2] if lang3 is None else [lang1, lang2, lang3]
     check_files_and_symlink_for_XLM(dataset, langs)
@@ -108,7 +119,9 @@ if __name__ == '__main__':
                         help='used bpe trained on data with comments or not')
     parser.add_argument('--local', type=bool_flag, default=True,
                         help='True if you want to run the processing pipeline locally, false if want to use submitit.')
+    parser.add_argument('--parallel_size', type=int, default=0,
+                        help='generate parallel data')
     args = parser.parse_args()
-
-    preprocess(args.root, args.lang1, args.lang2, args.keep_comments, args.local,
+    print("parallel" + str(args.parallel_size))
+    preprocess(args.root, args.lang1, args.lang2, args.keep_comments, args.local, parallel_size=args.parallel_size,
                lang3=args.lang3, size_gb=args.bpe_train_size, test_size=args.test_size)

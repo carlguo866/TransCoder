@@ -35,8 +35,7 @@ def process_binarized(data, params):
         assert params.max_vocab > 0
         logger.info("Selecting %i most frequent words ..." % params.max_vocab)
         dico.max_vocab(params.max_vocab)
-        data['sentences'][data['sentences'] >=
-                          params.max_vocab] = dico.index(UNK_WORD)
+        data['sentences'][data['sentences'] >= params.max_vocab] = dico.index(UNK_WORD)
         unk_count = (data['sentences'] == dico.index(UNK_WORD)).sum()
         logger.info("Now %i unknown words covering %.2f%% of the data."
                     % (unk_count, 100. * unk_count / (len(data['sentences']) - len(data['positions']))))
@@ -44,8 +43,7 @@ def process_binarized(data, params):
         logger.info("Selecting words with >= %i occurrences ..." %
                     params.min_count)
         dico.min_count(params.min_count)
-        data['sentences'][data['sentences'] >=
-                          len(dico)] = dico.index(UNK_WORD)
+        data['sentences'][data['sentences'] >= len(dico)] = dico.index(UNK_WORD)
         unk_count = (data['sentences'] == dico.index(UNK_WORD)).sum()
         logger.info("Now %i unknown words covering %.2f%% of the data."
                     % (unk_count, 100. * unk_count / (len(data['sentences']) - len(data['positions']))))
@@ -63,16 +61,12 @@ def load_binarized(path, params):
     assert path.endswith('.pth')
     if params.debug_train:
         path = path.replace('train', 'valid')
-    print("here-here2" + str(params.multi_gpu))
     if getattr(params, 'multi_gpu', False):
-        print("here-here")
         assert params.split_data_accross_gpu in ['local', 'global']
         if params.split_data_accross_gpu == 'local':
-            print("what is path[:-4] %s ?" % path[:-4])
             split_path = '%s.%i.pth' % (path[:-4], params.local_rank)
         else:
             split_path = '%s.%i.pth' % (path[:-4], params.global_rank)
-        print("split_path" + split_path)
         if os.path.isfile(split_path):
             assert params.split_data is False
             path = split_path
@@ -81,10 +75,6 @@ def load_binarized(path, params):
     assert os.path.isfile(path), path
     logger.info("Loading data from %s ..." % path)
     data = torch.load(path)
-    print("printing data")
-    for keys,values in data.items():
-        print("keys " + keys)
-        print("value " + str(values))
     data = process_binarized(data, params)
     return data
 
@@ -141,15 +131,13 @@ def load_mono_data(params, data):
                 continue
 
             # load data / update dictionary parameters / update data
-            for i in range(len(params.mono_dataset[lang][splt])):
-                mono_data = load_binarized(params.mono_dataset[lang][splt][i], params)
+            mono_data = load_binarized(params.mono_dataset[lang][splt], params)
             set_dico_parameters(params, data, mono_data['dico'])
 
             # create stream dataset
             bs = params.batch_size if splt == 'train' else 1
             data['mono_stream'][lang][splt] = StreamDataset(
                 mono_data['sentences'], mono_data['positions'], bs, params)
-
             # if there are several processes on the same machine, we can split the dataset
             if splt == 'train' and params.split_data and 1 < params.n_gpu_per_node <= data['mono_stream'][lang][splt].n_batches:
                 n_batches = data['mono_stream'][lang][splt].n_batches // params.n_gpu_per_node
@@ -315,33 +303,18 @@ def check_data_params(params):
                          if l2 is None] + params.ae_steps + params.bt_src_langs)
     params.mono_dataset = {
         lang: {
-            # splt: os.path.join(params.data_path, '%s.%s.pth' % (splt, lang))
-            # for splt in ['valid', 'test']
+            splt: os.path.join(params.data_path, '%s.%s.pth' % (splt, lang))
+            for splt in ['train', 'valid', 'test']
         } for lang in params.langs if lang in required_mono
     }
-    #add path for trains: 
-    for lang in params.langs:  
-        if lang in required_mono:
-            for splt in ['valid', 'test']: 
-                params.mono_dataset[lang][splt] = [os.path.join(params.data_path, '%s.%s.pth' % (splt, lang))]
-            params.mono_dataset[lang]['train'] = [] 
-            for num in range(8): 
-                params.mono_dataset[lang]['train'].append(os.path.join(params.data_path, '%s.%s.%d.pth' % ("train", lang, num)))
-        
+   
     for paths in params.mono_dataset.values():
         for p in paths.values():
-            # if isinstance(p, str):  
-            #     print("file %s" % p)
-            #     if not os.path.isfile(p):
-            #         logger.error(f"{p} not found")
-            if isinstance(p, list):
-                print("file %s" % p)
-                for each in p: 
-                    if not os.path.isfile(each):
-                        logger.error(f"{each} not found")
+            if not os.path.isfile(p):
+                logger.error(f"{p} not found")
     if not params.eval_only:
-        assert all([all([os.path.isfile(each) for each in p 
-                    for p in paths.values()]) for paths in params.mono_dataset.values()])
+        assert all( [all([os.path.isfile(p)]) for p in paths.values()
+                    for paths in params.mono_dataset.values()])
 
     # check parallel datasets
     required_para_train = set(

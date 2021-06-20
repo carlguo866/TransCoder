@@ -1,0 +1,1 @@
+define internal void @platform_main_begin ( ) #0 { ret void }

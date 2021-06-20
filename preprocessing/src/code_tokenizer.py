@@ -82,7 +82,7 @@ def strings():
                 pyllvm.lltok.ChecksumKind])
 
 def uints():
-    return set([pyllvm.lltok.LabelID, pyllvm.lltok.GlobalID, pyllvm.lltok.LocalVarID, pyllvm.lltok.AttrGrpID,
+    return set([ pyllvm.lltok.GlobalID, pyllvm.lltok.LocalVarID, pyllvm.lltok.AttrGrpID,
   pyllvm.lltok.SummaryID])
 
 def fromty(ty):
@@ -165,7 +165,7 @@ def process_string_llvm(tok, char2tok, tok2char, is_comment):
     tok = tok.replace('\n', ' STRNEWLINE ')
     tok = tok.replace('\t', ' TABSYMBOL ')
     tok = re.sub(' +', ' ', tok)
-    tok = tokenize_v14_international(tok)
+    # tok = tokenize_v14_international(tok)
     tok = re.sub(' +', ' ', tok)
     tok = tok.replace('\r', '')
     return tok
@@ -800,106 +800,172 @@ def strip_llvm_comment(s):
         s = s[:s.index(';')]
     return s
         
-def tokenize_llvm(s, keep_comments=False):
-    try: 
+def tokenize_llvm(s, keep_comments=False, detok=False):
+    # try: 
         tokens = []
         toktypes = [] 
         assert isinstance(s, str)
         s = s.replace(r'\r', '')
         lex = pyllvm.lexer(s)
+        global_strings_index = [] 
+        global_constants_index = [] 
+        isFirst = True; 
         while True:
-            toktype, tok = lex.getTok()
+            if isFirst:
+                toktype, tok = lex.getFirstTok()
+                isFirst = False 
+            else: 
+                toktype, tok = lex.getTok()
             #tok = strip_llvm_comment(tok.strip())
             tok = tok.strip()
             toktypes.append(toktype)
             if(tok != ''): 
                 tokens.append(tok)
-            if len(toktypes) >=2: 
-                if toktypes[-2] in strings():
-                    try:
-                        tokens[-1] = strip_llvm_comment(tokens[-1])
-                        tokens[-1] = process_string_llvm(tokens[-1],LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, keep_comments)
-                    except UnicodeDecodeError:
-                        print(tokens[-1])
-                #i dont know why "less" is causing issues "toktype = 10"
-                if(toktypes[-2] == pyllvm.lltok.less):
-                    tokens[-1] = "<"
-                #get rid of comments
-                if(toktypes[-2] == pyllvm.lltok.rbrace):
-                    tokens[-1] = "}"
-                elif (toktypes[-2] == pyllvm.lltok.APSInt):
-                    tokens[-1] = (str(lex.getAPSIntVal()))
-                elif (toktypes[-2] in uints()):
-                    tokens[-1] = tokens[-1][0] + str(lex.getUIntVal())
 
-                # elif toktypes[-2] in [pyllvm.lltok.Type]:
-                #     print(toktypes[-2], tokens[-1], fromty(lex.getTypeVal()))
-                #     tokens[-1] += (fromty(lex.getTypeVal()))
-                # elif toktypes[-2] == pyllvm.lltok.APFloat:
-                #     print(toktypes[-2], tokens[-1], lex.getAPFloatVal())
-                #     tokens[-1] += (str(lex.getAPFloatVal()))
-            if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
-                return tokens 
-    except KeyboardInterrupt:
-        raise
-    except:
-        return []
+            #deleting stuff 
+            if len(tokens) >=1 and tokens[-1]=="\"x86_64-unknown-linux-gnu\"": 
+                del tokens[:] 
+                del toktypes[:-1]
+                continue
 
-def get_llvm_tokens_and_types(s):
-    # try:
-        tokens = []
-        toktypes = [] 
-        assert isinstance(s, str)
-        s = s.replace(r'\r', '')
-        lex = pyllvm.lexer(s)
-        while True:
-            toktype, tok = lex.getTok()
-            #tok = strip_llvm_comment(tok.strip())
-            tok = tok.strip()
-            toktypes.append(toktype)
-            if(tok != ''): 
-                tokens.append(tok)
-            if len(toktypes) >=2: 
+            if len(toktypes) >=2 and not detok:
+                if toktypes[-2] == pyllvm.lltok.kw_attributes: 
+                    del toktypes[-2:]
+                    del tokens[-1]
+                    tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index)
+                    return tokens
+          
                 if toktypes[-2] in strings():
                     try:
                         tokens[-1] = strip_llvm_comment(tokens[-1])
                         tokens[-1] = process_string_llvm(tokens[-1],LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, False)
                     except UnicodeDecodeError:
                         print(tokens[-1])
+                #i dont know why "less" is causing issues "toktype = 10"
+                elif(toktypes[-2] == pyllvm.lltok.less):
+                    tokens[-1] = "<"
                 #get rid of comments
-                if(toktypes[-2] == pyllvm.lltok.rbrace):
+                elif(toktypes[-2] == pyllvm.lltok.rbrace):
                     tokens[-1] = "}"
                 elif (toktypes[-2] == pyllvm.lltok.APSInt):
+                    assert re.findall(r"-*\d+",tokens[-1])[0] == str(lex.getAPSIntVal()), re.findall(r"-*\d+",tokens[-1])[0]  + ' ' + str(lex.getAPSIntVal())
                     tokens[-1] = (str(lex.getAPSIntVal()))
-                elif (toktypes[-2] in uints()):
-                    tokens[-1] = tokens[-1][0] + str(lex.getUIntVal())
+                elif toktypes[-2] == pyllvm.lltok.LabelID:
+                    tokens[-1] = re.findall(r"\d+",tokens[-1])[0] + ":"
+                elif toktypes[-2] in uints():
+                    tokens[-1] = str(tokens[-1][0]) + re.findall(r"\d+",tokens[-1])[0] 
+                elif toktypes[-2] == pyllvm.lltok.GlobalVar and tokens[-1][:5] == '@.str': 
+                    global_strings_index.append(len(tokens)-1)
+                elif toktypes[-2] == pyllvm.lltok.LocalVar: 
+                    global_constants_index.append(len(tokens)-1)
+
+            # if len(toktypes) >=3 and toktypes[-3] == pyllvm.lltok.kw_align: 
+            #     # toktypes = [, align, 4 , something]
+            #     # tokens = [, align, 4]
+            #     del toktypes[-4:-1]
+            #     del tokens[-3:]
+            #     continue
+
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
-                return tokens, toktypes
+                tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index)
+                return tokens
     # except KeyboardInterrupt:
     #     raise
     # except:
-    #     return [],[]
+    #     return []
+def remove_globals(tokens, toktypes, global_strings_index, global_constants_index): 
+    for i in global_strings_index[:]: 
+        temp_name = tokens[i]
+        if len(toktypes) > i+11 and toktypes[i+11] == pyllvm.lltok.StringConstant: 
+            tokens[i] = f'@\"{temp_name[1:]}:{tokens[i+11][1:]}'
+            tokens[i] = tokens[i].replace('\\', '~')
+            for j in global_strings_index[:]: 
+                if tokens[j] == temp_name: 
+                    tokens[j] = tokens[i]
+                    global_strings_index.remove(j)
+            global_strings_index.remove(i)   
+    for i in global_constants_index[:]: 
+        temp_name = tokens[i]
+        res_name = ''
+        if toktypes[i+1] == pyllvm.lltok.equal and toktypes[i+2] == pyllvm.lltok.kw_type:  
+            index = i + 3
+            par = 0
+            tok = toktypes[index]
+            while True:
+                if tok == pyllvm.lltok.lbrace or tok == pyllvm.lltok.less or tok == pyllvm.lltok.lsquare: 
+                    par += 1
+                elif tok == pyllvm.lltok.rbrace or tok == pyllvm.lltok.greater or tok == pyllvm.lltok.rsquare:
+                    par -=1
+                res_name += ' ' + tokens[index] 
+                index+=1 
+                tok = toktypes[index]
+                if par == 0:
+                    break
+                
+            res_name = res_name.replace('\"', '\'').strip()
+            for j in global_constants_index[:]: 
+                if tokens[j] == temp_name and i != j: 
+                    tokens[j] = res_name
+                    global_constants_index.remove(j)
+            global_constants_index.remove(i)
+    return tokens, toktypes     
+
+def get_llvm_tokens_and_types(s):
+    try: 
+        tokens = []
+        toktypes = [] 
+        assert isinstance(s, str)
+        s = s.replace(r'\r', '')
+        lex = pyllvm.lexer(s)
+        global_strings_index = [] 
+        global_constants_index = [] 
+        isFirst = True; 
+        while True:
+            if isFirst:
+                toktype, tok = lex.getFirstTok()
+                isFirst = False 
+            else: 
+                toktype, tok = lex.getTok()
+            #tok = strip_llvm_comment(tok.strip())
+
+            tok = tok.strip()
+            if(tok != ''): 
+                tokens.append(tok)
+
+            if toktype == pyllvm.lltok.Eof:
+                return tokens, toktypes
+            elif toktype == pyllvm.lltok.Error: 
+                return [], []
+            toktypes.append(toktype)
+    except KeyboardInterrupt:
+        raise
+    except:
+        print("a problem in get_llvm_tokens_and_types", flush=True)
+        return [], [] 
 
 def detokenize_llvm(s):
     assert isinstance(s, str) or isinstance(s, list)
     if isinstance(s, list):
         s = ' '.join(s)
     # the ▁ character created bugs in the cpp tokenizer
-    s = s.replace('ENDCOM', '\n').replace('▁', ' SPACETOKEN ')
-
+    s = s.replace('ENDCOM', '\n').replace('▁', 'SPACETOKEN')
     tokens, toktypes = get_llvm_tokens_and_types(s)
-    # for i in range(len(tokens)):
-    #     print(tokens[i], toktypes[i])
-    #     print('\n')
     new_tokens = []
     for i in range(len(tokens)):
-        if toktypes[i] in strings():
-            new_tokens.append(tokens[i].replace('STRNEWLINE', '\n').replace(
-                'TABSYMBOL', '\t').replace(' ', '').replace('SPACETOKEN', ' '))
+        if toktypes[i] == pyllvm.lltok.kw_declare or toktypes[i] == pyllvm.lltok.kw_define:
+            new_tokens.append("NEW_LINE" + str(tokens[i]))
+        elif i<len(tokens)-2 and ((toktypes[i] == pyllvm.lltok.GlobalVar or toktypes[i] == pyllvm.lltok.LocalVar or toktypes[i] == pyllvm.lltok.LocalVarID ) 
+                        and toktypes[i+1] == pyllvm.lltok.equal): 
+            new_tokens.append("NEW_LINE"+ str(tokens[i]))
+        # elif toktypes[i-1]==pyllvm.lltok.kw_align: 
+        #     new_tokens.append(str(tokens[i])+ "NEW_LINE")
+        elif toktypes[i] == pyllvm.lltok.LabelID: 
+            new_tokens.append("NEW_LINE"+ str(tokens[i])+ "NEW_LINE") 
         else:
             new_tokens.append(tokens[i])
     lines = re.split('NEW_LINE', ' '.join(new_tokens))
-    untok_s = indent_lines(lines)
+    untok_s = "\n".join(lines).replace(" SPACETOKEN ", " ")
+    # untok_s = indent_lines(lines)
     return untok_s
 
 
@@ -911,79 +977,105 @@ def extract_functions_llvm(s):
     if(s.find("DOCUMENT_ID")!= -1):
         s = s[s.index("\">")+2:]
         s = s[:s.index("</DOCUMENT>")]
-    #print("does the error go above or below?")
-    tokens = tokenize_llvm(s)
+    tokens = s.split(" ")
     if(tokens == []): print("炸了！")
-    # print("string is " + s)
-    # print("tokens is " "".join(tokens))
-    i = ind_iter(len(tokens))
+    i = -1
     functions = []
-    # print("index" + str(i.i) + "-------") 
-    tok = tokens[i.i]
+    tok = tokens[i] 
     while True:
-        try:
-            # detect function
-            if tok == 'define':
-                function = [tok]
-                while tok != '}':
-                    i.next()
-                    tok = tokens[i.i]
-                    function.append(tok.replace(
-                        '\n', 'ENDCOM').replace('SPACETOKEN', '▁'))
-                if tok == '}':
-                    function = ' '.join(function)
-                    function = function.strip()
-                    function = function.replace(
-                        '\n', 'ENDCOM').replace('SPACETOKEN', '▁')
-                    #do i need this?
-                    #if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
-                    functions.append(function)
-            i.next()
-            tok = tokens[i.i]
-        except:
-            # print("stop condition" + str(i.i) + " " + str(len(tokens)))
+        if(i+1 < len(tokens)): 
+            i+=1
+            tok = tokens[i]
+        else:
             break
+        if tok == 'define':
+            par = 1
+            firstBrace = True
+            function = []
+            while True:
+                function.append(tok)
+                if tok == '{' and firstBrace: 
+                    firstBrace = False
+                elif tok == '{': 
+                    par+=1
+                elif tok == '}':
+                    par-=1
+                if par == 0:
+                    break
+                if(i+1 < len(tokens)): 
+                    i+=1
+                    tok = tokens[i]
+                else:
+                    break
+            if par == 0:
+                function = ' '.join(function)
+                function = function.strip()
+                #do i need this?
+                #if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
+                functions.append(function)
     # print("func llvm" + " ".join(functions))
-    return functions, []
+    return functions, [] 
 
 def get_function_name_llvm(s):
     return get_first_token_before_first_parenthesis(s)
 
 def extract_arguments_llvm(f):
-
-    assert isinstance(f, str) or isinstance(f, list)
-    if isinstance(f, str):
-        f = f.split(' ')
-    types = []
-    names = []
-    par = 0
-    arguments = []
-    f = f[f.index('('):]
-    for tok in f:
-        if tok == '(':
-            par += 1
-        elif tok == ')':
-            par -= 1
-        arguments.append(tok)
-        if par == 0:
-            break
-    arguments = ' '.join(arguments[1:-1])
-    if arguments == '':
-        return ['None'], ['None']
-    arguments = arguments.split(',')
-    for i in range(len(arguments)): 
-        arguments[i] = arguments[i].strip()
-    argtypes = arguments
-    argnames = [] 
-    for i in range(len(argtypes)):
-        argnames.append(f"%{i}")
-    return arguments, argnames
+    try: 
+        assert isinstance(f, str) or isinstance(f, list)
+        if isinstance(f, str):
+            f = f.split(' ')
+        types = []
+        names = []
+        par = 0
+        arguments = []
+        f = f[f.index('('):]
+        arg = ''
+        for tok in f:
+            if tok == '(':
+                par += 1
+            elif tok == ')':
+                par -= 1
+            if par == 1 and tok == ',': 
+                arguments.append(arg[:-1])
+                arg = ''
+            else: 
+                arg += tok + " " 
+            if par == 0:
+                arguments.append(arg[:-1])
+                break
+        #delete ( and )
+        arguments[0] = arguments[0][2:]
+        arguments[-1] = arguments[-1][:-2]
+        if arguments == []:
+            return ['None'], ['None']
+        argtypes = []
+        modifiers = [] 
+        for i in range(len(arguments)):
+            if(arguments[i].find(' ') > -1):
+                index = arguments[i].index(' ')
+                if arguments[i][index+1] == "*": 
+                    argtypes.append(arguments[i][:index+2])
+                    modifiers.append(arguments[i][index+2:].strip())
+                else:
+                    argtypes.append(arguments[i][:index])
+                    modifiers.append(arguments[i][index:].strip())
+            else: 
+                argtypes.append(arguments[i])
+                modifiers.append('')    
+        return argtypes, modifiers
+    except: 
+        print("no arg after define (", flush=True)
+        # print("arguments" + str(arguments))
+        return [], []
 
 def get_first_token_before_first_parenthesis(s):
-    assert isinstance(s, str) or isinstance(s, list)
-    if isinstance(s, str):
-        s = s.split()
-    return s[s.index('(') - 1]
+    try:
+        assert isinstance(s, str) or isinstance(s, list)
+        if isinstance(s, str):
+            s = s.split()
+        return s[s.index('(') - 1]
+    except: 
+        return ""
 
 
 def get_function_name_java(s):

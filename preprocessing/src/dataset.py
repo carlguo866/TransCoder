@@ -9,8 +9,9 @@ import itertools
 import subprocess
 from pathlib import Path
 import os
+import numpy as np
 from preprocessing.src.utils import shuf_file, apply_bpe_file, get_vocab_file, learn_bpe_file, regroup_and_select_data, LocalExecutor, binarize_for_XLM_file, truncate_files, \
-    get_nlines, process_and_tokenize_json_file, extract_functions_file
+    get_nlines, process_and_tokenize_json_file, extract_functions_file, extract_functions_parallel
 
 
 class Language:
@@ -29,10 +30,8 @@ class Language:
                    ) > 0, f"there is no json in {str(self.folder)}"
         jsons = [json for json in self.folder.glob(
             '*.json.gz') if not Path(str(json).replace('.json.gz', suffix + '.tok')).is_file()]
-        print(f"{self.l}: tokenizing {len(jsons)} json files ...")
+        print(f"{self.l}: tokenizing {len(jsons)} json files ...") 
         if len(jsons) > 0:
-            for json in jsons:
-                print(f"json {str(json)}")
             jobs = executor.map_array(process_and_tokenize_json_file, jsons, itertools.repeat(
                 self.l), itertools.repeat(keep_comments))
             for job in jobs:
@@ -40,12 +39,11 @@ class Language:
         else:
             return
 
-    def split_train_test_valid(self, keep_comments, test_size=1000):
+    def split_train_test_valid(self, keep_comments, parallel_size=0, test_size=1000, other_langs=None):
         suffix = '.with_comments' if keep_comments else ''
         # split train-test-valid
         # regroup
         all_tok = self.folder.joinpath(f'all{suffix}.tok')
-        print(all_tok)
         command = f"cd {self.folder}; cat *[0-4][0-9][0-9]{suffix}.tok > {all_tok}"
         proc = subprocess.run(command, shell=True, stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE, executable='/bin/bash')
@@ -56,39 +54,57 @@ class Language:
         n_lines = get_nlines(all_tok)
 
         # shuf
-        shuf_file(all_tok)
+        # shuf_file(all_tok)
 
         # select test/valid/train and split train in 8
         subprocess.run(f"cat {all_tok} | head -n {test_size} > {self.folder.joinpath(f'valid{suffix}.tok')}",
-                       shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        subprocess.run(f"cat {all_tok} | head -n {2 * test_size} | tail -n {test_size}  > {self.folder.joinpath(f'test{suffix}.tok')}", shell=True, stdout=subprocess.PIPE,
-                       stderr=subprocess.PIPE)
-        split_len = int((n_lines - 2 * test_size) / 8)
-        print(f"split_len = {split_len} n_lines = {n_lines}")
-        for n, i in zip(range(8), range(2 * test_size, n_lines, split_len)):
-            subprocess.run(f"cat {all_tok} | head -n {i + split_len} | tail -n {split_len}  > {self.folder.joinpath(f'train{suffix}.{n}.tok')}", shell=True, stdout=subprocess.PIPE,
-                           stderr=subprocess.PIPE)
-
+                    shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        command = f"cat {all_tok} | head -n {2 * test_size} | tail -n {test_size}  > {self.folder.joinpath(f'test{suffix}.tok')}"
+        subprocess.run(command, shell=True, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
+        
+        #parallel
+        if(parallel_size !=0):
+            for i, lang2 in enumerate(other_langs): 
+                lang1_, lang2_ = (self.l, lang2) if self.l < lang2 else (lang2, self.l)
+                subprocess.run(f"cat {all_tok} | head -n {(2+i)*test_size+parallel_size} | tail -n {parallel_size}> {self.folder.joinpath(f'valid.{lang1_}_sa-{lang2_}_sa.{self.l}.tok')}",
+                            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print("test_size" + str(test_size))
+                print("Head " + str((2+i)*test_size) + " Tail " +str((2+i)*test_size+parallel_size))
+                subprocess.run(f"cat {all_tok} | head -n {(2+i)*(test_size+parallel_size)} | tail -n {parallel_size}> {self.folder.joinpath(f'test.{lang1_}_sa-{lang2_}_sa.{self.l}.tok')}",
+                            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print("Head " + str((2+i)*test_size+parallel_size) + " Tail " +str((2+i)*(test_size+parallel_size)))
+            subprocess.run(f"cat {all_tok} | tail -n {n_lines-(2+len(other_langs)-1)*(test_size+parallel_size)}  > {self.folder.joinpath(f'train{suffix}.tok')}",
+                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            print("Head" + str((2+i)*(test_size+parallel_size))+ " Tail " + str(n_lines))
+        else: 
+            subprocess.run(f"cat {all_tok} | tail -n {n_lines-2*test_size}  > {self.folder.joinpath(f'train{suffix}.tok')}",
+                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #shufs 
+        shuf_file(all_tok)
+        shuf_file(self.folder.joinpath(f'test{suffix}.tok'))
+        shuf_file(self.folder.joinpath(f'valid{suffix}.tok'))
+        shuf_file(self.folder.joinpath(f'test{suffix}.tok'))
         return n_lines, size_gb
 
-    def process(self, keep_comments, tok_executor=None, test_size=1000, split_executor=None):
+    def process(self, keep_comments, tok_executor=None, test_size=1000, parallel_size=0, split_executor=None, langs=None):
         suffix = '.with_comments' if keep_comments else ''
         print(f"{self.l}: process ...")
+        other_langs = [lang.l for lang in langs if lang.l != self.l]
+        print("other_langs" + str(other_langs))
         self.process_json_and_tok(keep_comments, tok_executor)
-        if (all(self.folder.joinpath(f'train{suffix}.{n}.tok').is_file() for n in range(8)) and
-                self.folder.joinpath(f'test{suffix}.tok').is_file() and
-                self.folder.joinpath(f'valid{suffix}.tok').is_file()):
+        if (self.folder.joinpath(f'train{suffix}.tok').is_file() and
+            self.folder.joinpath(f'test{suffix}.tok').is_file() and
+            self.folder.joinpath(f'valid{suffix}.tok').is_file()):
             print(f"{self.l}: train, test and valid for already exist. ")
-            nlines = 8 * \
-                get_nlines(self.folder.joinpath(f'train{suffix}.{0}.tok'))
-            size_gb = 8 * \
-                self.folder.joinpath(f'train{suffix}.{0}.tok').stat().st_size
+            nlines = get_nlines(self.folder.joinpath(f'train{suffix}.tok'))
+            size_gb = self.folder.joinpath(f'train{suffix}.tok').stat().st_size
         else:
             print(f"{self.l}: split train, test and valid ... ")
             if split_executor is None:
                 split_executor = LocalExecutor()
             job = split_executor.submit(
-                self.split_train_test_valid, keep_comments, test_size)
+                self.split_train_test_valid, keep_comments, test_size=test_size, parallel_size=parallel_size, other_langs=other_langs)
             nlines, size_gb = job.result()
         print(f"{self.l}: train for is {nlines} lines and {size_gb / (1024 ** 3)} Go. ")
         # nlines, size = self.split_train_test_valid(keep_comments, test_size)
@@ -98,11 +114,13 @@ class Language:
         if executor is None:
             executor = LocalExecutor()
         suffix = '.with_comments' if keep_comments else ''
-        files = list(self.folder.glob(f'train{suffix}.[01234567].tok'))
+        files = list(self.folder.glob(f'train{suffix}.tok'))
         files.append(self.folder.joinpath(f'test{suffix}.tok'))
         files.append(self.folder.joinpath(f'valid{suffix}.tok'))
-        toks = [tok for tok in files if not (tok.with_suffix('.functions_standalone.tok').is_file(
-        ) and tok.with_suffix('.functions_class.tok').is_file())]
+        # files.extend(list(self.folder.glob(f'valid.*.{self.l}.tok')))
+        # files.extend(list(self.folder.glob(f'test.*.{self.l}.tok')))
+        print("files" + str(files))
+        toks = [tok for tok in files if not tok.with_suffix('.functions_standalone.tok').is_file() ] # and tok.with_suffix('.functions_class.tok').is_file())
         if len(toks) > 0:
             jobs = executor.map_array(
                 extract_functions_file, toks, itertools.repeat(self.l))
@@ -113,15 +131,15 @@ class Language:
         if executor is None:
             executor = LocalExecutor()
         suffix = '.with_comments' if keep_comments else ''
+        # files = list(self.folder.glob(
+        #     f'train{suffix}.functions_class.tok'))
         files = list(self.folder.glob(
-            f'train{suffix}.[01234567].functions_class.tok'))
-        files += list(self.folder.glob(
-            f'train{suffix}.[01234567].functions_standalone.tok'))
-        files.append(self.folder.joinpath(f'test{suffix}.functions_class.tok'))
+            f'train{suffix}.functions_standalone.tok'))
+        # files.append(self.folder.joinpath(f'test{suffix}.functions_class.tok'))
         files.append(self.folder.joinpath(
             f'test{suffix}.functions_standalone.tok'))
-        files.append(self.folder.joinpath(
-            f'valid{suffix}.functions_class.tok'))
+        # files.append(self.folder.joinpath(
+        #     f'valid{suffix}.functions_class.tok'))
         files.append(self.folder.joinpath(
             f'valid{suffix}.functions_standalone.tok'))
         toks = [tok for tok in files if not (tok.with_suffix(
@@ -135,8 +153,9 @@ class Language:
 
 class Dataset:
 
-    def __init__(self, root, lang1, lang2, keep_comments, test_size=1000, lang3=None):
+    def __init__(self, root, lang1, lang2, keep_comments, test_size=1000, parallel_size=0, lang3=None):
         self.test_size = test_size
+        self.parallel_size=parallel_size
         self.root = Path(root)
         assert self.root.is_dir(
         ), f"failed to build the dataset, there is no directory {str(root)}"
@@ -165,7 +184,9 @@ class Dataset:
     def process_languages(self, lang_executor=None, tok_executor=None, split_executor=None):
         if lang_executor is None:
             lang_executor = LocalExecutor()
-        jobs = [lang_executor.submit(lang.process, self.keep_comments, tok_executor, self.test_size, split_executor)
+        print("self.test_size" + str(self.test_size))
+        jobs = [lang_executor.submit(lang.process, self.keep_comments, tok_executor=tok_executor,
+                                 test_size=self.test_size, split_executor=split_executor, parallel_size=self.parallel_size, langs=self.langs)
                 for lang in self.langs]
         for i, lang in enumerate(self.langs):
             self.sizes[lang.l] = jobs[i].result()
@@ -192,7 +213,7 @@ class Dataset:
             f"regroup and select data for training bpe in {data_train_bpe} ...")
         regroup_and_select_data(
             files=[l.folder.glob(
-                f'train{self.suffix}.[01234567].tok') for l in self.langs],
+                f'train{self.suffix}.tok') for l in self.langs],
             nlines=nlines,
             output=data_train_bpe)
 
@@ -218,7 +239,7 @@ class Dataset:
         print(f"regroup and select data in {data_get_vocab} to get vocab ...")
         regroup_and_select_data(
             files=[self.folder.glob(
-                f'{l.l}.train{self.suffix}.[01234567].bpe') for l in self.langs],
+                f'{l.l}.train{self.suffix}.bpe') for l in self.langs],
             nlines=nlines,
             output=data_get_vocab)
         print(f"computing vocab on {data_get_vocab}...")
@@ -231,6 +252,7 @@ class Dataset:
         jobs = []
         for l in self.langs:
             for f in l.folder.glob(files_regex):
+                print("folder glob" + str(f))
                 out = self.folder.joinpath(
                     f"{l.l}.{f.name}").with_suffix('.bpe')
                 if not out.is_file():
@@ -260,19 +282,37 @@ class Dataset:
             lang_executor = LocalExecutor()
         jobs = [lang_executor.submit(lang.extract_functions, self.keep_comments,
                                      self.test_size, function_executor) for lang in self.langs]
+        lang1 = self.langs[0]
+        lang2 = self.langs[1]
+        assert lang1.l == "cpp" and lang2.l =='llvm'
+        src_paths = list(lang1.folder.glob(f'valid.*.{lang1.l}.tok'))
+        src_paths.extend(list(lang1.folder.glob(f'test.*.{lang1.l}.tok')))
+        tgt_paths = list(lang2.folder.glob(f'valid.*.{lang2.l}.tok'))
+        tgt_paths.extend(list(lang2.folder.glob(f'test.*.{lang2.l}.tok')))
+        print("src_paths" + str(src_paths))             
+        print("tgt_paths" + str(src_paths))                                                    
+        for i in range(len(src_paths)): 
+            jobs.append(lang_executor.submit(extract_functions_parallel, src_paths[i], tgt_paths[i], 'cpp', 'llvm'))
         for job in jobs:
             job.result()
-
-        for split in ['test', 'valid']:
-            for f_type in ['functions_standalone', 'functions_class']:
-                truncate_files(l.folder.joinpath(
-                    f'{split}{self.suffix}.{f_type}.tok') for l in self.langs)
+        
+        # #why do i need to truncate the files??
+        # for split in ['test', 'valid']:
+        #     truncate_files(l.folder.glob(
+        #         f'{split}{self.suffix}.functions_standalone.tok') for l in self.langs)
+        #     truncate_files(l.folder.glob(
+        #         f'{split}.*.{l.l}.functions_standalone.tok') for l in self.langs)
 
         print("apply bpe on train ... ")
         self.apply_bpe(
-            f'train{self.suffix}.[01234567].functions_*.tok', use_vocab=False, executor=bpe_executor)
+            f'train{self.suffix}.functions_*.tok', use_vocab=False, executor=bpe_executor)
         print("apply bpe on test and valid ...")
         self.apply_bpe(f'test{self.suffix}.functions_*.tok',
                        use_vocab=False, executor=bpe_executor)
         self.apply_bpe(f'valid{self.suffix}.functions_*.tok',
+                       use_vocab=False, executor=bpe_executor)
+        print("apply bpe on parallel data ...")
+        self.apply_bpe(f'valid.*.*.functions_*.tok',
+                       use_vocab=False, executor=bpe_executor)
+        self.apply_bpe(f'test.*.*.functions_*.tok',
                        use_vocab=False, executor=bpe_executor)

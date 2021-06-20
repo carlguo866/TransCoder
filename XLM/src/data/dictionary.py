@@ -67,6 +67,20 @@ class Dictionary(object):
             return False
         return all(self.id2word[i] == y[i] for i in range(len(y)))
 
+    def compare_sanity_check(self, other):
+        self.check_valid()
+        other.check_valid()
+        if self.id2word != other.id2word: 
+            print("id2word is different")
+        if self.word2id != other.word2id: 
+            print("word2id is different")
+        if self.counts != other.counts: 
+            print("counts are different")
+        assert self.bos_index == other.bos_index
+        assert self.eos_index == other.eos_index
+        assert self.pad_index == other.pad_index
+        assert self.unk_index == other.unk_index 
+        
     def check_valid(self):
         """
         Check that the dictionary is valid.
@@ -116,8 +130,8 @@ class Dictionary(object):
         """
         assert min_count >= 0
         init_size = len(self)
-        self.id2word = {k: v for k, v in self.id2word.items(
-        ) if self.counts[self.id2word[k]] >= min_count or k < 4 + SPECIAL_WORDS}
+        self.id2word = {k: v for k, v in self.id2word.items() 
+                        if self.counts[self.id2word[k]] >= min_count or k < 4 + SPECIAL_WORDS}
         self.word2id = {v: k for k, v in self.id2word.items()}
         self.counts = {k: v for k, v in self.counts.items()
                        if k in self.word2id}
@@ -156,8 +170,7 @@ class Dictionary(object):
                 skipped += 1
                 print('Empty word at line %s with count %s' % (i, line))
                 continue
-            word2id[line[0]] = 4 + SPECIAL_WORDS + i - \
-                skipped  # shift because of extra words
+            word2id[line[0]] = 4 + SPECIAL_WORDS + i - skipped  # shift because of extra words
             counts[line[0]] = int(line[1])
         f.close()
         id2word = {v: k for k, v in word2id.items()}

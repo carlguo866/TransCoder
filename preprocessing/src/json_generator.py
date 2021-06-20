@@ -24,10 +24,11 @@ if __name__ == '__main__':
         if not folder_name.joinpath(lang).is_dir():
             print(folder_name.joinpath(lang))
             folder_name.joinpath(lang).mkdir()
+        
         if(sys.argv[2]=="1"): 
-            outF = gzip.open(folder_name.joinpath(f"{lang}/{lang}.00{file_num}.json.gz"), "wt")
+            outF = gzip.open(folder_name.joinpath(f"{lang}/{lang}.{'{0:03}'.format(file_num)}.json.gz"), "wt")
         else: 
-            outF = gzip.open(folder_name.joinpath(f"{lang}/{lang}.00{file_num}.json.gz"), "at")
+            outF = gzip.open(folder_name.joinpath(f"{lang}/{lang}.{'{0:03}'.format(file_num)}.json.gz"), "at")
         outF.write(y)
         outF.write("\n")
         outF.close

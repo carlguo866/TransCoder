@@ -15,9 +15,9 @@ import torch
 import json
 from pathlib import Path
 
-from ..utils import to_cuda, restore_segmentation, concat_batches, vizualize_translated_files, eval_function_output
+from ..utils import to_cuda, restore_segmentation, concat_batches, vizualize_translated_files, eval_function_output, add_declarations_and_definitions
 
-BLEU_SCRIPT_URL = 'https://raw.githubusercontent.com/facebookresearch/XLM/master/src/evaluation/multi-bleu.perl'
+BLEU_SCRIPT_URL = 'https://raw.githubusercontent.com/moses-smt/mosesdecoder/master/scripts/generic/multi-bleu.perl'
 BLEU_SCRIPT_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'multi-bleu.perl')
 if not os.path.isfile(BLEU_SCRIPT_PATH):
     try:
@@ -236,6 +236,7 @@ class Evaluator(object):
                     scores['%s_clm_acc' % data_set] = np.mean(
                         [scores['%s_%s_clm_acc' % (data_set, lang)] for lang in _clm_mono])
                 _mlm_mono = [l1 for (l1, l2) in params.mlm_steps if l2 is None]
+                # logger.info("langs:" + " ".join(_mlm_mono))
                 if len(_mlm_mono) > 0:
                     scores['%s_mlm_ppl' % data_set] = np.mean(
                         [scores['%s_%s_mlm_ppl' % (data_set, lang)] for lang in _mlm_mono])
@@ -313,6 +314,7 @@ class Evaluator(object):
         acc_name = '%s_%s_clm_acc' % (data_set, l1l2)
         scores[ppl_name] = np.exp(xe_loss / n_words)
         scores[acc_name] = 100. * n_valid / n_words
+        
 
     def evaluate_mlm(self, scores, data_set, lang1, lang2):
         """
@@ -425,8 +427,9 @@ class EncDecEvaluator(Evaluator):
         if (eval_bleu or eval_computation) and data_set in datasets_for_bleu:
             hypothesis = []
             f_ids = []
-
+        # print("predicting and generate translation ", flush=True)
         for i, batch in enumerate(self.get_iterator(data_set, lang1, lang2)):
+            # print("batch in evaluator" + str(batch))
             (x1, len1, ids1, len_ids1), (x2, len2, ids2, len_ids2) = batch
             langs1 = x1.clone().fill_(lang1_id)
             langs2 = x2.clone().fill_(lang2_id)
@@ -462,7 +465,7 @@ class EncDecEvaluator(Evaluator):
             n_words += y.size(0)
             xe_loss += loss.item() * len(y)
             n_valid += (word_scores.max(1)[1] == y).sum().item()
-
+            
             # generate translation - translate / convert to text
             if (eval_bleu or eval_computation) and data_set in datasets_for_bleu:
                 len_v = (3 * len1 + 10).clamp(max=params.max_len)
@@ -502,9 +505,9 @@ class EncDecEvaluator(Evaluator):
         scores['%s_%s-%s_mt_acc' %
                (data_set, lang1, lang2)] = 100. * n_valid / n_words
 
+        num_errors = 0
         # write hypotheses
         if (eval_bleu or eval_computation) and data_set in datasets_for_bleu:
-
             # hypothesis / reference paths
             hyp_paths = []
             ref_path = params.ref_paths[(lang1, lang2, data_set)]
@@ -515,22 +518,33 @@ class EncDecEvaluator(Evaluator):
                     scores['epoch'], lang1, lang2, data_set, beam_number)
                 hyp_path = os.path.join(params.hyp_path, hyp_name)
                 hyp_paths.append(hyp_path)
-                print(f'outputing hypotheses in {hyp_path}')
-                with open(hyp_path, 'w', encoding='utf-8') as f:
-                    f.write('\n'.join([hyp[beam_number]
-                                       for hyp in hypothesis]) + '\n')
-                restore_segmentation(hyp_path)
+                print(f'outputing hypotheses in {hyp_path}', flush=True)
 
+                #errors in get_llvm_tokens_and_types
+                
+                with open(hyp_path, 'w', encoding='utf-8') as f:
+                    for hyp in hypothesis: 
+                        hyp = hyp[beam_number]
+                        if lang2 == 'llvm_sa':
+                            #print("hyp: "+ hyp.replace('\n',''), flush=True)
+                            hyp = add_declarations_and_definitions(hyp)
+                            if(hyp[:6]=='error '): 
+                                num_errors+=1
+                                hyp = hyp[6:]
+                        #print("hyp" + str(hyp), flush=True)
+                        f.write(hyp + '\n')
+                restore_segmentation(hyp_path)
+                
+    
         # check how many functions compiles + return same output as GT
-        if eval_computation and data_set in datasets_for_bleu:
+        if eval_computation and data_set in datasets_for_bleu and lang2 == 'llvm_sa':
+            # print("compiling hypothesis", flush=True)
             func_run_stats, func_run_out = eval_function_output(ref_path, hyp_paths,
                                                                 params.id_paths[(
                                                                     lang1, lang2, data_set)],
                                                                 lang2,
                                                                 params.eval_scripts_folders[(
-                                                                    lang1, lang2, data_set)],
-                                                                EVAL_SCRIPT_FOLDER[data_set],
-                                                                params.retry_mistmatching_types)
+                                                                    lang1, lang2, data_set)])
             out_paths = []
             success_for_beam_number = [0 for i in range(len(hypothesis[0]))]
             for beam_number in range(len(hypothesis[0])):
@@ -550,6 +564,7 @@ class EncDecEvaluator(Evaluator):
                 lang2, lang1, data_set)], hyp_paths, params.id_paths[(lang1, lang2, data_set)], ref_path, out_paths)
             logger.info("Computation res %s %s %s : %s" %
                         (data_set, lang1, lang2, json.dumps(func_run_stats)))
+            logger.info("Errors in get_llvm_tokens_and_types: %d" % (num_errors))
             scores['%s_%s-%s_mt_comp_acc' % (data_set, lang1, lang2)] = func_run_stats['success'] / (
                 func_run_stats['total_evaluated'] if func_run_stats['total_evaluated'] else 1)
             for beam_number, success_for_beam in enumerate(success_for_beam_number):
@@ -558,15 +573,18 @@ class EncDecEvaluator(Evaluator):
             for out_path in out_paths:
                 Path(out_path).unlink()
 
-        # compute BLEU score
+        #compute BLEU score
         if eval_bleu and data_set in datasets_for_bleu:
             # evaluate BLEU score
-            bleu = eval_moses_bleu(ref_path, hyp_paths[0])
+            #print("compute BLEU", flush=True)
+            src_path = params.ref_paths[(lang2, lang1, data_set)]
+            #bleu = eval_moses_bleu(ref_path, hyp_paths[0])
+            bleu = eval_moses_bleu2(ref_path, hyp_paths[0], src_path)
             logger.info("BLEU %s %s : %f" % (hyp_paths[0], ref_path, bleu))
             scores['%s_%s-%s_mt_bleu' % (data_set, lang1, lang2)] = bleu
-            if eval_computation:
-                for hyp_path in hyp_paths:
-                    Path(hyp_path).unlink()
+            # if eval_computation:
+            #     for hyp_path in hyp_paths:
+            #         Path(hyp_path).unlink()
 
 
 def convert_to_text(batch, lengths, dico, params, generate_several_reps=False):
@@ -619,6 +637,26 @@ def eval_moses_bleu(ref, hyp):
     assert os.path.isfile(BLEU_SCRIPT_PATH)
     command = BLEU_SCRIPT_PATH + ' %s < %s'
     p = subprocess.Popen(command % (ref, hyp),
+                         stdout=subprocess.PIPE, shell=True)
+    result = p.communicate()[0].decode("utf-8")
+    if result.startswith('BLEU'):
+        return float(result[7:result.index(',')])
+    else:
+        logger.warning('Impossible to parse BLEU score! "%s"' % result)
+        return -1
+
+
+def eval_moses_bleu2(ref, hyp, src):
+    """
+    Given a file of hypothesis and reference files,
+    evaluate the BLEU score using Moses scripts.
+    """
+    assert os.path.isfile(hyp)
+    assert os.path.isfile(ref) or os.path.isfile(ref + '0')
+    assert os.path.isfile(src)
+    assert os.path.isfile(BLEU_SCRIPT_PATH2)
+    command = BLEU_SCRIPT_PATH2 + ' -r %s -s %s -t %s'
+    p = subprocess.Popen(command % (ref, src, hyp),
                          stdout=subprocess.PIPE, shell=True)
     result = p.communicate()[0].decode("utf-8")
     if result.startswith('BLEU'):

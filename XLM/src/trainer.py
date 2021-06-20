@@ -163,6 +163,7 @@ class Trainer(object):
 
         # log
         logger.info("Optimizers: %s" % ", ".join(self.optimizers.keys()))
+        
 
     def init_amp(self):
         """

@@ -325,14 +325,13 @@ if __name__ == '__main__':
     # generate parser / parse parameters
     parser = get_parser()
     params = parser.parse_args()
-    print(params)
     # debug mode
     if params.debug:
         params.exp_name = 'debug'
         params.exp_id = 'debug_%08i' % random.randint(0, 100000000)
         params.debug_slurm = True
         params.debug_train = True
-
+    print("type(params)" + str(type(params)))
     # check parameters
     check_data_params(params)
     check_model_params(params)
