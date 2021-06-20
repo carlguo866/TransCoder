@@ -827,12 +827,6 @@ def tokenize_llvm(s, keep_comments=False, detok=False):
                 del tokens[:] 
                 del toktypes[:-1]
                 continue
-            # elif len(toktypes) >=3 and toktypes[-3] == pyllvm.lltok.kw_align: 
-            #     # toktypes = [, align, 4 , something]
-            #     # tokens = [, align, 4]
-            #     del toktypes[-4:-1]
-            #     del tokens[-3:]
-            #     continue
 
             if len(toktypes) >=2 and not detok:
                 if toktypes[-2] == pyllvm.lltok.kw_attributes: 
@@ -864,6 +858,13 @@ def tokenize_llvm(s, keep_comments=False, detok=False):
                     global_strings_index.append(len(tokens)-1)
                 elif toktypes[-2] == pyllvm.lltok.LocalVar: 
                     global_constants_index.append(len(tokens)-1)
+
+            # if len(toktypes) >=3 and toktypes[-3] == pyllvm.lltok.kw_align: 
+            #     # toktypes = [, align, 4 , something]
+            #     # tokens = [, align, 4]
+            #     del toktypes[-4:-1]
+            #     del tokens[-3:]
+            #     continue
 
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
                 tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index)
@@ -910,7 +911,7 @@ def remove_globals(tokens, toktypes, global_strings_index, global_constants_inde
     return tokens, toktypes     
 
 def get_llvm_tokens_and_types(s):
-    # try: 
+    try: 
         tokens = []
         toktypes = [] 
         assert isinstance(s, str)
@@ -926,17 +927,21 @@ def get_llvm_tokens_and_types(s):
             else: 
                 toktype, tok = lex.getTok()
             #tok = strip_llvm_comment(tok.strip())
+
             tok = tok.strip()
-            toktypes.append(toktype)
             if(tok != ''): 
                 tokens.append(tok)
 
-            if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
+            if toktype == pyllvm.lltok.Eof:
                 return tokens, toktypes
-    # except KeyboardInterrupt:
-    #     raise
-    # except:
-    #     return [], [] 
+            elif toktype == pyllvm.lltok.Error: 
+                return [], []
+            toktypes.append(toktype)
+    except KeyboardInterrupt:
+        raise
+    except:
+        print("a problem in get_llvm_tokens_and_types", flush=True)
+        return [], [] 
 
 def detokenize_llvm(s):
     assert isinstance(s, str) or isinstance(s, list)
@@ -949,19 +954,17 @@ def detokenize_llvm(s):
     for i in range(len(tokens)):
         if toktypes[i] == pyllvm.lltok.kw_declare or toktypes[i] == pyllvm.lltok.kw_define:
             new_tokens.append("NEW_LINE" + str(tokens[i]))
-        # elif ((toktypes[i] == pyllvm.lltok.GlobalVar or toktypes[i] == pyllvm.lltok.LocalVar or toktypes[i] == pyllvm.lltok.LocalVarID ) 
-        #                 and toktypes[i+1] == pyllvm.lltok.equal): 
-        #     new_tokens.append("NEW_LINE"+ str(tokens[i])) 
-        elif toktypes[i-1]==pyllvm.lltok.kw_align: 
-            new_tokens.append(str(tokens[i])+ "NEW_LINE")
+        elif i<len(tokens)-2 and ((toktypes[i] == pyllvm.lltok.GlobalVar or toktypes[i] == pyllvm.lltok.LocalVar or toktypes[i] == pyllvm.lltok.LocalVarID ) 
+                        and toktypes[i+1] == pyllvm.lltok.equal): 
+            new_tokens.append("NEW_LINE"+ str(tokens[i]))
+        # elif toktypes[i-1]==pyllvm.lltok.kw_align: 
+        #     new_tokens.append(str(tokens[i])+ "NEW_LINE")
         elif toktypes[i] == pyllvm.lltok.LabelID: 
             new_tokens.append("NEW_LINE"+ str(tokens[i])+ "NEW_LINE") 
-        elif toktypes[i] in strings() or toktypes[i] == pyllvm.lltok.GlobalVar or toktypes[i] == pyllvm.lltok.LocalVar: 
-            new_tokens.append(tokens[i].replace(" SPACETOKEN ", " "))
         else:
             new_tokens.append(tokens[i])
     lines = re.split('NEW_LINE', ' '.join(new_tokens))
-    untok_s = "\n".join(lines)
+    untok_s = "\n".join(lines).replace(" SPACETOKEN ", " ")
     # untok_s = indent_lines(lines)
     return untok_s
 
@@ -1061,7 +1064,8 @@ def extract_arguments_llvm(f):
                 modifiers.append('')    
         return argtypes, modifiers
     except: 
-        print("arguments" + str(arguments))
+        print("no arg after define (", flush=True)
+        # print("arguments" + str(arguments))
         return [], []
 
 def get_first_token_before_first_parenthesis(s):

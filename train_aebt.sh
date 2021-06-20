@@ -18,7 +18,7 @@ python XLM/train.py \
 --sinusoidal_embeddings false \
 --mlm_steps '' \
 --word_shuffle 3 \
---tokens_per_batch 2000 \
+--tokens_per_batch 3000 \
 --has_sentences_ids true \
 --attention_dropout 0 \
 --split_data false \
@@ -28,8 +28,8 @@ python XLM/train.py \
 --lambda_bt 1 \
 --generate_hypothesis true \
 --lambda_mt 1 \
---epoch_size 20 \
---data_path '/home/carl/TransCoder/data/data_aebt/cpp-llvm-.XLM-syml' \
+--epoch_size 20000  \
+--data_path '/home/carl/TransCoder/data/proper_eval2/cpp-llvm-.XLM-syml' \
 --gelu_activation false \
 --split_data_accross_gpu global \
 --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0001,weight_decay=0.01' \
@@ -42,7 +42,7 @@ python XLM/train.py \
 --batch_size 32 \
 --context_size 0 \
 --word_dropout '0.1'  \
---reload_model '/home/carl/TransCoder/output/bt_sa/1/periodic-149.pth,/home/carl/TransCoder/output/bt_sa/1/periodic-149.pth' \
+--reload_model '/home/carl/TransCoder/output/bt_sa/dkxpgexrn3/periodic-8.pth,/home/carl/TransCoder/output/bt_sa/dkxpgexrn3/periodic-8.pth' \
 --min_count 0 \
 --eval_bleu_test_only false \
 --group_by_size true \
