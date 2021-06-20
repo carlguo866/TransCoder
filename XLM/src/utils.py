@@ -81,7 +81,8 @@ def eval_state(proc, proc_name):
                            stderr=subprocess.PIPE)
             return 'timeout', None
         stderr = stderr.decode('utf8', errors='replace')
-        if result =='' and stderr.find("error:") == -1:
+        if stderr.find("error:") == -1:
+            #print("hell yes one func works: " + proc_name, flush=True)
             return 'success', None
         else:
             return 'failure', stderr
@@ -213,72 +214,79 @@ def convert_filled_arguments(script_model, f, lang, f_name=None):
     return '\n'.join(list(set(header))) + script_model.replace(TOFILL[lang], '\n'.join([f, '\n'] + new_function_lines))
 
 def add_declarations_and_definitions(s): 
-    llvm_toks_and_types = getattr(code_tokenizer, f"get_llvm_tokens_and_types")
-    extract_args= getattr(code_tokenizer, f"extract_arguments_llvm")
-    toks, toktypes = llvm_toks_and_types(s)
-    defs = dict()
-    s = s.replace("\n", "")
-    for i in range(len(toks)): 
-        if not toks[i] in defs.keys(): 
-            if(toktypes[i] == pyllvm.lltok.GlobalVar): 
-                if(toks[i][:6] == "@\".str"): 
-                    # counts of "~"
-                    counts = toks[i].count("~")
-                    str_value = "\"" + toks[i].replace("~","\\").split(":")[1]
-                    str_length = len(str_value) - 3*counts - 1
-                    expression = f"{toks[i]} = private unnamed_addr constant [{str_length} x i8] c{str_value} "
-                    defs[toks[i]] = expression
-                    s = expression + s
-                elif i-2 >= 0 and toktypes[i-1] == pyllvm.lltok.star:
-                    expression = ''
-                    if (toktypes[i-2] == pyllvm.lltok.rbrace or toktypes[i-2] == pyllvm.lltok.rsquare): 
-                        arg = ''
+    try: 
+        llvm_toks_and_types = getattr(code_tokenizer, f"get_llvm_tokens_and_types")
+        extract_args= getattr(code_tokenizer, f"extract_arguments_llvm")
+        toks, toktypes = llvm_toks_and_types(s)
+        if( toks == [] or toktypes == []): 
+            #print("hi there is an error in get_llvm_tokens_and_types")
+            return 'error ' + s
+        assert len(toks) == len(toktypes), "len(toks):" + str(len(toks)) +"; len(toktypes)" + str(len(toktypes))
+        defs = dict()
+        s = s.replace("\n", "")
+        for i in range(len(toks)): 
+            if not toks[i] in defs.keys(): 
+                if(toktypes[i] == pyllvm.lltok.GlobalVar): 
+                    if(toks[i][:6] == "@\".str"): 
+                        # counts of "~"
+                        counts = toks[i].count("~")
+                        str_value = "\"" + toks[i].replace("~","\\").split(":")[1]
+                        str_length = len(str_value) - 2*counts - 2
+                        expression = f"{toks[i]} = private unnamed_addr constant [{str_length} x i8] c{str_value} "
+                        defs[toks[i]] = expression
+                        s = expression + s
+                    elif i-2 >= 0 and toktypes[i-1] == pyllvm.lltok.star:
+                        expression = ''
+                        if (toktypes[i-2] == pyllvm.lltok.rbrace or toktypes[i-2] == pyllvm.lltok.rsquare): 
+                            arg = ''
+                            par = 0 
+                            for index in range(i-2, 0, -1):
+                                tok = toks[index]
+                                if tok == ']' or tok == '}':
+                                    par += 1
+                                elif tok == '[' or tok == '{':
+                                    par -= 1
+                                arg = tok + ' ' + arg
+                                if par == 0:
+                                    break
+                            expression = toks[i] + " = internal global " + arg.strip() + " zeroinitializer "
+                        elif toktypes[i-2] == pyllvm.lltok.Type: 
+                            expression = toks[i] + " = internal global " + toks[i-2] + " zeroinitializer "
+                        defs[toks[i]] = expression
+                        s = expression + s
+            if (toktypes[i] == pyllvm.lltok.kw_call): 
+                index = i 
+                while index < len(toktypes) -1 and toktypes[index] != pyllvm.lltok.GlobalVar: 
+                    index+=1 
+                if not toks[index] in defs.keys(): 
+                    func_name = toks[index] 
+                    func=" ".join(toks[index:])
+                    if func.find('(') != -1 and toktypes[index-1] == pyllvm.lltok.Type:
+                        args, ___ = extract_args(func)
+                        if args == []: 
+                            continue 
+                        expression = f" declare {toks[index-1]} {func_name} ( {' , '.join(args)} ) "
+                        defs[func_name] = expression
+                        s += expression
+                    elif toktypes[index-1] == pyllvm.lltok.rparen:
                         par = 0 
-                        for index in range(i-2, 0, -1):
-                            tok = toks[index]
-                            if tok == ']' or tok == '}':
-                                par += 1
-                            elif tok == '[' or tok == '{':
-                                par -= 1
-                            arg = tok + ' ' + arg
-                            if par == 0:
-                                break
-                        expression = toks[i] + " = internal global " + arg.strip() + " zeroinitializer "
-                    elif toktypes[i-2] == pyllvm.lltok.Type: 
-                        expression = toks[i] + " = internal global " + toks[i-2] + " zeroinitializer "
-                    defs[toks[i]] = expression
-                    s = expression + s
-        if (toktypes[i] == pyllvm.lltok.kw_call): 
-            index = i 
-            while index < len(toktypes) and toktypes[index] != pyllvm.lltok.GlobalVar: 
-                index+=1 
-            if index < len(toktypes) and not toks[index] in defs.keys(): 
-                func_name = toks[index] 
-                func=" ".join(toks[index:])
-                if func.find('(') != -1 and toktypes[index-1] == pyllvm.lltok.Type:
-                    args, ___ = extract_args(func)
-                    if args == []: 
-                        continue 
-                    expression = f" declare {toks[index-1]} {func_name} ( {' , '.join(args)} ) "
-                    defs[func_name] = expression
-                    s += expression
-                elif toktypes[index-1] == pyllvm.lltok.rparen:
-                    par = 0 
-                    args = ''
-                    while toktypes[index-1] != pyllvm.lltok.Type and index >=i: 
-                        args = toks[index-1] + " " + args
-                        index -=1
-                    if args == '': 
-                        continue 
-                    expression = f" declare {toks[index-1]} {func_name} ( {args} ) "
-                    defs[func_name] = expression
-                    s += expression
-    s = re.sub(' +', ' ', s) 
-    return s
+                        args = ''
+                        while toktypes[index-1] != pyllvm.lltok.Type and index >=i: 
+                            args = toks[index-1] + " " + args
+                            index -=1
+                        if args == '': 
+                            continue 
+                        expression = f" declare {toks[index-1]} {func_name} ( {args} ) "
+                        defs[func_name] = expression
+                        s += expression
+        s = re.sub(' +', ' ', s) 
+        return s
+    except: 
+        print("a problem in add_declarations_and_definitions!!! probably a seg fault", flush=True)
+        return s
 
-def submit_functions(functions_list, id, ref, lang, outfolder, script_folder, retry_mismatching_types):
+def submit_functions(functions_list, id, ref, lang, outfolder):
     detokenize = getattr(code_tokenizer, f"detokenize_{lang}")
-    get_name = getattr(code_tokenizer, f"get_function_name_{lang}")
     results_list = []
     i = id.rstrip()
     if lang == 'llvm':
@@ -302,7 +310,7 @@ def submit_functions(functions_list, id, ref, lang, outfolder, script_folder, re
         return [return_script_not_found()], i
 
 
-def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder, script_folder, retry_mismatching_types):
+def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder):
     functions = list(zip(*[read_file_lines(path) for path in hyp_paths]))
     ids = read_file_lines(id_path)
     refs = read_file_lines(ref_path)
@@ -313,8 +321,9 @@ def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder, script_
     jobs = []
     executor = ProcessPoolExecutor()
     for f, i, r in zip(functions, ids, refs):
+        i = i.replace('<unk> ', '@')
         jobs.append(executor.submit(submit_functions, f, i, r, lang,
-                                    outfolder, script_folder, retry_mismatching_types))
+                                    outfolder))
 
     results_stats = {'success': 0, 'failure': 0, 'error': 0,
                      'timeout': 0, 'script_not_found': 0, 'identical_gold': 0}
@@ -331,7 +340,7 @@ def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder, script_
                 results_stats['identical_gold'] += 1
         else:
             results_stats[results_list[0][0]] += 1
-            
+        i = i.replace('@', '<unk> ') 
         results[ids.index(i+'\n')] = []
         for result, stderr in results_list:
             if stderr is not None:
@@ -345,7 +354,6 @@ def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder, script_
     results_stats['total_evaluated'] = len(
         functions) - results_stats['script_not_found']
     results_stats = {k: results_stats[k] for k in sorted(results_stats.keys())}
-    # print("results for computation" + str(results))
     return results_stats, results
 
 

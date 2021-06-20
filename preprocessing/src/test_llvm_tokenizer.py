@@ -3,7 +3,7 @@ import pyllvm
 import re
 
 if __name__ == '__main__':
-    fn = open("/home/carl/TransCoder/detokenized-output.ll", 'r').read()
+    fn = open("/home/carl/TransCoder/input.txt", 'r').read()
     #test tokenizer
     tokenized = tokenize_llvm(fn)
     # # print(tokenized)
@@ -20,12 +20,12 @@ if __name__ == '__main__':
     #          tokens[i] = "@" + tokens[i][2:tokens[i].index(':')]
 
 
-    # # detokenized = detokenize_llvm(fn)
+    detokenized = detokenize_llvm(tokenized)
 
-    # #print(detokenized)
-    # outF = open("detokenized-output.ll", "w")
-    # outF.write(" ".join(tokens))
-    # outF.close()
+    #print(detokenized)
+    outF = open("detokenized-output.ll", "w")
+    outF.write(detokenized)
+    outF.close()
 
     
 
