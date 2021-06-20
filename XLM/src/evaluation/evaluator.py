@@ -19,6 +19,7 @@ from ..utils import to_cuda, restore_segmentation, concat_batches, vizualize_tra
 
 BLEU_SCRIPT_URL = 'https://raw.githubusercontent.com/moses-smt/mosesdecoder/master/scripts/generic/multi-bleu.perl'
 BLEU_SCRIPT_PATH = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'multi-bleu.perl')
+BLEU_SCRIPT_PATH2 = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'mteval-v14.pl')
 if not os.path.isfile(BLEU_SCRIPT_PATH):
     try:
         r = requests.get(BLEU_SCRIPT_URL)
