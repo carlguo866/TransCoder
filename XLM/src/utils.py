@@ -293,10 +293,13 @@ def submit_functions(functions_list, id, ref, lang, outfolder):
         for try_id, f_fill in enumerate(functions_list):
             f = f_fill.rstrip()
             if lang == 'llvm':
-                if f_fill == ref:
+                if f_fill == ref or f == ref:
                     results_list.append(('success', 'identical to gold'))
                     return results_list, i
                 script = detokenize(f)
+                if script == '': 
+                    results_list.append(('error', 'script empty'))
+                    continue
                 script_path = f"{outfolder}/{i}.{EXT[lang]}"
                 open(script_path, 'w', encoding='utf-8').write(script)
                 run_pg = globals()[f'run_{lang}_program']

@@ -578,9 +578,9 @@ class EncDecEvaluator(Evaluator):
         if eval_bleu and data_set in datasets_for_bleu:
             # evaluate BLEU score
             #print("compute BLEU", flush=True)
-            src_path = params.ref_paths[(lang2, lang1, data_set)]
-            #bleu = eval_moses_bleu(ref_path, hyp_paths[0])
-            bleu = eval_moses_bleu2(ref_path, hyp_paths[0], src_path)
+            # src_path = params.ref_paths[(lang2, lang1, data_set)]
+            bleu = eval_moses_bleu(ref_path, hyp_paths[0])
+            # bleu = eval_moses_bleu2(ref_path, hyp_paths[0], src_path)
             logger.info("BLEU %s %s : %f" % (hyp_paths[0], ref_path, bleu))
             scores['%s_%s-%s_mt_bleu' % (data_set, lang1, lang2)] = bleu
             # if eval_computation:
