@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-
+import string
 import argparse
 import logging
 import os
@@ -355,7 +355,6 @@ def extract_functions_python(s):
                         if function is not None:
                             functions_standalone.append(function)
                 except:
-                    print(function)
                     token = next(tokens)
             else:
                 token = next(tokens)
@@ -796,8 +795,8 @@ def remove_java_annotation(function):
 def strip_llvm_comment(s):
     if(s.find('\n') != -1):
         s = s[:s.index('\n')]
-    if(s.find(';') != -1):
-        s = s[:s.index(';')]
+    if(s.find('; ') != -1):
+        s = s[:s.index('; ')]
     return s
         
 def tokenize_llvm(s, keep_comments=False, detok=False):
@@ -809,7 +808,9 @@ def tokenize_llvm(s, keep_comments=False, detok=False):
         lex = pyllvm.lexer(s)
         global_strings_index = [] 
         global_constants_index = [] 
+        local_constants_index = []
         isFirst = True; 
+        num_define = 0
         while True:
             if isFirst:
                 toktype, tok = lex.getFirstTok()
@@ -818,7 +819,6 @@ def tokenize_llvm(s, keep_comments=False, detok=False):
                 toktype, tok = lex.getTok()
             #tok = strip_llvm_comment(tok.strip())
             tok = tok.strip()
-            toktypes.append(toktype)
             if(tok != ''): 
                 tokens.append(tok)
 
@@ -829,51 +829,68 @@ def tokenize_llvm(s, keep_comments=False, detok=False):
                 continue
 
             if len(toktypes) >=2 and not detok:
-                if toktypes[-2] == pyllvm.lltok.kw_attributes: 
-                    del toktypes[-2:]
+                if toktypes[-1] == pyllvm.lltok.kw_attributes: 
+                    del toktypes[-1]
                     del tokens[-1]
-                    tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index)
+                    tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index)
                     return tokens
-          
-                if toktypes[-2] in strings():
+                if toktypes[-1] in strings():
                     try:
                         tokens[-1] = strip_llvm_comment(tokens[-1])
-                        tokens[-1] = process_string_llvm(tokens[-1],LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, False)
+                        tokens[-1] = process_string_llvm(tokens[-1], LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, False)
                     except UnicodeDecodeError:
                         print(tokens[-1])
                 #i dont know why "less" is causing issues "toktype = 10"
-                elif(toktypes[-2] == pyllvm.lltok.less):
+                elif(toktypes[-1] == pyllvm.lltok.less):
                     tokens[-1] = "<"
                 #get rid of comments
-                elif(toktypes[-2] == pyllvm.lltok.rbrace):
+                elif(toktypes[-1] == pyllvm.lltok.rbrace):
                     tokens[-1] = "}"
-                elif (toktypes[-2] == pyllvm.lltok.APSInt):
+                elif (toktypes[-1] == pyllvm.lltok.APSInt):
                     assert re.findall(r"-*\d+",tokens[-1])[0] == str(lex.getAPSIntVal()), re.findall(r"-*\d+",tokens[-1])[0]  + ' ' + str(lex.getAPSIntVal())
                     tokens[-1] = (str(lex.getAPSIntVal()))
-                elif toktypes[-2] == pyllvm.lltok.LabelID:
+                elif toktypes[-1] == pyllvm.lltok.kw_define: 
+                    num_define += 1
+                elif toktypes[-1] == pyllvm.lltok.LabelID:
                     tokens[-1] = re.findall(r"\d+",tokens[-1])[0] + ":"
-                elif toktypes[-2] in uints():
+                    # local_constants_index.append((len(tokens)-1, num_define))
+                elif toktypes[-1] in uints():
                     tokens[-1] = str(tokens[-1][0]) + re.findall(r"\d+",tokens[-1])[0] 
-                elif toktypes[-2] == pyllvm.lltok.GlobalVar and tokens[-1][:5] == '@.str': 
+                    if toktypes[-1] == pyllvm.lltok.AttrGrpID: 
+                        del tokens[-1]
+                        del toktypes[-1]
+                    # elif toktypes[-1] == pyllvm.lltok.LocalVarID: 
+                    #     local_constants_index.append((len(tokens)-1, num_define))
+                elif toktypes[-1] == pyllvm.lltok.GlobalVar and tokens[-1][:5] == '@.str': 
                     global_strings_index.append(len(tokens)-1)
-                elif toktypes[-2] == pyllvm.lltok.LocalVar: 
+                elif toktypes[-1] == pyllvm.lltok.LocalVar: 
                     global_constants_index.append(len(tokens)-1)
+                elif (toktypes[-1] == pyllvm.lltok.kw_internal or toktypes[-1] == pyllvm.lltok.kw_signext or
+                    toktypes[-1] == pyllvm.lltok.kw_zeroext or toktypes[-1] == pyllvm.lltok.kw_dso_local): 
+                    del tokens[-1]
+                    del toktypes[-1]
 
-            # if len(toktypes) >=3 and toktypes[-3] == pyllvm.lltok.kw_align: 
-            #     # toktypes = [, align, 4 , something]
-            #     # tokens = [, align, 4]
-            #     del toktypes[-4:-1]
-            #     del tokens[-3:]
-            #     continue
+            if len(toktypes) >=3 and toktypes[-2] == pyllvm.lltok.kw_align and toktypes[-1] == pyllvm.lltok.APSInt: 
+                if  toktypes[-3] == pyllvm.lltok.comma: 
+                    # toktypes = [, align, 4 , something]
+                    # tokens = [, align, 4]
+                    del toktypes[-3:]
+                    del tokens[-3:] 
+                else: 
+                    del toktypes[-2:]
+                    del tokens[-2:] 
 
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
-                tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index)
+                tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index)
                 return tokens
+
+            toktypes.append(toktype)
     # except KeyboardInterrupt:
     #     raise
     # except:
     #     return []
-def remove_globals(tokens, toktypes, global_strings_index, global_constants_index): 
+
+def remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index): 
     for i in global_strings_index[:]: 
         temp_name = tokens[i]
         if len(toktypes) > i+11 and toktypes[i+11] == pyllvm.lltok.StringConstant: 
@@ -884,30 +901,55 @@ def remove_globals(tokens, toktypes, global_strings_index, global_constants_inde
                     tokens[j] = tokens[i]
                     global_strings_index.remove(j)
             global_strings_index.remove(i)   
+    #will cause constant expression type mismatch; fix later
+    defs = dict()
     for i in global_constants_index[:]: 
         temp_name = tokens[i]
         res_name = ''
-        if toktypes[i+1] == pyllvm.lltok.equal and toktypes[i+2] == pyllvm.lltok.kw_type:  
-            index = i + 3
-            par = 0
-            tok = toktypes[index]
-            while True:
-                if tok == pyllvm.lltok.lbrace or tok == pyllvm.lltok.less or tok == pyllvm.lltok.lsquare: 
-                    par += 1
-                elif tok == pyllvm.lltok.rbrace or tok == pyllvm.lltok.greater or tok == pyllvm.lltok.rsquare:
-                    par -=1
-                res_name += ' ' + tokens[index] 
-                index+=1 
+        if temp_name not in defs.keys(): 
+            if toktypes[i+1] == pyllvm.lltok.equal and toktypes[i+2] == pyllvm.lltok.kw_type:  
+                index = i + 3
+                par = 0
                 tok = toktypes[index]
-                if par == 0:
-                    break
-                
-            res_name = res_name.replace('\"', '\'').strip()
-            for j in global_constants_index[:]: 
-                if tokens[j] == temp_name and i != j: 
-                    tokens[j] = res_name
-                    global_constants_index.remove(j)
-            global_constants_index.remove(i)
+                while True:
+                    if tok == pyllvm.lltok.lbrace or tok == pyllvm.lltok.less or tok == pyllvm.lltok.lsquare: 
+                        par += 1
+                    elif tok == pyllvm.lltok.rbrace or tok == pyllvm.lltok.greater or tok == pyllvm.lltok.rsquare:
+                        par -=1
+                    res_name += ' ' + tokens[index] 
+                    index+=1 
+                    tok = toktypes[index]
+                    if par == 0:
+                        break 
+                res_name = res_name.replace('\"', '\'').strip()
+                for i in res_name.split(" "): 
+                    if i in defs.keys(): 
+                        res_name = res_name.replace(i,defs[i])
+                defs[temp_name] = res_name
+        else: 
+            break 
+    for k, v in defs.items(): 
+        for i in v.split(" "): 
+            if i in defs.keys(): 
+                defs[k] = defs[k].replace(i,defs[i])
+    for i in global_constants_index: 
+        if tokens[i] in defs.keys() and toktypes[i+1] != pyllvm.lltok.equal and toktypes[i+2] != pyllvm.lltok.kw_type: 
+            tokens[i] = defs[tokens[i]]
+            
+    # for i, num_define in local_constants_index[:]: 
+    #     print(len(local_constants_index))
+    #     tok_name = tokens[i]
+    #     if(re.fullmatch('%\d+',tok_name) == None and re.fullmatch('\d+:',tok_name) == None ): 
+    #         continue
+    #     res_name =  (''.join(random.choices(string.ascii_uppercase)) + 
+    #                     ''.join(random.choices(string.ascii_uppercase+string.digits, k=3)))
+    #     tokens[i] = re.sub("\d+",res_name, tok_name) 
+    #     for j, num_define2 in local_constants_index[:]: 
+    #         if (re.findall("\d+", tokens[j]) != [] and re.findall("\d+", tokens[j])[0] == re.findall("\d+", tok_name)[0] 
+    #                 and num_define2 == num_define and i !=j):
+    #             tokens[j] = re.sub("\d+",res_name, tokens[j]) 
+    #             local_constants_index.pop(local_constants_index.index((j,num_define2) ))
+    #     local_constants_index.pop(local_constants_index.index((i,num_define) ))
     return tokens, toktypes     
 
 def get_llvm_tokens_and_types(s):
@@ -931,7 +973,6 @@ def get_llvm_tokens_and_types(s):
             tok = tok.strip()
             if(tok != ''): 
                 tokens.append(tok)
-
             if toktype == pyllvm.lltok.Eof:
                 return tokens, toktypes
             elif toktype == pyllvm.lltok.Error: 
@@ -959,7 +1000,7 @@ def detokenize_llvm(s):
             new_tokens.append("NEW_LINE"+ str(tokens[i]))
         # elif toktypes[i-1]==pyllvm.lltok.kw_align: 
         #     new_tokens.append(str(tokens[i])+ "NEW_LINE")
-        elif toktypes[i] == pyllvm.lltok.LabelID: 
+        elif toktypes[i] == pyllvm.lltok.LabelID or toktypes[i] == pyllvm.lltok.LabelStr: 
             new_tokens.append("NEW_LINE"+ str(tokens[i])+ "NEW_LINE") 
         else:
             new_tokens.append(tokens[i])
@@ -978,10 +1019,8 @@ def extract_functions_llvm(s):
         s = s[s.index("\">")+2:]
         s = s[:s.index("</DOCUMENT>")]
     tokens = s.split(" ")
-    if(tokens == []): print("炸了！")
     i = -1
     functions = []
-    tok = tokens[i] 
     while True:
         if(i+1 < len(tokens)): 
             i+=1
@@ -992,6 +1031,25 @@ def extract_functions_llvm(s):
             par = 1
             firstBrace = True
             function = []
+            while True: 
+                function.append(tok)
+                if tok == '(' and firstBrace: 
+                    firstBrace = False
+                elif tok == '(': 
+                    par+=1
+                elif tok == ')':
+                    par-=1
+                if par == 0:
+                    break
+                if(i+1 < len(tokens)): 
+                    i+=1
+                    tok = tokens[i]
+                else:
+                    break
+            i+=1
+            tok = tokens[i]
+            firstBrace = True
+            par = 1
             while True:
                 function.append(tok)
                 if tok == '{' and firstBrace: 
@@ -1011,9 +1069,8 @@ def extract_functions_llvm(s):
                 function = ' '.join(function)
                 function = function.strip()
                 #do i need this?
-                #if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
+                # if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
                 functions.append(function)
-    # print("func llvm" + " ".join(functions))
     return functions, [] 
 
 def get_function_name_llvm(s):

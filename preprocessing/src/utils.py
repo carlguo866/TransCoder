@@ -4,7 +4,7 @@
 # This source code is licensed under the license found in the
 # LICENSE file in the root directory of this source tree.
 #
-
+import re
 import subprocess
 import typing as tp
 from pathlib import Path
@@ -100,8 +100,9 @@ def extract_functions_file(input_path, language, test_size=None):
         lines = f.readlines()
     extract_auto_code = getattr(
         code_tokenizer, f"extract_functions_{language}")
-    # get_function_name = getattr(
-    #     code_tokenizer, f"get_function_name_{language}")
+    get_function_name = getattr(
+        code_tokenizer, f"get_function_name_{language}")
+    defs = dict()
     with output_path_sa.open('w', encoding='utf-8') as f_sa:
             pool = Pool(cpu_count())
             result_functions = tqdm.tqdm(pool.imap(
@@ -111,10 +112,19 @@ def extract_functions_file(input_path, language, test_size=None):
                 # for i in range(5):
                 #     print("func_standalone[i][5]"+func_standalone[i][5])
                 for func in func_standalone:
-                    # name = get_function_name(func)
-                    # print("nammmmme" + str(name))
-                    f_sa.write(str(func))
-                    f_sa.write('\n')
+                    if language == 'llvm':  
+                        name = get_function_name(func)
+                        if name not in defs.keys(): 
+                            f_sa.write(str(func))
+                            f_sa.write('\n')
+                            if re.fullmatch("@func_\d+", name) == None and re.fullmatch("@main", name) == None: 
+                                defs[name] = str(func)
+                            # else: 
+                            #     # print("name for func func" + name)
+                    else:
+                        f_sa.write(str(func))
+                        f_sa.write('\n')
+                    # print("nammmmme" + str(name))              
                 # for func in func_class:
                 #     f_class.write(func)
                 #     f_class.write('\n')
@@ -151,13 +161,11 @@ def extract_functions_parallel(src_path, tgt_path, src_lang, tgt_lang , test_siz
             with tgt_output_path_sa.open('a+', encoding='utf-8') as tgt_sa:
                 print("printing extracted functions to file " + str(src_output_path_sa) + "and" + str(tgt_output_path_sa))
                 for k, v in src_dict.items(): 
-                    # print("kkkkk" + str(k) )
-                    # print("str(tgt_dict.keys()))" + str(tgt_dict.keys()))
                     if '@'+k in tgt_dict.keys(): 
                         chars = 'abcdefghijklmnopqrstuvwxyz'
-                        name = k + ''.join(random.choice(chars) for _ in range(10)) 
+                        name = k + ''.join(random.choice(chars) for _ in range(5)) 
                         #print("type(name)" + str(type(name)))
-                        print("nameeeee " + name)
+                        # print("nameeeee " + name)
                         #print("type(src_dict[k])" + str(type(src_dict[k])))
                         
                         src_sa.write(name + " | " + src_dict[k])
