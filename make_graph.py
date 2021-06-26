@@ -45,3 +45,12 @@ if __name__ == '__main__':
     plt.title("C to LLVM Translation BLEU Score")
     plt.legend()
     plt.savefig("c_llvm_bleu.png")
+    plt.clf()
+
+    plt.plot(scores['epoch'],scores['valid_cpp_sa-llvm_sa_mt_ppl'], label='validation perplexity')
+    plt.plot(scores['epoch'],scores['test_cpp_sa-llvm_sa_mt_ppl'], label='test perplexity')
+    plt.xlabel("epoch")
+    plt.ylabel('translation perplexity')
+    plt.title("C to LLVM Translation Perplexity")
+    plt.legend()
+    plt.savefig("c_llvm_ppl.png")
