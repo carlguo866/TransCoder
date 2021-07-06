@@ -303,6 +303,7 @@ def main(params):
 
         logger.info("============ End of epoch %i ============" %
                     trainer.epoch)
+        print(f"epoch:{trainer.epoch}", flush=True)
 
         # evaluate perplexity
         scores = evaluator.run_all_evals(trainer)

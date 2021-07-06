@@ -561,8 +561,8 @@ class EncDecEvaluator(Evaluator):
                             success_for_beam_number[beam_number] += 1
                         f.write((result_for_beam) + '\n')
                     f.write('\n')
-            vizualize_translated_files(lang1, lang2, params.ref_paths[(
-                lang2, lang1, data_set)], hyp_paths, params.id_paths[(lang1, lang2, data_set)], ref_path, out_paths)
+            # vizualize_translated_files(lang1, lang2, params.ref_paths[(
+            #     lang2, lang1, data_set)], hyp_paths, params.id_paths[(lang1, lang2, data_set)], ref_path, out_paths)
             logger.info("Computation res %s %s %s : %s" %
                         (data_set, lang1, lang2, json.dumps(func_run_stats)))
             logger.info("Errors in get_llvm_tokens_and_types: %d" % (num_errors))

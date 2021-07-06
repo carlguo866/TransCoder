@@ -799,8 +799,8 @@ def strip_llvm_comment(s):
         s = s[:s.index('; ')]
     return s
         
-def tokenize_llvm(s, keep_comments=False, detok=False):
-    # try: 
+def tokenize_llvm(s, keep_comments=False):
+    # try:
         tokens = []
         toktypes = [] 
         assert isinstance(s, str)
@@ -808,87 +808,89 @@ def tokenize_llvm(s, keep_comments=False, detok=False):
         lex = pyllvm.lexer(s)
         global_strings_index = [] 
         global_constants_index = [] 
-        local_constants_index = []
-        isFirst = True; 
-        num_define = 0
         while True:
-            if isFirst:
-                toktype, tok = lex.getFirstTok()
-                isFirst = False 
-            else: 
-                toktype, tok = lex.getTok()
-            #tok = strip_llvm_comment(tok.strip())
-            tok = tok.strip()
-            if(tok != ''): 
-                tokens.append(tok)
+            
 
             #deleting stuff 
             if len(tokens) >=1 and tokens[-1]=="\"x86_64-unknown-linux-gnu\"": 
                 del tokens[:] 
                 del toktypes[:-1]
                 continue
-
-            if len(toktypes) >=2 and not detok:
-                if toktypes[-1] == pyllvm.lltok.kw_attributes: 
-                    del toktypes[-1]
-                    del tokens[-1]
-                    tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index)
-                    return tokens
-                if toktypes[-1] in strings():
-                    try:
-                        tokens[-1] = strip_llvm_comment(tokens[-1])
-                        tokens[-1] = process_string_llvm(tokens[-1], LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, False)
-                    except UnicodeDecodeError:
-                        print(tokens[-1])
-                #i dont know why "less" is causing issues "toktype = 10"
-                elif(toktypes[-1] == pyllvm.lltok.less):
-                    tokens[-1] = "<"
-                #get rid of comments
-                elif(toktypes[-1] == pyllvm.lltok.rbrace):
-                    tokens[-1] = "}"
-                elif (toktypes[-1] == pyllvm.lltok.APSInt):
-                    assert re.findall(r"-*\d+",tokens[-1])[0] == str(lex.getAPSIntVal()), re.findall(r"-*\d+",tokens[-1])[0]  + ' ' + str(lex.getAPSIntVal())
-                    tokens[-1] = (str(lex.getAPSIntVal()))
-                elif toktypes[-1] == pyllvm.lltok.kw_define: 
-                    num_define += 1
-                elif toktypes[-1] == pyllvm.lltok.LabelID:
-                    tokens[-1] = re.findall(r"\d+",tokens[-1])[0] + ":"
-                    # local_constants_index.append((len(tokens)-1, num_define))
-                elif toktypes[-1] in uints():
-                    tokens[-1] = str(tokens[-1][0]) + re.findall(r"\d+",tokens[-1])[0] 
-                    if toktypes[-1] == pyllvm.lltok.AttrGrpID: 
-                        del tokens[-1]
-                        del toktypes[-1]
-                    # elif toktypes[-1] == pyllvm.lltok.LocalVarID: 
-                    #     local_constants_index.append((len(tokens)-1, num_define))
-                elif toktypes[-1] == pyllvm.lltok.GlobalVar and tokens[-1][:5] == '@.str': 
-                    global_strings_index.append(len(tokens)-1)
-                elif toktypes[-1] == pyllvm.lltok.LocalVar: 
-                    global_constants_index.append(len(tokens)-1)
-                elif (toktypes[-1] == pyllvm.lltok.kw_internal or toktypes[-1] == pyllvm.lltok.kw_signext or
-                    toktypes[-1] == pyllvm.lltok.kw_zeroext or toktypes[-1] == pyllvm.lltok.kw_dso_local): 
-                    del tokens[-1]
-                    del toktypes[-1]
-
-            if len(toktypes) >=3 and toktypes[-2] == pyllvm.lltok.kw_align and toktypes[-1] == pyllvm.lltok.APSInt: 
-                if  toktypes[-3] == pyllvm.lltok.comma: 
-                    # toktypes = [, align, 4 , something]
-                    # tokens = [, align, 4]
-                    del toktypes[-3:]
-                    del tokens[-3:] 
-                else: 
-                    del toktypes[-2:]
-                    del tokens[-2:] 
-
+            if toktypes[-1] == pyllvm.lltok.kw_attributes: 
+                del toktypes[-1]
+                del tokens[-1]
+                tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index)
+                return tokens
+                    
             if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
                 tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index)
                 return tokens
 
-            toktypes.append(toktype)
     # except KeyboardInterrupt:
     #     raise
     # except:
     #     return []
+
+def tokenize_llvm_line(s, global_strings_index,  global_constants_index): 
+    assert isinstance(s, str)
+    lex = pyllvm.lexer(s)
+    isFirst = True; 
+    while True:
+        if isFirst:
+            toktype, tok = lex.getFirstTok()
+            isFirst = False 
+        else: 
+            toktype, tok = lex.getTok()
+        tok = tok.strip()
+        if(tok != ''): 
+            tokens.append(tok)
+        
+        if len(toktypes[-1]) >= 1: 
+            if toktypes[-1] in strings():
+                try:
+                    tokens[-1] = strip_llvm_comment(tokens[-1])
+                    tokens[-1] = process_string_llvm(tokens[-1], LLVM_CHAR2TOKEN, LLVM_TOKEN2CHAR, False)
+                except UnicodeDecodeError:
+                    print(tokens[-1])
+            elif(toktypes[-1] == pyllvm.lltok.less):
+                tokens[-1] = "<"
+            elif(toktypes[-1] == pyllvm.lltok.rbrace):
+                tokens[-1] = "}"
+            elif (toktypes[-1] == pyllvm.lltok.APSInt):
+                assert re.findall(r"-*\d+",tokens[-1])[0] == str(lex.getAPSIntVal()), re.findall(r"-*\d+",tokens[-1])[0]  + ' ' + str(lex.getAPSIntVal())
+                tokens[-1] = (str(lex.getAPSIntVal()))
+            elif toktypes[-1] == pyllvm.lltok.LabelID:
+                tokens[-1] = re.findall(r"\d+",tokens[-1])[0] + ":"
+            elif toktypes[-1] in uints():
+                tokens[-1] = str(tokens[-1][0]) + re.findall(r"\d+",tokens[-1])[0] 
+                if toktypes[-1] == pyllvm.lltok.AttrGrpID: 
+                    del tokens[-1]
+                    del toktypes[-1]
+            elif (toktypes[-1] == pyllvm.lltok.kw_internal): 
+                del tokens[-1]
+                del toktypes[-1]
+            #add proper definition and declaration 
+            elif toktypes[-1] == pyllvm.lltok.GlobalVar and tokens[-1][:5] == '@.str': 
+                global_strings_index.append(len(tokens)-1)
+            elif toktypes[-1] == pyllvm.lltok.LocalVar: 
+                global_constants_index.append(len(tokens)-1)
+                    
+
+        if len(toktypes) >=2 toktypes[-2] == pyllvm.lltok.kw_align and toktypes[-1] == pyllvm.lltok.APSInt: 
+            if len(toktypes) >=3 and toktypes[-3] == pyllvm.lltok.comma: 
+                del toktypes[-3:]
+                del tokens[-3:] 
+            else: 
+                del toktypes[-2:]
+                del tokens[-2:] 
+
+        if toktype == pyllvm.lltok.Eof:
+            return tokens, toktypes
+        if toktype == pyllvm.lltok.Error: 
+            print("shit an error")
+            return tokens, toktypes
+
+        toktypes.append(toktype)
 
 def remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index): 
     for i in global_strings_index[:]: 

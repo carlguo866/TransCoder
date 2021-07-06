@@ -9,7 +9,7 @@ python XLM/train.py \
     --bptt 512 \
     --lambda_clm 1 \
     --ae_steps '' \
-    --fp16 true \
+    --fp16 false \
     --share_inout_emb true \
     --lambda_mlm 1 \
     --sinusoidal_embeddings false \
@@ -18,16 +18,16 @@ python XLM/train.py \
     --attention_dropout 0 \
     --split_data false \
     --length_penalty 1 \
-    --max_epoch 20 \
+    --max_epoch 1000 \
     --stopping_criterion '_valid_mlm_ppl,10' \
     --lambda_bt 1 \
     --dump_path '/mnt/sabrent/carl/TransCoder/output' \
     --lambda_mt 1 \
-    --epoch_size 125000 \
+    --epoch_size 75000 \
     --early_stopping false \
-    --gelu_activation false \
+    --gelu_activation true \
     --n_layers 6 \
-    --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0003,weight_decay=0.01' \
+    --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0001,weight_decay=0.01' \
     --validation_metrics _valid_mlm_ppl \
     --eval_bleu false \
     --dropout '0.1' \
@@ -36,12 +36,12 @@ python XLM/train.py \
     --batch_size 32 \
     --context_size 0 \
     --word_dropout 0 \
-    --reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/32vat5pwry/best-valid_mlm_ppl.pth' \
+    --reload_model '' \
     --min_count 0 \
     --lgs 'cpp-llvm' \
     --sample_alpha 0 \
     --word_pred '0.15' \
-    --amp 2 \
+    --amp 0 \
     --max_batch_size 0 \
     --clip_grad_norm 5 \
     --emb_dim 1024 \
