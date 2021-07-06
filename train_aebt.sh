@@ -12,7 +12,7 @@ python XLM/train.py \
 --bptt 256 \
 --lambda_clm 1 \
 --ae_steps 'cpp_sa,llvm_sa' \
---fp16 true \
+--fp16 false \
 --share_inout_emb true \
 --lambda_mlm 1 \
 --sinusoidal_embeddings false \
@@ -20,7 +20,7 @@ python XLM/train.py \
 --word_shuffle 3 \
 --tokens_per_batch 3500 \
 --has_sentences_ids true \
---attention_dropout 0 \
+--attention_dropout '0.1' \
 --split_data false \
 --length_penalty 1 \
 --max_epoch 200 \
@@ -30,7 +30,7 @@ python XLM/train.py \
 --lambda_mt 1 \
 --epoch_size 20000  \
 --data_path '/home/carl/TransCoder/data/proper_eval3/cpp-llvm-.XLM-syml' \
---gelu_activation false \
+--gelu_activation true \
 --split_data_accross_gpu global \
 --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0001,weight_decay=0.01' \
 --eval_computation true \
@@ -46,10 +46,10 @@ python XLM/train.py \
 --min_count 0 \
 --eval_bleu_test_only false \
 --group_by_size true \
---early_stopping false \
+--early_stopping true \
 --sample_alpha 0 \
 --word_pred '0.15' \
---amp 2 \
+--amp 0 \
 --max_batch_size 128 \
 --clip_grad_norm 5 \
 --emb_dim 1024 \
