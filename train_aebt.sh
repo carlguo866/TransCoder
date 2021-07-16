@@ -18,7 +18,7 @@ python XLM/train.py \
 --sinusoidal_embeddings false \
 --mlm_steps '' \
 --word_shuffle 3 \
---tokens_per_batch 3500 \
+--tokens_per_batch 3000 \
 --has_sentences_ids true \
 --attention_dropout '0.1' \
 --split_data false \
@@ -29,7 +29,7 @@ python XLM/train.py \
 --generate_hypothesis true \
 --lambda_mt 1 \
 --epoch_size 20000  \
---data_path '/home/carl/TransCoder/data/proper_eval3/cpp-llvm-.XLM-syml' \
+--data_path '/home/carl/TransCoder/data/more_preprocessing/cpp-llvm-.XLM-syml' \
 --gelu_activation true \
 --split_data_accross_gpu global \
 --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0001,weight_decay=0.01' \
@@ -42,7 +42,7 @@ python XLM/train.py \
 --batch_size 32 \
 --context_size 0 \
 --word_dropout '0.1'  \
---reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/32vat5pwry/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/32vat5pwry/best-valid_mlm_ppl.pth' \
+--reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/t6lo9iu2eu/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/t6lo9iu2eu/best-valid_mlm_ppl.pth' \
 --min_count 0 \
 --eval_bleu_test_only false \
 --group_by_size true \

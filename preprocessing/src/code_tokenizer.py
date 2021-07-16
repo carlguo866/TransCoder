@@ -798,43 +798,231 @@ def strip_llvm_comment(s):
     if(s.find('; ') != -1):
         s = s[:s.index('; ')]
     return s
-        
-def tokenize_llvm(s, keep_comments=False):
-    # try:
-        tokens = []
-        toktypes = [] 
-        assert isinstance(s, str)
-        s = s.replace(r'\r', '')
-        lex = pyllvm.lexer(s)
-        global_strings_index = [] 
-        global_constants_index = [] 
-        while True:
+
+def get_llvm_type(tokens, i, add_comma=0): 
+    #add_comma: 1 means only types; 2 means with value
+    try: 
+        ty = []
+        word_types = set(['half', 'bfloat', 'float', 'double', 
+                    'fp128', 'x86_fp80', 'ppc_fp128', 'x86_amx', 'x86_mmx'])
+        if tokens[i] in word_types:
+            ty.append(tokens[i])
+            i+=1
+        elif re.fullmatch("i\d+", tokens[i]) !=None and (int(tokens[i][1:])==1 or int(tokens[i][1:]) %8 == 0): 
+            ty.append(tokens[i])
+            i+=1
+        elif tokens[i][0] == '%' and re.fullmatch("%\d+", tokens[i]) == None: 
+            ty.append(tokens[i])
+            i+=1
+        elif tokens[i][0] == '@': 
+            ty.append(tokens[i])
+            i+=1
+        elif tokens[i] == '[' or tokens[i] == '{': 
+            par = 0
+            pars = dict()
+            while i < len(tokens): 
+                if tokens[i] == '[' or tokens[i] == '{': 
+                    if len(ty) >= 1 and ty[-1] not in set(['[','{','x','(',',', 'to']): 
+                        if add_comma == 1: 
+                            ty.append(',')
+                        elif add_comma == 2 and pars[par] %2 == 0: 
+                            ty.append(',')
+                    if par != 0: pars[par] +=1
+                    par+=1 
+                    pars[par] = 0
+                elif tokens[i] == ']' or tokens[i] == '}': 
+                    par-=1
+                toktype = get_one_llvm_toktype(tokens[i])
+                if par != 0 and (tokens[i] in set(['c','zeroinitializer','undef,null']) or tokens[i][0] =='@'): 
+                    pars[par] +=1
+                if add_comma > 0 and par != 0 and toktype == pyllvm.lltok.Type and ty[-1] not in set(['[','{','x','(','to', ',']): 
+                    ty.append(',')
+                ty.append(tokens[i])
+
+                if add_comma ==2 and tokens[i] == 'getelementptr': 
+                    i+=1
+                    if tokens[i] == 'inbounds': i+=1 ; ty.append("inbounds")
+                    if tokens[i] == '(': i+=1 ; ty.append("(")
+                    ty2, i = get_llvm_type(tokens, i, add_comma=1)
+                    ty.extend(ty2)
+                    ty2 = [','] + ty2 + ['*']
+                    ty.extend(ty2)
+                    i-=1
+
+                i+=1
+                if par==0: 
+                    # one token after ] or }s
+                    break
+
+        while i < len(tokens) and tokens[i] == '*':
+            ty.append(tokens[i])
+            i+=1
+
+        return ty, i 
+    except:
+        print("an error " + str(tokens) + "\n" + str(ty) )
+        return ty, i
+            
             
 
-            #deleting stuff 
-            if len(tokens) >=1 and tokens[-1]=="\"x86_64-unknown-linux-gnu\"": 
-                del tokens[:] 
-                del toktypes[:-1]
-                continue
-            if toktypes[-1] == pyllvm.lltok.kw_attributes: 
-                del toktypes[-1]
-                del tokens[-1]
-                tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index)
-                return tokens
-                    
-            if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
-                tokens, toktypes = remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index)
-                return tokens
+def tokenize_instruction_printer(tokens, toktypes):
+
+    if len(tokens)>0 and tokens[0] == 'define': 
+        tokens, toktypes = infix_to_prefix(tokens[:-1], toktypes[:-1])
+        tokens.append('{')
+        toktypes.append(pyllvm.lltok.lbrace)
+        return tokens, toktypes
+    if len(tokens) == 1 and tokens[0] == '}':
+        #no infix to prefix
+        return tokens, toktypes
+
+    i = 0 
+    par = 0
+    while i < len(tokens): 
+        if tokens[i] in set(['[', '(', '{']): par +=1 
+        elif tokens[i] in set([']', ')', '}']): par -=1
+
+        
+        if tokens[i] == 'load': 
+            i+=1
+            if tokens[i] == 'volatile': i+=1
+            __, i = get_llvm_type(tokens, i) 
+            assert tokens[i] == ',', f"no comma after type {tokens[i]} in {str(tokens)}"
+            ty, j = get_llvm_type(tokens, i+1) 
+            del tokens[i:j]
+            del toktypes[i:j] 
+            break
+        if tokens[i] == 'getelementptr':
+            i+=1
+            if tokens[i] == 'inbounds': i+=1
+            if tokens[i] == '(': 
+                i+=1 
+                par+=1 
+            __, i = get_llvm_type(tokens, i) 
+            assert tokens[i] == ',', f"no comma after type {tokens[i]} in {str(tokens)}"
+            ty, j = get_llvm_type(tokens, i+1) 
+            del tokens[i:j]
+            del toktypes[i:j] 
+            i-=1
+            
+        if tokens[i] == ',' and par == 0 and tokens[0] == 'store': 
+            ty, j = get_llvm_type(tokens, i+1)
+            del tokens[i:j]
+            del toktypes[i:j]
+            break
+        i+=1
+    
+    tokens, toktypes = infix_to_prefix(tokens, toktypes)
+    return tokens, toktypes
+                
+def detokenize_instruction_printer(tokens):
+    try: 
+        i = 0 
+        while i < len(tokens): 
+            ty, _ = get_llvm_type(tokens, i)
+            if ty != [] and len(ty) >1: 
+                ty, j  = get_llvm_type(tokens, i, add_comma=1)
+                tokens[i:j] = ty 
+                i += len(ty)-1
+            if tokens[i] == 'load': 
+                i+=1
+                if tokens[i] == 'volatile': i+=1
+                ty, j = get_llvm_type(tokens, i)
+                tokens[i:j] = ty 
+                ty = [','] + ty + ['*'] + [tokens.pop()]
+                tokens.extend(ty)
+                i += len(ty) -1
+            elif tokens[i] == 'store': 
+                i+=1
+                if tokens[i] == 'volatile': i+=1
+                ty, j = get_llvm_type(tokens, i)
+                tokens[i:j] = ty
+                ty = [','] + ty + ['*'] + [tokens.pop()]
+                tokens.extend(ty)
+                i += len(ty) -1
+            elif tokens[i] == 'getelementptr': 
+                i+=1
+                if tokens[i] == 'inbounds': i+=1
+                if tokens[i] == '(': i+=1 
+                ty, j = get_llvm_type(tokens, i, add_comma=1)
+                tokens[i:j] = ty 
+                i += len(ty) 
+                ty = [','] + ty + ['*']
+                tokens[i:i] = ty
+                i-=1 
+            elif tokens[i] == 'constant' or tokens[i] == 'global': 
+                i+=1 
+                ty, j  = get_llvm_type(tokens, i, add_comma=1)
+                tokens[i:j] = ty 
+                i += len(ty)
+                ty, j  = get_llvm_type(tokens, i, add_comma=2)
+                tokens[i:j] = ty
+                i += len(ty) - 1
+        # elif tokens[i] == 'bitcast': 
+        #     i+=1 
+        #     if tokens[i] == '(': i+=1 
+        #     ty, j  = get_llvm_type(tokens, i, add_comma=1)
+        #     tokens[i:j] = ty 
+        #     i += len(ty)
+        #     ty, j  = get_llvm_type(tokens, i, add_comma=1)
+        #     tokens[i:j] = ty 
+        #     i += len(ty)
+        #     assert tokens[i] == 'to', f"bitcast but no to in {tokens}"
+        #     ty, j  = get_llvm_type(tokens, i, add_comma=1)
+        #     tokens[i:j] = ty 
+        #     i += len(ty)-1
+            i+=1
+        return tokens
+    except: 
+        print("a problem in detokenize_instruction_printer")
+        return tokens
+    
+def tokenize_llvm(s, keep_comments=False):
+    # try:
+        assert isinstance(s, str)
+        s = s.replace(r'\r', '')
+        global_strings_index = [] 
+        global_constants_index = [] 
+        local_constants_index = []
+
+        #delete top and bottom irrelevant stuff
+        if s.find('attributes') != -1: 
+            s = s[:s.index('attributes')]
+        if s.find("\"x86_64-unknown-linux-gnu\"") != -1: 
+            s = s[s.index("\"x86_64-unknown-linux-gnu\"")+len("\"x86_64-unknown-linux-gnu\"\n\n"):]
+        arr = s.split('\n')
+        tokens = [] 
+        toktypes = [] 
+        total_len = 0 
+        for line in arr: 
+            toks_line, toktypes_line = tokenize_llvm_line(line)
+            toks_line, toktypes_line = tokenize_instruction_printer(toks_line, toktypes_line)
+            tokens.extend(toks_line)
+            toktypes.extend(toktypes_line)
+            if tokens[-1] != "NEW_LINE": 
+                tokens.append("NEW_LINE")
+                toktypes.append("kw_newline")
+            
+        
+        assert len(tokens) == len(toktypes), f"len(tokens) != len(toktypes) {len(tokens)} and {len(toktypes)} "
+        # for i in global_strings_index: 
+        #     assert toktypes[i] == pyllvm.lltok.GlobalVar or toktypes[i] == pyllvm.lltok.LocalVar, f"{i} does not match string global; toktype is {toktypes[i]}"
+        # for i in global_constants_index: 
+        #     assert toktypes[i] == pyllvm.lltok.GlobalVar or toktypes[i] == pyllvm.lltok.LocalVar, f"{i} does not match constant; toktype is {toktypes[i]}"
+        tokens, toktypes = remove_globals(tokens, toktypes)
+        return tokens
 
     # except KeyboardInterrupt:
     #     raise
     # except:
     #     return []
 
-def tokenize_llvm_line(s, global_strings_index,  global_constants_index): 
+def tokenize_llvm_line(s): 
     assert isinstance(s, str)
     lex = pyllvm.lexer(s)
     isFirst = True; 
+    tokens = [] 
+    toktypes = []
     while True:
         if isFirst:
             toktype, tok = lex.getFirstTok()
@@ -845,7 +1033,7 @@ def tokenize_llvm_line(s, global_strings_index,  global_constants_index):
         if(tok != ''): 
             tokens.append(tok)
         
-        if len(toktypes[-1]) >= 1: 
+        if len(toktypes) >= 1: 
             if toktypes[-1] in strings():
                 try:
                     tokens[-1] = strip_llvm_comment(tokens[-1])
@@ -856,6 +1044,14 @@ def tokenize_llvm_line(s, global_strings_index,  global_constants_index):
                 tokens[-1] = "<"
             elif(toktypes[-1] == pyllvm.lltok.rbrace):
                 tokens[-1] = "}"
+            #remove packed struct
+            elif (len(toktypes)>=2 and toktypes[-1] == pyllvm.lltok.greater 
+                and toktypes[-2] == pyllvm.lltok.rbrace):
+                del tokens[-1]; del toktypes[-1]
+            elif (len(toktypes)>=2 and toktypes[-1] == pyllvm.lltok.lbrace 
+                and toktypes[-2] == pyllvm.lltok.less):
+                del tokens[-2]; del toktypes[-2]   
+            #clean ; comments
             elif (toktypes[-1] == pyllvm.lltok.APSInt):
                 assert re.findall(r"-*\d+",tokens[-1])[0] == str(lex.getAPSIntVal()), re.findall(r"-*\d+",tokens[-1])[0]  + ' ' + str(lex.getAPSIntVal())
                 tokens[-1] = (str(lex.getAPSIntVal()))
@@ -866,17 +1062,11 @@ def tokenize_llvm_line(s, global_strings_index,  global_constants_index):
                 if toktypes[-1] == pyllvm.lltok.AttrGrpID: 
                     del tokens[-1]
                     del toktypes[-1]
-            elif (toktypes[-1] == pyllvm.lltok.kw_internal): 
+            elif toktypes[-1] == pyllvm.lltok.kw_internal: 
                 del tokens[-1]
                 del toktypes[-1]
-            #add proper definition and declaration 
-            elif toktypes[-1] == pyllvm.lltok.GlobalVar and tokens[-1][:5] == '@.str': 
-                global_strings_index.append(len(tokens)-1)
-            elif toktypes[-1] == pyllvm.lltok.LocalVar: 
-                global_constants_index.append(len(tokens)-1)
-                    
 
-        if len(toktypes) >=2 toktypes[-2] == pyllvm.lltok.kw_align and toktypes[-1] == pyllvm.lltok.APSInt: 
+        if len(toktypes) >=2 and toktypes[-2] == pyllvm.lltok.kw_align and toktypes[-1] == pyllvm.lltok.APSInt: 
             if len(toktypes) >=3 and toktypes[-3] == pyllvm.lltok.comma: 
                 del toktypes[-3:]
                 del tokens[-3:] 
@@ -889,55 +1079,113 @@ def tokenize_llvm_line(s, global_strings_index,  global_constants_index):
         if toktype == pyllvm.lltok.Error: 
             print("shit an error")
             return tokens, toktypes
-
         toktypes.append(toktype)
 
-def remove_globals(tokens, toktypes, global_strings_index, global_constants_index, local_constants_index): 
+def infix_to_prefix(tokens, toktypes): 
+    assert isinstance(tokens, str) or isinstance(tokens, list)
+    if isinstance(tokens, str): 
+        tokens = tokens.split(' ')
+    prefix = [] 
+    prefix_types = [] 
+
+    par = 0
+    pars = [0] * 100
+    position = dict()
+    for i in range(len(tokens)):
+        tok = tokens[i] 
+        if tok == '[' or tok == '{': 
+            pars[par]+=1
+            par+=1 
+            position[par] = len(prefix)
+            prefix.extend(['placeholder','placeholder'])
+            prefix_types.extend(['kw_arr_identifier','arr_len'] if tok == '[' else ['kw_struct_identifier','struct_len'])
+        elif tok == ']' or tok == '}': 
+            prefix[position[par]] = f"ARR" if tok == ']' else f"STRUCT"
+            prefix[position[par]+1] = str(pars[par])
+            pars[par] = 0
+            par-=1 
+        elif tok == ',': 
+            if par == 0:  
+                prefix.append(tok)
+                prefix_types.append(toktypes[i])
+        elif tok == '*': 
+            pos = 0 
+            if toktypes[i-1] == pyllvm.lltok.Type or toktypes[i-1] == pyllvm.lltok.LocalVar: 
+                pos = -1
+            elif tokens[i-1] == ']' or tokens[i-1] == '}': 
+                pos = position[par+1]
+            elif tokens[i-1] == '*': 
+                index = i-1
+                while tokens[index-1] == '*': 
+                    index-=1
+                if toktypes[index-1] == pyllvm.lltok.Type or toktypes[index-1] == pyllvm.lltok.LocalVar: 
+                    pos = -1
+                elif tokens[index-1] == ']' or tokens[index-1] == '}':
+                    pos = position[par+1]
+            prefix.insert(pos, tok)
+            prefix_types.insert(pos, toktypes[i])
+        else: 
+            prefix.append(tok)
+            prefix_types.append(toktypes[i])
+            pars[par]+=1
+        
+    if par == 0:
+        return prefix, prefix_types
+    else: 
+        print("error in infix to prefix")
+        return tokens, toktypes  
+    
+def remove_globals(tokens, toktypes): 
+    global_strings_index = [] 
+    global_constants_index = []
+    for i in range(len(toktypes)): 
+        #add proper definition and declaration 
+        if toktypes[i] == pyllvm.lltok.GlobalVar and tokens[i][:5] == '@.str':
+            global_strings_index.append(i)
+        elif toktypes[i] == pyllvm.lltok.LocalVar: 
+            global_constants_index.append(i)
+                
     for i in global_strings_index[:]: 
+        # print(str(len(tokens)) + " " + str(i))
         temp_name = tokens[i]
-        if len(toktypes) > i+11 and toktypes[i+11] == pyllvm.lltok.StringConstant: 
-            tokens[i] = f'@\"{temp_name[1:]}:{tokens[i+11][1:]}'
+        if len(toktypes) > i+10 and toktypes[i+10] == pyllvm.lltok.StringConstant: 
+            tokens[i] = f'@\"{temp_name[1:]}:{tokens[i+10][1:]}'
             tokens[i] = tokens[i].replace('\\', '~')
             for j in global_strings_index[:]: 
                 if tokens[j] == temp_name: 
                     tokens[j] = tokens[i]
                     global_strings_index.remove(j)
             global_strings_index.remove(i)   
-    #will cause constant expression type mismatch; fix later
     defs = dict()
     for i in global_constants_index[:]: 
         temp_name = tokens[i]
         res_name = ''
         if temp_name not in defs.keys(): 
-            if toktypes[i+1] == pyllvm.lltok.equal and toktypes[i+2] == pyllvm.lltok.kw_type:  
+            if toktypes[i+1] == pyllvm.lltok.equal and toktypes[i+2] == pyllvm.lltok.kw_type: 
                 index = i + 3
-                par = 0
-                tok = toktypes[index]
-                while True:
-                    if tok == pyllvm.lltok.lbrace or tok == pyllvm.lltok.less or tok == pyllvm.lltok.lsquare: 
-                        par += 1
-                    elif tok == pyllvm.lltok.rbrace or tok == pyllvm.lltok.greater or tok == pyllvm.lltok.rsquare:
-                        par -=1
+                while tokens[index] != 'NEW_LINE' :
                     res_name += ' ' + tokens[index] 
                     index+=1 
-                    tok = toktypes[index]
-                    if par == 0:
-                        break 
                 res_name = res_name.replace('\"', '\'').strip()
                 for i in res_name.split(" "): 
                     if i in defs.keys(): 
                         res_name = res_name.replace(i,defs[i])
                 defs[temp_name] = res_name
-        else: 
-            break 
     for k, v in defs.items(): 
         for i in v.split(" "): 
             if i in defs.keys(): 
                 defs[k] = defs[k].replace(i,defs[i])
+        # print(defs[k])
+        # tokenized, types = get_llvm_tokens_and_types(defs[k])
+        # tokenized, _ = infix_to_prefix(tokenized, types)
+        # defs[k] = " ".join(tokenized) 
     for i in global_constants_index: 
-        if tokens[i] in defs.keys() and toktypes[i+1] != pyllvm.lltok.equal and toktypes[i+2] != pyllvm.lltok.kw_type: 
-            tokens[i] = defs[tokens[i]]
-            
+        if tokens[i] in defs.keys(): 
+            if i+1 >= len(toktypes) or i+2 >= len(toktypes): 
+                tokens[i] = defs[tokens[i]]
+            elif (toktypes[i+1] != pyllvm.lltok.equal and toktypes[i+2] != pyllvm.lltok.kw_type): 
+                tokens[i] = defs[tokens[i]]
+        
     # for i, num_define in local_constants_index[:]: 
     #     print(len(local_constants_index))
     #     tok_name = tokens[i]
@@ -955,14 +1203,12 @@ def remove_globals(tokens, toktypes, global_strings_index, global_constants_inde
     return tokens, toktypes     
 
 def get_llvm_tokens_and_types(s):
-    try: 
+    # try: 
         tokens = []
         toktypes = [] 
         assert isinstance(s, str)
         s = s.replace(r'\r', '')
         lex = pyllvm.lexer(s)
-        global_strings_index = [] 
-        global_constants_index = [] 
         isFirst = True; 
         while True:
             if isFirst:
@@ -975,39 +1221,115 @@ def get_llvm_tokens_and_types(s):
             tok = tok.strip()
             if(tok != ''): 
                 tokens.append(tok)
-            if toktype == pyllvm.lltok.Eof:
+            if len(tokens) > 0 and (tokens[-1] == '<' or tokens[-1] == '>'): 
+                del tokens[-1]
+                del toktypes[-1]
+            if toktype == pyllvm.lltok.Eof or toktype == pyllvm.lltok.Error:
                 return tokens, toktypes
-            elif toktype == pyllvm.lltok.Error: 
-                return [], []
             toktypes.append(toktype)
-    except KeyboardInterrupt:
-        raise
-    except:
-        print("a problem in get_llvm_tokens_and_types", flush=True)
-        return [], [] 
+    # except KeyboardInterrupt:
+    #     raise
+    # except:
+    #     print("a problem in get_llvm_tokens_and_types", flush=True)
+    #     return [], [] 
 
+def add_tok(tok, tokens, par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma):
+    if tok == "ARR" or tok == "STRUCT": 
+        if par != 0: 
+            # pars[par] +=1
+            items_counts[par]-=1
+            # if add_comma and tokens[-1] not in set(['[','{','x','(']): 
+            #     tokens.append(',')
+        tokens.append(('[' if tok=="ARR" else '{') )
+        par+=1 
+        pars[par] = 0
+        end_par[par] = ']' if tok=="ARR" else '}'
+
+        if num_of_star > 0: 
+            end_par[par] += ' * ' * num_of_star
+            num_of_star = 0 
+        is_type_len = True
+        items_counts[par] = -1
+    elif is_type_len: 
+        items_counts[par] = int(tok)
+        is_type_len = False
+    elif tok == '*': 
+        num_of_star += 1
+    else:
+        # if tok == 'constant' or tok == 'global': 
+        #     add_comma = False
+        # toktype = get_one_llvm_toktype(tok)
+        # if add_comma and par != 0 and toktype == pyllvm.lltok.Type and tokens[-1] not in set(['[','{','x','(','to']): 
+        #     tokens.append(',')
+        tokens.append(tok)
+        if num_of_star > 0: 
+            tokens.extend(['*'] * num_of_star)
+            num_of_star = 0 
+        if tok != ',' and par != 0: 
+            items_counts[par] -=1 
+
+    while items_counts[par]== 0 and par > 0: 
+        tokens.extend(end_par[par].strip().replace("  ", " ").split(" "))
+        pars[par] = 0 
+        par-=1
+        
+        
+    return par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma
+
+
+
+def get_one_llvm_toktype(s): 
+    assert isinstance(s, str)
+    lex = pyllvm.lexer(s)
+    toktype = lex.getTokType() 
+    return toktype 
+    
 def detokenize_llvm(s):
-    assert isinstance(s, str) or isinstance(s, list)
-    if isinstance(s, list):
+    assert isinstance(s, list) or isinstance(s, str) 
+    if isinstance(s, list): 
         s = ' '.join(s)
-    # the ▁ character created bugs in the cpp tokenizer
-    s = s.replace('ENDCOM', '\n').replace('▁', 'SPACETOKEN')
-    tokens, toktypes = get_llvm_tokens_and_types(s)
-    new_tokens = []
-    for i in range(len(tokens)):
-        if toktypes[i] == pyllvm.lltok.kw_declare or toktypes[i] == pyllvm.lltok.kw_define:
-            new_tokens.append("NEW_LINE" + str(tokens[i]))
-        elif i<len(tokens)-2 and ((toktypes[i] == pyllvm.lltok.GlobalVar or toktypes[i] == pyllvm.lltok.LocalVar or toktypes[i] == pyllvm.lltok.LocalVarID ) 
-                        and toktypes[i+1] == pyllvm.lltok.equal): 
-            new_tokens.append("NEW_LINE"+ str(tokens[i]))
-        # elif toktypes[i-1]==pyllvm.lltok.kw_align: 
-        #     new_tokens.append(str(tokens[i])+ "NEW_LINE")
-        elif toktypes[i] == pyllvm.lltok.LabelID or toktypes[i] == pyllvm.lltok.LabelStr: 
-            new_tokens.append("NEW_LINE"+ str(tokens[i])+ "NEW_LINE") 
-        else:
-            new_tokens.append(tokens[i])
-    lines = re.split('NEW_LINE', ' '.join(new_tokens))
-    untok_s = "\n".join(lines).replace(" SPACETOKEN ", " ")
+    s = s.replace(" ▁ ", " ")
+    tokens = []
+    
+    for line in re.split('NEW_LINE', s): 
+        tok = ''
+        i = 0
+        par = 0 
+        items_counts = [0] * 100000
+        end_par = dict()  
+        is_type_len = False
+        add_comma = True
+        num_of_star = 0
+        pars = dict()
+        toks_line = []
+        while i < len(line): 
+            if line[i]  == ' ': 
+                if tok != '': par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma = \
+                        add_tok(tok, toks_line, par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma)
+                tok = ''
+            elif line[i] == '\"': 
+                tok += line[i] 
+                i+=1
+                while line[i] != '\"': 
+                    tok += line[i] 
+                    i+=1
+                tok += line[i] 
+                i+=1
+                par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma = \
+                    add_tok(tok, toks_line, par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma)
+                tok = ''
+            else: 
+                tok += line[i]
+            i+=1
+        
+        toks_line = detokenize_instruction_printer(toks_line)
+        tokens.extend(toks_line)
+        tokens.append("NEW_LINE")
+    for tok in tokens: 
+        if isinstance(tok, list): 
+            print( tok)
+    lines = re.split('NEW_LINE', ' '.join(tokens))
+    untok_s = "\n".join(lines)
     # untok_s = indent_lines(lines)
     return untok_s
 
