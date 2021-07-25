@@ -30,13 +30,13 @@ python XLM/train.py \
     --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0001,weight_decay=0.01' \
     --validation_metrics _valid_mlm_ppl \
     --eval_bleu false \
-    --dropout '0.1' \
+    --dropout 0 \
     --mt_steps '' \
     --reload_emb '' \
     --batch_size 32 \
     --context_size 0 \
     --word_dropout 0 \
-    --reload_model '' \
+    --reload_model '/mnt/sabrent/carl/TransCoder/output/mlm_cpp_llvm/oevt4m4psu/best-valid_mlm_ppl.pth' \
     --min_count 0 \
     --lgs 'cpp-llvm' \
     --sample_alpha 0 \

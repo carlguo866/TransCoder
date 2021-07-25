@@ -526,12 +526,9 @@ class EncDecEvaluator(Evaluator):
                 with open(hyp_path, 'w', encoding='utf-8') as f:
                     for hyp in hypothesis: 
                         hyp = hyp[beam_number]
-                        if lang2 == 'llvm_sa':
-                            #print("hyp: "+ hyp.replace('\n',''), flush=True)
-                            hyp = add_declarations_and_definitions(hyp)
-                            if(hyp[:6]=='error '): 
-                                num_errors+=1
-                                hyp = hyp[6:]
+                        # if lang2 == 'llvm_sa':
+                        #     #print("hyp: "+ hyp.replace('\n',''), flush=True)
+                        #     hyp = add_declarations_and_definitions(hyp)
                         #print("hyp" + str(hyp), flush=True)
                         f.write(hyp + '\n')
                 restore_segmentation(hyp_path)

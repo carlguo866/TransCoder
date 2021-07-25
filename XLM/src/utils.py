@@ -218,9 +218,6 @@ def add_declarations_and_definitions(s):
         llvm_toks_and_types = getattr(code_tokenizer, f"get_llvm_tokens_and_types")
         extract_args= getattr(code_tokenizer, f"extract_arguments_llvm")
         toks, toktypes = llvm_toks_and_types(s)
-        if( toks == [] or toktypes == []): 
-            #print("hi there is an error in get_llvm_tokens_and_types")
-            return 'error ' + s
         assert len(toks) == len(toktypes), "len(toks):" + str(len(toks)) +"; len(toktypes)" + str(len(toktypes))
         defs = dict()
         s = s.replace("\n", "")
@@ -265,7 +262,10 @@ def add_declarations_and_definitions(s):
                         args, ___ = extract_args(func)
                         if args == []: 
                             continue 
-                        expression = f" declare {toks[index-1]} {func_name} ( {' , '.join(args)} ) "
+                        elif args == ['None']: 
+                             expression = f" declare {toks[index-1]} {func_name} ( ) "
+                        else: 
+                            expression = f" declare {toks[index-1]} {func_name} ( {' , '.join(args)} ) "
                         defs[func_name] = expression
                         s += expression
                     elif toktypes[index-1] == pyllvm.lltok.rparen:
@@ -287,27 +287,28 @@ def add_declarations_and_definitions(s):
 
 def submit_functions(functions_list, id, ref, lang, outfolder):
     detokenize = getattr(code_tokenizer, f"detokenize_{lang}")
+        
     results_list = []
     i = id.rstrip()
     if lang == 'llvm':
         for try_id, f_fill in enumerate(functions_list):
             f = f_fill.rstrip()
-            if lang == 'llvm':
-                if f_fill == ref or f == ref:
-                    results_list.append(('success', 'identical to gold'))
-                    return results_list, i
-                script = detokenize(f)
-                if script == '': 
-                    results_list.append(('error', 'script empty'))
-                    continue
-                script_path = f"{outfolder}/{i}.{EXT[lang]}"
-                open(script_path, 'w', encoding='utf-8').write(script)
-                run_pg = globals()[f'run_{lang}_program']
-                result, _ = run_pg(script_path, i)
-                if result[0] == 'success':
-                    results_list.append(result)
-                    return results_list, i
-                results_list.append(result)     
+            if f_fill == ref or f == ref:
+                results_list.append(('success', 'identical to gold'))
+                return results_list, i
+            script = detokenize(f)
+            script = add_declarations_and_definitions(hyp)
+            if script == '': 
+                results_list.append(('error', 'script empty'))
+                continue
+            script_path = f"{outfolder}/{i}.{EXT[lang]}"
+            open(script_path, 'w', encoding='utf-8').write(script)
+            run_pg = globals()[f'run_{lang}_program']
+            result, _ = run_pg(script_path, i)
+            if result[0] == 'success':
+                results_list.append(result)
+                return results_list, i
+            results_list.append(result)     
         return results_list, i
     else: 
         return [return_script_not_found()], i
