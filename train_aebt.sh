@@ -42,7 +42,7 @@ python XLM/train.py \
 --batch_size 32 \
 --context_size 0 \
 --word_dropout '0.1'  \
---reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/t6lo9iu2eu/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/t6lo9iu2eu/best-valid_mlm_ppl.pth' \
+--reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/rrorgsvswt/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/rrorgsvswt/best-valid_mlm_ppl.pth' \
 --min_count 0 \
 --eval_bleu_test_only false \
 --group_by_size true \

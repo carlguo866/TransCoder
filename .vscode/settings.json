@@ -74,6 +74,7 @@
         "random": "cpp",
         "set": "cpp",
         "string": "cpp",
-        "stdlib.h": "c"
+        "stdlib.h": "c",
+        "variant": "cpp"
     }
 }
