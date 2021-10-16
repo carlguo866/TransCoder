@@ -1,0 +1,62 @@
+define dso_local i32 @main ( i32 %0 i8 * * %1 ) #0 { 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca i8 * * 
+ %6 = alloca double 
+ %7 = alloca double 
+ %8 = alloca double 
+ %9 = alloca i32 
+ %10 = alloca i32 
+ store i32 0 , i32 * %3 
+ store i32 %0 , i32 * %4 
+ store i8 * * %1 , i8 * * * %5 
+ store double , double * 0.000000e+00 %7 
+ store double , double * 0.000000e+00 %6 
+ store double , double * 0x3FF921FB54442D18 %8 
+ br label %11 
+ 11: 
+ %12 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %9 i32 * %10 ) 
+ %13 = load i32 , i32 * %9 
+ %14 = icmp eq i32 %13 , 0 
+ br i1 %14 , label %15 , label %19 
+ 15: 
+ %16 = load i32 , i32 * %10 
+ %17 = icmp eq i32 %16 , 0 
+ br i1 %17 , label %18 , label %19 
+ 18: 
+ br label %40 
+ 19: 
+ %20 = load double , double * %8 
+ %21 = call double @cos ( double %20 ) #3 
+ %22 = load i32 , i32 * %9 
+ %23 = sitofp i32 %22 to double 
+ %24 = fmul double %21 , %23 
+ %25 = load double , double * %6 
+ %26 = fadd double %25 , %24 
+ store double %26 , double * %6 
+ %27 = load double , double * %8 
+ %28 = call double @sin ( double %27 ) #3 
+ %29 = load i32 , i32 * %9 
+ %30 = sitofp i32 %29 to double 
+ %31 = fmul double %28 , %30 
+ %32 = load double , double * %7 
+ %33 = fadd double %32 , %31 
+ store double %33 , double * %7 
+ %34 = load i32 , i32 * %10 
+ %35 = sitofp i32 %34 to double 
+ %36 = fdiv double %35 , 1.800000e+02 
+ %37 = fmul double %36 , 0x400921FB54442D18 
+ %38 = load double , double * %8 
+ %39 = fsub double %38 , %37 
+ store double %39 , double * %8 
+ br label %11 
+ 40: 
+ %41 = load double , double * %6 
+ %42 = call double @modf ( double %41 double * %6 ) #3 
+ %43 = load double , double * %7 
+ %44 = call double @modf ( double %43 double * %7 ) #3 
+ %45 = load double , double * %6 
+ %46 = load double , double * %7 
+ %47 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 13 x i8 ] @".str.1:%.0lf~0A%.0lf~0A~00" i64 0 i64 0 ) double %45 double %46 ) 
+ ret i32 0 
+ } 

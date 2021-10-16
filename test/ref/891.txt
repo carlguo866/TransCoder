@@ -1,0 +1,48 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca double 
+ %3 = alloca double 
+ %4 = alloca double 
+ %5 = alloca double 
+ %6 = alloca double 
+ %7 = alloca double 
+ store i32 0 , i32 * %1 
+ store double , double * 0.000000e+00 %2 
+ store double , double * 0.000000e+00 %3 
+ store double , double * 0.000000e+00 %4 
+ store double , double * 0.000000e+00 %5 
+ store double , double * 0.000000e+00 %6 
+ store double , double * 0.000000e+00 %7 
+ store double , double * 0.000000e+00 @last_turn 
+ store double , double * 0.000000e+00 %4 
+ store double , double * 0.000000e+00 %5 
+ br label %8 
+ 8: 
+ store double , double * 0.000000e+00 %6 
+ store double , double * 0.000000e+00 %7 
+ %9 = call i32 ( i8 * ... ) @scanf ( i8 * getelementptr inbounds ( [ 8 x i8 ] @".str:%lf,%lf~00" i64 0 i64 0 ) double * %6 double * %7 ) 
+ %10 = load double , double * %6 
+ %11 = load double , double * %7 
+ %12 = call double @walk ( double %10 double %11 double * %4 double * %5 ) 
+ %13 = load double , double * @last_turn 
+ %14 = fadd double %13 , %12 
+ store double %14 , double * @last_turn 
+ %15 = load double , double * %6 
+ %16 = fcmp oeq double %15 , 0.000000e+00 
+ br i1 %16 , label %17 , label %21 
+ 17: 
+ %18 = load double , double * %7 
+ %19 = fcmp oeq double %18 , 0.000000e+00 
+ br i1 %19 , label %20 , label %21 
+ 20: 
+ br label %22 
+ 21: 
+ br label %8 
+ 22: 
+ %23 = load double , double * %4 
+ %24 = fptosi double %23 to i32 
+ %25 = load double , double * %5 
+ %26 = fptosi double %25 to i32 
+ %27 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %24 i32 %26 ) 
+ ret i32 0 
+ } 

@@ -1,0 +1,46 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca double 
+ %3 = alloca double 
+ %4 = alloca double 
+ %5 = alloca double 
+ %6 = alloca double 
+ %7 = alloca double 
+ %8 = alloca double 
+ %9 = alloca double 
+ %10 = alloca double 
+ %11 = alloca double 
+ %12 = alloca double 
+ %13 = alloca double 
+ %14 = alloca double 
+ %15 = alloca double 
+ %16 = alloca double 
+ %17 = alloca double 
+ %18 = alloca double 
+ %19 = alloca double 
+ store i32 0 , i32 * %1 
+ store double , double * 1.000000e+00 %6 
+ store double , double * 1.000000e+00 %7 
+ store double , double * 1.000000e+00 %8 
+ store double , double * 1.000000e+00 %9 
+ store double , double * 1.000000e+00 %10 
+ store double , double * 1.000000e+00 %11 
+ br label %20 
+ 20: 
+ %21 = load double , double * %11 
+ %22 = load double , double * %8 
+ %23 = fcmp olt double %21 , %22 
+ br i1 %23 , label %24 , label %38 
+ 24: 
+ %25 = load double , double * %8 
+ %26 = load double , double * %9 
+ %27 = fsub double %25 , %26 
+ store double %27 , double * %5 
+ br label %28 
+ 28: 
+ %29 = load double , double * %8 
+ %30 = load double , double * %9 
+ %31 = fsub double %29 , %30 
+ %32 = load double , double * %10 
+ %33 = fcmp oeq double %31 , %32 
+ br i1 %33 , 

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from itertools import chain
 if __name__ == '__main__': 
-    log_reader = open("/home/carl/TransCoder/myoutput/train_new2.log" , 'r', encoding='utf-8')
+    log_reader = open("/home/carl/TransCoder/myoutput/codenet_train2.log" , 'r', encoding='utf-8')
     log_reader2= None 
     # log_reader2 = open("/home/carl/TransCoder/myoutput/train8.log" , 'r')
     scores = None 
@@ -74,17 +74,17 @@ if __name__ == '__main__':
     plt.clf()
 
 
-    scores['valid_cpp_sa-llvm_sa_mt_comp_acc'] = [i * 100. for i in scores['valid_cpp_sa-llvm_sa_mt_comp_acc']] 
-    scores['test_cpp_sa-llvm_sa_mt_comp_acc'] = [i * 100. for i in scores['test_cpp_sa-llvm_sa_mt_comp_acc']]
-    plt.plot(scores['epoch'],scores['valid_cpp_sa-llvm_sa_mt_comp_acc'], label='validation compilation accuracy')
-    plt.plot(scores['epoch'],scores['test_cpp_sa-llvm_sa_mt_comp_acc'], label='test compilation accuracy')
-    plt.xlabel("epoch")
-    plt.ylabel('percentage of successful compilation in all test cases')
-    plt.ylim([0,100])
-    plt.title("C to LLVM Translation Compilation Accuracy")
-    plt.savefig("c_llvm_comp_acc.png")
-    plt.legend()
-    plt.clf()
+    # scores['valid_cpp_sa-llvm_sa_mt_comp_acc'] = [i * 100. for i in scores['valid_cpp_sa-llvm_sa_mt_comp_acc']] 
+    # scores['test_cpp_sa-llvm_sa_mt_comp_acc'] = [i * 100. for i in scores['test_cpp_sa-llvm_sa_mt_comp_acc']]
+    # plt.plot(scores['epoch'],scores['valid_cpp_sa-llvm_sa_mt_comp_acc'], label='validation compilation accuracy')
+    # plt.plot(scores['epoch'],scores['test_cpp_sa-llvm_sa_mt_comp_acc'], label='test compilation accuracy')
+    # plt.xlabel("epoch")
+    # plt.ylabel('percentage of successful compilation in all test cases')
+    # plt.ylim([0,100])
+    # plt.title("C to LLVM Translation Compilation Accuracy")
+    # plt.savefig("c_llvm_comp_acc.png")
+    # plt.legend()
+    # plt.clf()
 
     plt.plot(scores['epoch'],scores['valid_cpp_sa-llvm_sa_mt_bleu'], label='validation bleu')
     plt.plot(scores['epoch'],scores['test_cpp_sa-llvm_sa_mt_bleu'], label='test bleu')

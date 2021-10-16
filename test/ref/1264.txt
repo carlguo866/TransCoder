@@ -1,0 +1,43 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ store i32 0 , i32 * %1 
+ br label %2 
+ 2: 
+ %3 = load i32 , i32 * @i 
+ %4 = add nsw i32 %3 , 1 
+ store i32 %4 , i32 * @i 
+ %5 = sext i32 %3 to i64 
+ %6 = getelementptr inbounds i32 , i32 * getelementptr inbounds ( [ 10010 x i32 ] , [ 10010 x i32 ] * @data i64 0 i64 0 ) , i64 %5 
+ %7 = call i32 ( i8 * ... ) @scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %6 ) 
+ %8 = xor i32 %7 , -1 
+ %9 = icmp ne i32 %8 , 0 
+ br i1 %9 , label %10 , label %11 
+ 10: 
+ br label %2 
+ 11: 
+ %12 = call i32 ( i32 * i32 i32 i32 ( i32 * i32 * ) * ... ) bitcast ( i32 ( ... ) * @qsort to i32 ( i32 * i32 i32 i32 ( i32 * i32 * ) * ... ) * ) ( i32 * getelementptr inbounds ( [ 10010 x i32 ] @data i64 0 i64 0 ) i32 5 i32 4 i32 ( i32 * i32 * ) * @cmp ) 
+ store i32 4 , i32 * @i 
+ br label %13 
+ 13: 
+ %14 = load i32 , i32 * @i 
+ %15 = icmp sge i32 %14 , 0 
+ br i1 %15 , label %16 , label %29 
+ 16: 
+ %17 = load i32 , i32 * @i 
+ %18 = sext i32 %17 to i64 
+ %19 = getelementptr inbounds [ 10010 x i32 ] , [ 10010 x i32 ] * @data , i64 0 , i64 %18 
+ %20 = load i32 , i32 * %19 
+ %21 = load i32 , i32 * @i 
+ %22 = icmp ne i32 %21 , 0 
+ %23 = zext i1 %22 to i64 
+ %24 = select i1 %22 , i32 32 , i32 10 
+ %25 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 5 x i8 ] @".str.1:%d%c~00" i64 0 i64 0 ) i32 %20 i32 %24 ) 
+ br label %26 
+ 26: 
+ %27 = load i32 , i32 * @i 
+ %28 = add nsw i32 %27 , -1 
+ store i32 %28 , i32 * @i 
+ br label %13 
+ 29: 
+ ret i32 0 
+ } 

@@ -1,0 +1,60 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca double 
+ %3 = alloca double 
+ %4 = alloca double 
+ %5 = alloca double 
+ %6 = alloca double 
+ %7 = alloca i32 
+ %8 = alloca i32 
+ store i32 0 , i32 * %1 
+ store double , double * 0.000000e+00 %4 
+ store double , double * 0.000000e+00 %5 
+ store double , double * 0.000000e+00 %6 
+ br label %9 
+ 9: 
+ %10 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 8 x i8 ] @".str:%lf,%lf~00" i64 0 i64 0 ) double * %2 double * %3 ) 
+ %11 = load double , double * %2 
+ %12 = fcmp oeq double %11 , 0.000000e+00 
+ br i1 %12 , label %13 , label %17 
+ 13: 
+ %14 = load double , double * %3 
+ %15 = fcmp oeq double %14 , 0.000000e+00 
+ br i1 %15 , label %16 , label %17 
+ 16: 
+ br label %35 
+ 17: 
+ %18 = load double , double * %2 
+ %19 = load double , double * %6 
+ %20 = call double @sin ( double %19 ) #3 
+ %21 = fmul double %18 , %20 
+ %22 = load double , double * %4 
+ %23 = fadd double %21 , %22 
+ store double %23 , double * %4 
+ %24 = load double , double * %2 
+ %25 = load double , double * %6 
+ %26 = call double @cos ( double %25 ) #3 
+ %27 = fmul double %24 , %26 
+ %28 = load double , double * %5 
+ %29 = fadd double %27 , %28 
+ store double %29 , double * %5 
+ %30 = load double , double * %3 
+ %31 = fmul double 0x400921FB54442D18 , %30 
+ %32 = fdiv double %31 , 1.800000e+02 
+ %33 = load double , double * %6 
+ %34 = fadd double %32 , %33 
+ store double %34 , double * %6 
+ br label %9 
+ 35: 
+ %36 = load double , double * %4 
+ %37 = fptosi double %36 to i32 
+ store i32 %37 , i32 * %7 
+ %38 = load double , double * %5 
+ %39 = fptosi double %38 to i32 
+ store i32 %39 , i32 * %8 
+ %40 = load i32 , i32 * %7 
+ %41 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 4 x i8 ] @".str.1:%d~0A~00" i64 0 i64 0 ) i32 %40 ) 
+ %42 = load i32 , i32 * %8 
+ %43 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 4 x i8 ] @".str.1:%d~0A~00" i64 0 i64 0 ) i32 %42 ) 
+ ret i32 0 
+ } 

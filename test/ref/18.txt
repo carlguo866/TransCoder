@@ -1,0 +1,6 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ store i32 0 , i32 * %1 
+ call void @depot ( i32 0 ) 
+ ret i32 0 
+ } 

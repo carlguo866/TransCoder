@@ -1,0 +1,40 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca [ MAX_LEN x i8 ] 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca i32 
+ store i32 0 , i32 * %1 
+ br label %6 
+ 6: 
+ %7 = load i8 * , i8 * * @p 
+ %8 = load i8 * , i8 * * @p 
+ %9 = load i8 * , i8 * * @p 
+ %10 = load i8 * , i8 * * %9 
+ %11 = load i8 * , i8 * * @p 
+ %12 = call i8 * @strchr ( i8 * %11 i32 1 ) #3 
+ %13 = icmp ne i8 * %12 , 0 
+ br i1 %13 , label %14 , label %14 
+ 14: 
+ %15 = load i8 * , i8 * * @p 
+ %16 = load i8 * , i8 * * @p 
+ %17 = load i8 * , i8 * * @p 
+ %18 = load i8 * , i8 * * @p 
+ %19 = load i8 * , i8 * * @p 
+ %20 = load i8 * , i8 * * @p 
+ %21 = call i8 * @strchr ( i8 * %19 i32 %20 ) 
+ %22 = icmp ne i8 * %21 , 0 
+ br i1 %22 , label %23 , label %25 
+ 23: 
+ %24 = load i32 , i32 * %5 
+ store i32 %24 , i32 * %4 
+ br label %25 
+ 25: 
+ %26 = load i8 * , i8 * * @p 
+ %27 = load i8 * , i8 * * @p 
+ %28 = load i8 * , i8 * * @p 
+ %29 = call i8 * @strchr ( i8 * %28 i32 %29 ) #5 
+ %30 = icmp ne i8 * %29 , 0 
+ br i1 %30 , label %31 , label %36 
+ 31: 
+ %32 = load i32 , i32 * 

@@ -100,7 +100,7 @@ class Language:
             nlines = get_nlines(self.folder.joinpath(f'train{suffix}.tok'))
             size_gb = self.folder.joinpath(f'train{suffix}.tok').stat().st_size
         else:
-            print(f"{self.l}: split train, test and valid ... ")
+            print(f"{self.l}: split train, test and valid ... ", flush=True)
             if split_executor is None:
                 split_executor = LocalExecutor()
             job = split_executor.submit(
@@ -197,7 +197,7 @@ class Dataset:
             print("bpe codes already exists.")
             return
 
-        print("train bpe ...")
+        print("train bpe ...", flush=True)
         if size_gb is None:
             nlines = None
         else:
@@ -263,7 +263,7 @@ class Dataset:
             job.result()
 
     def binarize_for_XLM(self, files_regex, executor=None):
-        print(f"binarize {files_regex} ...")
+        print(f"binarize {files_regex} ...", flush=True)
         if executor is None:
             executor = LocalExecutor()
         jobs = []
@@ -277,7 +277,7 @@ class Dataset:
             job.result()
 
     def extract_functions_and_apply_bpe(self, lang_executor=None, function_executor=None, bpe_executor=None):
-        print("extract functions ... ")
+        print("extract functions ... ", flush=True)
         if lang_executor is None:
             lang_executor = LocalExecutor()
         jobs = [lang_executor.submit(lang.extract_functions, self.keep_comments,
@@ -303,7 +303,7 @@ class Dataset:
         #     truncate_files(l.folder.glob(
         #         f'{split}.*.{l.l}.functions_standalone.tok') for l in self.langs)
 
-        print("apply bpe on train ... ")
+        print("apply bpe on train ... ", flush=True)
         self.apply_bpe(
             f'train{self.suffix}.functions_*.tok', use_vocab=False, executor=bpe_executor)
         print("apply bpe on test and valid ...")

@@ -4,7 +4,7 @@ python XLM/train.py \
     --max_vocab 64000 \
     --word_mask_keep_rand '0.8,0.1,0.1' \
     --word_blank 0 \
-    --data_path '/home/carl/TransCoder/data/more_preprocessing/cpp-llvm-.XLM-syml' \
+    --data_path '/home/carl/TransCoder/data/data_aebt/cpp-llvm-.XLM-syml' \
     --save_periodic 0 \
     --bptt 512 \
     --lambda_clm 1 \
@@ -14,7 +14,7 @@ python XLM/train.py \
     --lambda_mlm 1 \
     --sinusoidal_embeddings false \
     --word_shuffle 0 \
-    --mlm_steps 'cpp,llvm' \
+    --mlm_steps 'hsw' \
     --attention_dropout 0 \
     --split_data false \
     --length_penalty 1 \
@@ -23,7 +23,7 @@ python XLM/train.py \
     --lambda_bt 1 \
     --dump_path '/mnt/sabrent/carl/TransCoder/output' \
     --lambda_mt 1 \
-    --epoch_size 75000 \
+    --epoch_size 100000 \
     --early_stopping false \
     --gelu_activation true \
     --n_layers 6 \
@@ -36,7 +36,7 @@ python XLM/train.py \
     --batch_size 32 \
     --context_size 0 \
     --word_dropout 0 \
-    --reload_model '/mnt/sabrent/carl/TransCoder/output/mlm_cpp_llvm/oevt4m4psu/best-valid_mlm_ppl.pth' \
+    --reload_model '' \
     --min_count 0 \
     --lgs 'cpp-llvm' \
     --sample_alpha 0 \

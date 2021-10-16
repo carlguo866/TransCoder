@@ -1,0 +1,64 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca double 
+ %6 = alloca double 
+ %7 = alloca double 
+ %8 = alloca double 
+ store i32 0 , i32 * %1 
+ store i32 0 , i32 * %3 
+ store double , double * 0.000000e+00 %5 
+ store double , double * 0.000000e+00 %6 
+ %9 = call double @atan ( double 1.000000e+00 ) #3 
+ %10 = fmul double %9 , 4.000000e+00 
+ store double %10 , double * %7 
+ br label %11 
+ 11: 
+ %12 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %2 i32 * %4 ) 
+ %13 = load i32 , i32 * %2 
+ %14 = icmp eq i32 %13 , 0 
+ br i1 %14 , label %15 , label %19 
+ 15: 
+ %16 = load i32 , i32 * %4 
+ %17 = icmp eq i32 %16 , 0 
+ br i1 %17 , label %18 , label %19 
+ 18: 
+ br label %42 
+ 19: 
+ %20 = load i32 , i32 * %3 
+ %21 = sitofp i32 %20 to double 
+ %22 = load double , double * %7 
+ %23 = fmul double %21 , %22 
+ %24 = fdiv double %23 , 1.800000e+02 
+ store double %24 , double * %8 
+ %25 = load i32 , i32 * %2 
+ %26 = sitofp i32 %25 to double 
+ %27 = load double , double * %8 
+ %28 = call double @sin ( double %27 ) #3 
+ %29 = fmul double %26 , %28 
+ %30 = load double , double * %5 
+ %31 = fadd double %30 , %29 
+ store double %31 , double * %5 
+ %32 = load i32 , i32 * %2 
+ %33 = sitofp i32 %32 to double 
+ %34 = load double , double * %8 
+ %35 = call double @cos ( double %34 ) #3 
+ %36 = fmul double %33 , %35 
+ %37 = load double , double * %6 
+ %38 = fadd double %37 , %36 
+ store double %38 , double * %6 
+ %39 = load i32 , i32 * %4 
+ %40 = load i32 , i32 * %3 
+ %41 = add nsw i32 %40 , %39 
+ store i32 %41 , i32 * %3 
+ br label %11 
+ 42: 
+ %43 = load double , double * %5 
+ %44 = fptosi double %43 to i32 
+ %45 = load double , double * %6 
+ %46 = fptosi double %45 to i32 
+ %47 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %44 i32 %46 ) 
+ ret i32 0 
+ } 

@@ -1,0 +1,59 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ store i32 0 , i32 * %1 
+ br label %2 
+ 2: 
+ %3 = call i32 ( i8 * ... ) @scanf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str:%[^~0A] ~00" i64 0 i64 0 ) i32 * getelementptr inbounds ( [ 1 x i32 ] @c i64 0 i64 0 ) ) 
+ %4 = xor i32 %3 , -1 
+ %5 = icmp ne i32 %4 , 0 
+ br i1 %5 , label %6 , label %39 
+ 6: 
+ br label %7 
+ 7: 
+ %8 = load i8 * , i8 * * @p 
+ %9 = load i8 , i8 * %8 
+ %10 = sext i8 %9 to i32 
+ %11 = icmp sgt i32 %10 , 96 
+ br i1 %11 , label %12 , label %18 
+ 12: 
+ %13 = load i8 * , i8 * * @p 
+ %14 = load i8 , i8 * %13 
+ %15 = sext i8 %14 to i32 
+ %16 = srem i32 %15 , 26 
+ %17 = add nsw i32 %16 , 97 
+ br label %22 
+ 18: 
+ %19 = load i8 * , i8 * * @p 
+ %20 = load i8 , i8 * %19 
+ %21 = sext i8 %20 to i32 
+ br label %22 
+ 22: 
+ %23 = phi i32 [ %17 %12 ] , [ %21 %18 ] 
+ %24 = trunc i32 %23 to i8 
+ %25 = load i8 * , i8 * * @p 
+ %26 = getelementptr inbounds i8 , i8 * %25 , i32 1 
+ store i8 * %26 , i8 * * @p 
+ store i8 %24 , i8 * %25 
+ %27 = sext i8 %24 to i32 
+ %28 = icmp ne i32 %27 , 0 
+ br i1 %28 , label %33 , label %29 
+ 29: 
+ store i8 * bitcast ( [ 1 x i32 ] * @c to i8 * ) , i8 * * @p 
+ %30 = call i8 * @strstr ( i8 * bitcast ( [ 1 x i32 ] * @c to i8 * ) i8 * getelementptr inbounds ( [ 3 x i8 ] @".str.1:th~00" i64 0 i64 0 ) ) 
+ %31 = icmp ne i8 * %30 , null 
+ %32 = xor i1 %31 , true 
+ br label %33 
+ 33: 
+ %34 = phi i1 [ true %22 ] , [ %32 %29 ] 
+ br i1 %34 , label %35 , label %36 
+ 35: 
+ br label %7 
+ 36: 
+ br label %37 
+ 37: 
+ %38 = call i32 ( i32 * ... ) bitcast ( i32 ( ... ) * @puts to i32 ( i32 * ... ) * ) ( i32 * getelementptr inbounds ( [ 1 x i32 ] @c i64 0 i64 0 ) ) 
+ br label %2 
+ 39: 
+ %40 = load i32 , i32 * %1 
+ ret i32 %40 
+ } 

@@ -1,0 +1,7 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ store i32 0 , i32 * %1 
+ %2 = call i32 ( i8 * ... ) bitcast ( i32 ( ... ) * @puts to i32 ( i8 * ... ) * ) ( i8 * getelementptr inbounds ( [ 20 x i8 ] @".str:2432902008176640000~00" i64 0 i64 0 ) ) 
+ call void @exit ( i32 0 ) #3 
+ unreachable 
+ } 

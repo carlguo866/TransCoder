@@ -1,0 +1,36 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i8 * 
+ %3 = alloca i64 
+ %4 = alloca i64 
+ %5 = alloca i64 
+ store i32 0 , i32 * %1 
+ store i64 0 , i64 * %5 
+ %6 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %2 ) 
+ %7 = load i32 , i32 * %2 
+ %8 = zext i32 %7 to i64 
+ %9 = call i8 * @llvm.stacksave ( ) 
+ store i8 * %9 , i8 * * %4 
+ %10 = alloca i32 , i64 %8 
+ store i64 %8 , i64 * %5 
+ store i64 0 , i64 * %6 
+ br label %11 
+ 11: 
+ %12 = load i32 , i32 * %6 
+ %13 = load i32 , i32 * %2 
+ %14 = icmp slt i32 %12 , %13 
+ br i1 %14 , label %15 , label %38 
+ 15: 
+ %16 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %3 ) 
+ %17 = load i32 , i32 * %3 
+ %18 = sext i32 %17 to i64 
+ %19 = getelementptr inbounds i32 , i32 * %10 , i64 %18 
+ %20 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %19 ) 
+ %21 = load i32 , i32 * %3 
+ %22 = sext i32 %21 to i64 
+ %23 = getelementptr inbounds i32 , i32 * %10 , i64 %22 
+ %24 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %23 ) 
+ %25 = load i32 , i32 * %3 
+ %26 = sext i32 %25 to i64 
+ %27 = getelementptr inbounds i32 , i32 * %10 , i64 %26 
+ %28 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 

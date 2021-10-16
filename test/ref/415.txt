@@ -1,0 +1,49 @@
+define i32 @isPrime ( i32 %0 ) #0 { 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ store i32 %0 , i32 * %3 
+ %5 = load i32 , i32 * %3 
+ %6 = icmp slt i32 %5 , 2 
+ br i1 %6 , label %11 , label %7 
+ 7: 
+ %8 = load i32 , i32 * %3 
+ %9 = srem i32 %8 , 2 
+ %10 = icmp ne i32 %9 , 0 
+ br i1 %10 , label %12 , label %11 
+ 11: 
+ store i32 0 , i32 * %2 
+ br label %30 
+ 12: 
+ store i32 3 , i32 * %4 
+ br label %13 
+ 13: 
+ %14 = load i32 , i32 * %4 
+ %15 = load i32 , i32 * %4 
+ %16 = mul nsw i32 %14 , %15 
+ %17 = load i32 , i32 * %3 
+ %18 = icmp sle i32 %16 , %17 
+ br i1 %18 , label %19 , label %29 
+ 19: 
+ %20 = load i32 , i32 * %3 
+ %21 = load i32 , i32 * %4 
+ %22 = srem i32 %20 , %21 
+ %23 = icmp ne i32 %22 , 0 
+ br i1 %23 , label %25 , label %24 
+ 24: 
+ store i32 0 , i32 * %2 
+ br label %30 
+ 25: 
+ br label %26 
+ 26: 
+ %27 = load i32 , i32 * %4 
+ %28 = add nsw i32 %27 , 2 
+ store i32 %28 , i32 * %4 
+ br label %13 
+ 29: 
+ store i32 1 , i32 * %2 
+ br label %30 
+ 30: 
+ %31 = load i32 , i32 * %2 
+ ret i32 %31 
+ } 

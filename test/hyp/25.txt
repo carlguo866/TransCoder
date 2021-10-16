@@ -1,0 +1,7 @@
+define dso_local { %struct.node * %struct.node * %struct.node * , i32 } * @treeMinimum ( { %struct.node * %struct.node * %struct.node * i32 } * %0 ) #0 { 
+ %2 = alloca { %struct.node * %struct.node * %struct.node * %struct.node * } * i32 
+ store { %struct.node * %struct.node * %struct.node * i32 } * %0 , { %struct.node * %struct.node * %struct.node * i32 } * * %2 
+ br label %3 
+ 3: 
+ %4 = load { %struct.node * %struct.node * %struct.node * i32 } * , { %struct.node * %struct.node * %struct.node * i32 } * * %2 
+ 

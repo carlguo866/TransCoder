@@ -1,0 +1,35 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca i64 
+ %4 = alloca i64 
+ store i32 0 , i32 * %1 
+ store i32 0 , i32 * %2 
+ store i64 1 , i64 * %4 
+ %5 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %2 ) 
+ store i64 1 , i64 * %3 
+ br label %6 
+ 6: 
+ %7 = load i64 , i64 * %3 
+ %8 = load i32 , i32 * %2 
+ %9 = add nsw i32 %8 , 1 
+ %10 = sext i32 %9 to i64 
+ %11 = icmp ult i64 %7 , %10 
+ br i1 %11 , label %12 , label %19 
+ 12: 
+ %13 = load i64 , i64 * %4 
+ %14 = load i64 , i64 * %3 
+ %15 = mul i64 %13 , %14 
+ store i64 %15 , i64 * %4 
+ br label %16 
+ 16: 
+ %17 = load i64 , i64 * %3 
+ %18 = add i64 %17 , 1 
+ store i64 %18 , i64 * %3 
+ br label %6 
+ 19: 
+ %20 = load { i32 i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * %struct._IO_marker * %struct._IO_FILE * i32 i32 i64 i16 i8 [ 1 x i8 ] i8 * i64 i8 * i8 * i8 * i8 * i64 i32 [ 20 x i8 ] } * , { i32 i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * %struct._IO_marker * %struct._IO_FILE * i32 i32 i64 i16 i8 [ 1 x i8 ] i8 * i64 i8 * i8 * i8 * i8 * i64 i32 [ 20 x i8 ] } * * @stdout 
+ %21 = load i64 , i64 * %4 
+ %22 = call i32 ( { i32 i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * %struct._IO_marker * %struct._IO_FILE * i32 i32 i64 i16 i8 [ 1 x i8 ] i8 * i64 i8 * i8 * i8 * i8 * i64 i32 [ 20 x i8 ] } * i8 * ... ) @fprintf ( { i32 i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * %struct._IO_marker * %struct._IO_FILE * i32 i32 i64 i16 i8 [ 1 x i8 ] i8 * i64 i8 * i8 * i8 * i8 * i64 i32 [ 20 x i8 ] } * %20 i8 * getelementptr inbounds ( [ 5 x i8 ] @".str.1:%ld~0A~00" i64 0 i64 0 ) i64 %21 ) 
+ ret i32 0 
+ } 

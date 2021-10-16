@@ -925,14 +925,33 @@ def get_llvm_type(tokens, i, add_comma=0):
                 if par==0: 
                     # one token after ] or }s
                     break
-
-        if i < len(tokens) and tokens[i] == '(': 
-            while tokens[i] != ')': 
+        elif tokens[i] == '<': 
+            par = 0
+            while i < len(tokens): 
+                if tokens[i] == '<': 
+                    par +=1 
+                elif tokens[i] == '>': 
+                    par -=1 
                 ty.append(tokens[i])
                 i+=1 
-            if tokens[i] == ')': 
+                if par == 0: 
+                    break
+
+        while i < len(tokens) and tokens[i] == '*':
+            ty.append(tokens[i])
+            i+=1
+
+        if i < len(tokens) and tokens[i] == '(': 
+            par = 0
+            while i < len(tokens): 
+                if tokens[i] == '(': 
+                    par +=1 
+                elif tokens[i] == ')': 
+                    par -=1 
                 ty.append(tokens[i])
-                i+=1
+                i+=1 
+                if par == 0: 
+                    break
 
         while i < len(tokens) and tokens[i] == '*':
             ty.append(tokens[i])
@@ -1195,7 +1214,7 @@ def infix_to_prefix(tokens):
                 par-=1 
                 prefix.append(tok)
             elif tok == ",": 
-                if par == 0:  
+                if par == 0 or prefix[position[par]] == '(':  
                     prefix.append(tok)       
             elif tok == '*': 
                 pos = 0 
@@ -1270,7 +1289,6 @@ def remove_globals(tokens):
             #     for i in v.split(" "): 
             #         if i in defs.keys(): 
             #             defs[k] = defs[k].replace(i,defs[i])
-            print(len(defs))
             for i in global_constants_index: 
                 if tokens[i] in defs.keys(): 
                     if i+1 >= len(tokens) or i+2 >= len(tokens): 
@@ -1336,13 +1354,14 @@ def add_tok(tok, tokens, par, items_counts, end_par, is_type_len, num_of_star, p
         tokens.append('(')
         par+=1 
         items_counts[par] = 99999
-        end_par[par] = ')' 
+        end_par[par] = ')'
         if num_of_star > 0: 
             end_par[par] += ' * ' * num_of_star
             num_of_star = 0 
     elif tok == ')': 
-        tokens.extend(end_par[par].strip().replace("  ", " ").split(" "))
-        par-=1 
+        if par != 0: 
+            tokens.extend(end_par[par].strip().replace("  ", " ").split(" "))
+            par-=1 
     elif is_type_len: 
         items_counts[par] = int(tok)
         is_type_len = False
@@ -1391,8 +1410,8 @@ def detokenize_llvm(s):
             num_of_star = 0
             pars = dict()
             toks_line = []
-            while i < len(line): 
-                if line[i]  == ' ': 
+            while i < len(line):
+                if line[i] == ' ' or line[i] == '\n': 
                     if tok != '': par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma = \
                             add_tok(tok, toks_line, par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma)
                     tok = ''
@@ -1411,6 +1430,9 @@ def detokenize_llvm(s):
                     tok += line[i]
                 i+=1
             
+            if tok!='': par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma = \
+                            add_tok(tok, toks_line, par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma)
+
             toks_line = detokenize_instruction_printer(toks_line)
             tokens.extend(toks_line)
             tokens.append("NEW_LINE")
@@ -1420,9 +1442,9 @@ def detokenize_llvm(s):
         return untok_s
     except KeyboardInterrupt:
         raise
-    # except:
-    #     print("problem in detokenize_llvm", flush=True)
-    #     return ''
+    except:
+        print("problem in detokenize_llvm", flush=True)
+        return ''
 
 
 def extract_functions_llvm(s):

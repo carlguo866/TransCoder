@@ -1,0 +1,67 @@
+define dso_local i32 @main ( i32 %0 ) #0 { 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ store i32 0 , i32 * %2 
+ store i32 %0 , i32 * %3 
+ br label %4 
+ 4: 
+ %5 = call i32 ( i8 * ... ) @scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %3 i32 * @d ) 
+ %6 = xor i32 %5 , -1 
+ %7 = icmp ne i32 %6 , 0 
+ br i1 %7 , label %8 , label %38 
+ 8: 
+ %9 = load i32 , i32 * %3 
+ %10 = sitofp i32 %9 to double 
+ %11 = load float , float * @z 
+ %12 = fpext float %11 to double 
+ %13 = call double @cos ( double %12 ) #3 
+ %14 = fmul double %10 , %13 
+ %15 = load float , float * @y 
+ %16 = fpext float %15 to double 
+ %17 = fadd double %16 , %14 
+ %18 = fptrunc double %17 to float 
+ store float %18 , float * @y 
+ %19 = load i32 , i32 * %3 
+ %20 = sitofp i32 %19 to double 
+ %21 = load float , float * @z 
+ %22 = fpext float %21 to double 
+ %23 = call double @sin ( double %22 ) #3 
+ %24 = fmul double %20 , %23 
+ %25 = load float , float * @x 
+ %26 = fpext float %25 to double 
+ %27 = fsub double %26 , %24 
+ %28 = fptrunc double %27 to float 
+ store float %28 , float * @x 
+ %29 = load i32 , i32 * @d 
+ %30 = sitofp i32 %29 to double 
+ %31 = fdiv double %30 , 5.730000e+01 
+ %32 = load float , float * @z 
+ %33 = fpext float %32 to double 
+ %34 = fsub double %33 , %31 
+ %35 = fptrunc double %34 to float 
+ store float %35 , float * @z 
+ %36 = load i32 , i32 * %3 
+ %37 = xor i32 %36 , -1 
+ br label %47 
+ 38: 
+ %39 = load float , float * @x 
+ %40 = fptosi float %39 to i32 
+ store i32 %40 , i32 * @d 
+ %41 = load float , float * @y 
+ %42 = fptosi float %41 to i32 
+ store i32 %42 , i32 * %3 
+ %43 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %40 i32 %42 ) 
+ %44 = icmp ne i32 %43 , 0 
+ %45 = xor i1 %44 , true 
+ %46 = zext i1 %45 to i32 
+ br label %47 
+ 47: 
+ %48 = phi i32 [ %37 %8 ] , [ %46 %38 ] 
+ %49 = icmp ne i32 %48 , 0 
+ br i1 %49 , label %50 , label %51 
+ 50: 
+ br label %4 
+ 51: 
+ %52 = load i32 , i32 * %2 
+ ret i32 %52 
+ } 

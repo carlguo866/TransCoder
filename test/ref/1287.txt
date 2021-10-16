@@ -1,0 +1,68 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca double 
+ %6 = alloca double 
+ %7 = alloca double 
+ %8 = alloca double 
+ store i32 0 , i32 * %1 
+ store i32 90 , i32 * %4 
+ store double , double * 0.000000e+00 %5 
+ store double , double * 0.000000e+00 %6 
+ br label %9 
+ 9: 
+ %10 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %2 i32 * %3 ) 
+ %11 = icmp ne i32 %10 , -1 
+ br i1 %11 , label %12 , label %45 
+ 12: 
+ %13 = load i32 , i32 * %2 
+ %14 = icmp eq i32 %13 , 0 
+ br i1 %14 , label %15 , label %19 
+ 15: 
+ %16 = load i32 , i32 * %3 
+ %17 = icmp eq i32 %16 , 0 
+ br i1 %17 , label %18 , label %19 
+ 18: 
+ br label %45 
+ 19: 
+ %20 = load i32 , i32 * %2 
+ %21 = sitofp i32 %20 to double 
+ %22 = load i32 , i32 * %4 
+ %23 = sitofp i32 %22 to double 
+ %24 = fmul double %23 , 0x400921FB54442D18 
+ %25 = fdiv double %24 , 1.800000e+02 
+ %26 = call double @cos ( double %25 ) #3 
+ %27 = fmul double %21 , %26 
+ store double %27 , double * %7 
+ %28 = load i32 , i32 * %2 
+ %29 = sitofp i32 %28 to double 
+ %30 = load i32 , i32 * %4 
+ %31 = sitofp i32 %30 to double 
+ %32 = fmul double %31 , 0x400921FB54442D18 
+ %33 = fdiv double %32 , 1.800000e+02 
+ %34 = call double @sin ( double %33 ) #3 
+ %35 = fmul double %29 , %34 
+ store double %35 , double * %8 
+ %36 = load double , double * %5 
+ %37 = load double , double * %7 
+ %38 = fadd double %36 , %37 
+ store double %38 , double * %5 
+ %39 = load double , double * %6 
+ %40 = load double , double * %8 
+ %41 = fadd double %39 , %40 
+ store double %41 , double * %6 
+ %42 = load i32 , i32 * %4 
+ %43 = load i32 , i32 * %3 
+ %44 = sub nsw i32 %42 , %43 
+ store i32 %44 , i32 * %4 
+ br label %9 
+ 45: 
+ %46 = load double , double * %5 
+ %47 = fptosi double %46 to i32 
+ %48 = load double , double * %6 
+ %49 = fptosi double %48 to i32 
+ %50 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %47 i32 %49 ) 
+ ret i32 0 
+ } 

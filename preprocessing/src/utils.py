@@ -56,8 +56,8 @@ def output_all_tokenized_results(docs, language, f_tok):
             # if(language != "llvm"): 
             #     s = f"<DOCUMENT_ID=\"{path}\"> {content_tokenized} </DOCUMENT>"
             # else: 
-            #     s = content_tokenized
-            s = f"<DOCUMENT_ID=\"{path}\"> {content_tokenized} </DOCUMENT>"
+            s = content_tokenized
+            # s = f"<DOCUMENT_ID=\"{path}\"> {content_tokenized} </DOCUMENT>"
             # for some reason sometimes, some caracters of s
             # cannot be encoded into utf-8 and it failed to print, so use try/catch
             try:
@@ -116,7 +116,7 @@ def extract_functions_file(input_path, language, test_size=None):
                         if name not in defs.keys(): 
                             f_sa.write(str(func))
                             f_sa.write('\n')
-                            if re.fullmatch("@func_\d+", name) == None and re.fullmatch("@main", name) == None: 
+                            if re.fullmatch("@main", name) == None:  # re.fullmatch("@func_\d+", name) == None and
                                 defs[name] = str(func)
                             # else: 
                             #     # print("name for func func" + name)

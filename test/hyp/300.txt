@@ -1,0 +1,30 @@
+define dso_local i32 @amount ( i32 %0 ) #0 { 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ store i32 %0 , i32 * %2 
+ %5 = load i32 , i32 * %2 
+ %6 = call i32 @amount ( i32 %5 ) 
+ %7 = icmp eq i32 %6 , 0 
+ br i1 %7 , label %8 , label %9 
+ 8: 
+ store i32 1 , i32 * %2 
+ br label %34 
+ 9: 
+ %10 = load i32 , i32 * %2 
+ %11 = load i32 , i32 * %2 
+ %12 = call i32 @amount ( i32 %10 i32 %11 ) 
+ %13 = icmp eq i32 %10 , 0 
+ br i1 %13 , label %14 , label %15 
+ 14: 
+ store i32 0 , i32 * %2 
+ br label %34 
+ 15: 
+ %16 = load i32 , i32 * %2 
+ %17 = load i32 , i32 * %3 
+ %18 = call i32 @amount ( i32 %16 i32 %17 ) 
+ %19 = icmp eq i32 %18 , 0 
+ br i1 %19 , label %20 , label %24 
+ 20: 
+ %21 = load i32 , i32 * %2 
+ %22 = load i32 , i32 * 

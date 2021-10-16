@@ -1,0 +1,26 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ store i32 0 , i32 * %1 
+ call void @get_input_num ( ) 
+ store i32 0 , i32 * %2 
+ br label %3 
+ 3: 
+ %4 = load i32 , i32 * %2 
+ %5 = load i32 , i32 * @input_num 
+ %6 = icmp ult i32 %4 , %5 
+ br i1 %6 , label %7 , label %11 
+ 7: 
+ call void @get_input ( i64 * getelementptr inbounds ( [ 10 x i64 ] @input1 i64 0 i64 0 ) i32 * @input1_sz ) 
+ call void @get_input ( i64 * getelementptr inbounds ( [ 10 x i64 ] @input2 i64 0 i64 0 ) i32 * @input2_sz ) 
+ call void @get_output ( ) 
+ call void @print_output ( ) 
+ br label %8 
+ 8: 
+ %9 = load i32 , i32 * %2 
+ %10 = add nsw i32 %9 , 1 
+ store i32 %10 , i32 * %2 
+ br label %3 
+ 11: 
+ ret i32 0 
+ } 

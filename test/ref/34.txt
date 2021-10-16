@@ -1,0 +1,11 @@
+define dso_local void @pop ( ) #0 { 
+ %1 = load i32 , i32 * @idx 
+ %2 = add nsw i32 %1 , -1 
+ store i32 %2 , i32 * @idx 
+ %3 = load i32 , i32 * @idx 
+ %4 = sext i32 %3 to i64 
+ %5 = getelementptr inbounds [ 100 x i32 ] , [ 100 x i32 ] * @train , i64 0 , i64 %4 
+ %6 = load i32 , i32 * %5 
+ %7 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 4 x i8 ] @".str:%d~0A~00" i64 0 i64 0 ) i32 %6 ) 
+ ret void 
+ } 

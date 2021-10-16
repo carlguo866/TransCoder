@@ -1,0 +1,54 @@
+define dso_local i32 @main ( i32 %0 ) #0 { 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ store i32 0 , i32 * %2 
+ store i32 %0 , i32 * %3 
+ br label %4 
+ 4: 
+ %5 = call i32 ( i8 * ... ) @scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %3 i32 * @d ) 
+ %6 = load i32 , i32 * %3 
+ %7 = load i32 , i32 * @d 
+ %8 = or i32 %6 , %7 
+ %9 = icmp ne i32 %8 , 0 
+ br i1 %9 , label %10 , label %32 
+ 10: 
+ %11 = load i32 , i32 * %3 
+ %12 = sitofp i32 %11 to double 
+ %13 = load double , double * @c 
+ %14 = call double @sin ( double %13 ) #4 
+ %15 = fmul double %12 , %14 
+ %16 = load double , double * @x 
+ %17 = fadd double %16 , %15 
+ store double %17 , double * @x 
+ %18 = load i32 , i32 * %3 
+ %19 = sitofp i32 %18 to double 
+ %20 = load double , double * @c 
+ %21 = call double @cos ( double %20 ) #4 
+ %22 = fmul double %19 , %21 
+ %23 = load double , double * @y 
+ %24 = fadd double %23 , %22 
+ store double %24 , double * @y 
+ br label %25 
+ 25: 
+ %26 = load i32 , i32 * @d 
+ %27 = sitofp i32 %26 to double 
+ %28 = fmul double %27 , 0x400921FB54442D18 
+ %29 = fdiv double %28 , 1.800000e+02 
+ %30 = load double , double * @c 
+ %31 = fadd double %30 , %29 
+ store double %31 , double * @c 
+ br label %4 
+ 32: 
+ %33 = load double , double * @x 
+ %34 = fptosi double %33 to i32 
+ store i32 %34 , i32 * @d 
+ %35 = load double , double * @y 
+ %36 = fptosi double %35 to i32 
+ store i32 %36 , i32 * %3 
+ %37 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %34 i32 %36 ) 
+ %38 = icmp ne i32 %37 , 0 
+ %39 = xor i1 %38 , true 
+ %40 = zext i1 %39 to i32 
+ call void @exit ( i32 %40 ) #5 
+ unreachable 
+ } 

@@ -1,0 +1,68 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca double 
+ %6 = alloca double 
+ %7 = alloca double 
+ store i32 0 , i32 * %1 
+ store i32 90 , i32 * %4 
+ store double , double * 0.000000e+00 %7 
+ store double , double * 0.000000e+00 %6 
+ br label %8 
+ 8: 
+ %9 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %2 i32 * %3 ) 
+ %10 = icmp ne i32 %9 , -1 
+ br i1 %10 , label %11 , label %19 
+ 11: 
+ %12 = load i32 , i32 * %2 
+ %13 = icmp ne i32 %12 , 0 
+ br i1 %13 , label %17 , label %14 
+ 14: 
+ %15 = load i32 , i32 * %3 
+ %16 = icmp ne i32 %15 , 0 
+ br label %17 
+ 17: 
+ %18 = phi i1 [ true %11 ] , [ %16 %14 ] 
+ br label %19 
+ 19: 
+ %20 = phi i1 [ false %8 ] , [ %18 %17 ] 
+ br i1 %20 , label %21 , label %45 
+ 21: 
+ %22 = load i32 , i32 * %4 
+ %23 = sitofp i32 %22 to double 
+ %24 = fmul double %23 , 0x400921FB54442D18 
+ %25 = fdiv double %24 , 1.800000e+02 
+ store double %25 , double * %5 
+ %26 = load double , double * %5 
+ %27 = call double @cos ( double %26 ) #3 
+ %28 = load i32 , i32 * %2 
+ %29 = sitofp i32 %28 to double 
+ %30 = fmul double %27 , %29 
+ %31 = load double , double * %6 
+ %32 = fadd double %31 , %30 
+ store double %32 , double * %6 
+ %33 = load double , double * %5 
+ %34 = call double @sin ( double %33 ) #3 
+ %35 = load i32 , i32 * %2 
+ %36 = sitofp i32 %35 to double 
+ %37 = fmul double %34 , %36 
+ %38 = load double , double * %7 
+ %39 = fadd double %38 , %37 
+ store double %39 , double * %7 
+ %40 = load i32 , i32 * %4 
+ %41 = load i32 , i32 * %3 
+ %42 = sub nsw i32 %40 , %41 
+ %43 = add nsw i32 %42 , 360 
+ %44 = srem i32 %43 , 360 
+ store i32 %44 , i32 * %4 
+ br label %8 
+ 45: 
+ %46 = load double , double * %6 
+ %47 = fptosi double %46 to i32 
+ %48 = load double , double * %7 
+ %49 = fptosi double %48 to i32 
+ %50 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %47 i32 %49 ) 
+ ret i32 0 
+ } 

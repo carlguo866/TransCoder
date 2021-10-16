@@ -1,0 +1,12 @@
+define dso_local i32 @pop ( ) #0 { 
+ %1 = alloca i32 
+ %2 = load i32 , i32 * @top 
+ %3 = add nsw i32 %2 , -1 
+ store i32 %3 , i32 * @top 
+ %4 = sext i32 %2 to i64 
+ %5 = getelementptr inbounds [ 1000 x i32 ] , [ 1000 x i32 ] * @S , i64 0 , i64 %4 
+ %6 = load i32 , i32 * %5 
+ store i32 %6 , i32 * %1 
+ %7 = load i32 , i32 * %1 
+ ret i32 %7 
+ } 

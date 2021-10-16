@@ -1,0 +1,47 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca [ 10 x i32 ] 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca i32 
+ store i32 0 , i32 * %1 
+ store i32 0 , i32 * %3 
+ store i32 0 , i32 * %4 
+ br label %6 
+ 6: 
+ %7 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %4 ) 
+ %8 = icmp ne i32 %7 , -1 
+ br i1 %8 , label %9 , label %31 
+ 9: 
+ %10 = load i32 , i32 * %4 
+ %11 = icmp ne i32 %10 , 0 
+ br i1 %11 , label %12 , label %19 
+ 12: 
+ %13 = load i32 , i32 * %4 
+ %14 = load i32 , i32 * %3 
+ %15 = sext i32 %14 to i64 
+ %16 = getelementptr inbounds [ 10 x i32 ] , [ 10 x i32 ] * %2 , i64 0 , i64 %15 
+ store i32 %13 , i32 * %16 
+ %17 = load i32 , i32 * %3 
+ %18 = add nsw i32 %17 , 1 
+ store i32 %18 , i32 * %3 
+ br label %30 
+ 19: 
+ %20 = load i32 , i32 * %3 
+ %21 = add nsw i32 %20 , -1 
+ store i32 %21 , i32 * %3 
+ %22 = load i32 , i32 * %3 
+ %23 = sext i32 %22 to i64 
+ %24 = getelementptr inbounds [ 10 x i32 ] , [ 10 x i32 ] * %2 , i64 0 , i64 %23 
+ %25 = load i32 , i32 * %24 
+ %26 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 4 x i8 ] @".str.1:%d~0A~00" i64 0 i64 0 ) i32 %25 ) 
+ %27 = load i32 , i32 * %3 
+ %28 = sext i32 %27 to i64 
+ %29 = getelementptr inbounds [ 10 x i32 ] , [ 10 x i32 ] * %2 , i64 0 , i64 %28 
+ store i32 0 , i32 * %29 
+ br label %30 
+ 30: 
+ br label %6 
+ 31: 
+ ret i32 0 
+ } 

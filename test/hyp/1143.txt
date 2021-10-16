@@ -1,0 +1,62 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca double 
+ %3 = alloca double 
+ %4 = alloca double 
+ %5 = alloca double 
+ %6 = alloca double 
+ %7 = alloca double 
+ %8 = alloca double 
+ %9 = alloca double 
+ %10 = alloca double 
+ %11 = alloca double 
+ %12 = alloca double 
+ %13 = alloca double 
+ %14 = alloca double 
+ %15 = alloca double 
+ %16 = alloca double 
+ %17 = alloca double 
+ store i32 0 , i32 * %1 
+ store double , double * 1.000000e+00 %7 
+ store double , double * 1.000000e+00 %8 
+ store double , double * 1.000000e+00 %9 
+ store double , double * 1.000000e+00 %10 
+ store double , double * 1.000000e+00 %11 
+ store double , double * 1.000000e+00 %12 
+ store double , double * 1.000000e+00 %13 
+ store double , double * 1.000000e+00 %14 
+ store double , double * 1.000000e+00 %15 
+ store double , double * 1.000000e+00 %16 
+ store double , double * 1.000000e+00 %17 
+ store double , double * 1.000000e+00 %18 
+ br label %19 
+ 19: 
+ %20 = load double , double * %4 
+ %21 = load double , double * %3 
+ %22 = fdiv double %20 , %21 
+ store double %22 , double * %6 
+ %23 = load double , double * %8 
+ %24 = load double , double * %6 
+ %25 = fdiv double %23 , %24 
+ %26 = fdiv double %25 , 2.000000e+00 
+ %27 = load double , double * %8 
+ %28 = fdiv double %27 , 2.000000e+00 
+ %29 = load double , double * %9 
+ %30 = fdiv double %28 , %29 
+ store double %30 , double * %7 
+ %31 = load double , double * %9 
+ %32 = fdiv double %31 , 2.000000e+00 
+ %33 = load double , double * %7 
+ %34 = fdiv double %33 , 2.000000e+00 
+ store double %34 , double * %8 
+ %35 = load double , double * %8 
+ %36 = fdiv double %35 , 2.000000e+00 
+ %37 = load double , double * %9 
+ %38 = fdiv double %36 , %37 
+ %39 = fdiv double %38 , 2.000000e+00 
+ %40 = load double , double * %8 
+ %41 = fdiv double %40 , 2.000000e+00 
+ %42 = fdiv double %41 , 2.000000e+00 
+ %43 = fdiv double %42 , 2.000000e+00 
+ %44 = load double , double * %9 
+ 

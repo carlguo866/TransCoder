@@ -82,9 +82,10 @@ def eval_state(proc, proc_name):
             return 'timeout', None
         stderr = stderr.decode('utf8', errors='replace')
         if stderr.find("error:") == -1:
-            #print("hell yes one func works: " + proc_name, flush=True)
+            print("hell yes one func works: " + proc_name, flush=True)
             return 'success', None
         else:
+            print(stderr)
             return 'failure', stderr
     except KeyboardInterrupt:
         raise
@@ -119,6 +120,7 @@ def run_cpp_program(script_path, i):
 def run_llvm_program(script_path, i):
     folder = os.path.dirname(script_path)
     name = os.path.basename(script_path).split('.')[0]
+    print(folder+'/' + name + '.ll')
     proc = subprocess.Popen(f'{limit_virtual_memory(MAX_VIRTUAL_MEMORY)}; cd {folder} && clang {name}.ll -S',
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=True, executable='/bin/bash')
     res = eval_state(proc, f"clang {name}")
@@ -297,7 +299,8 @@ def submit_functions(functions_list, id, ref, lang, outfolder):
                 results_list.append(('success', 'identical to gold'))
                 return results_list, i
             script = detokenize(f)
-            script = add_declarations_and_definitions(hyp)
+            print(script)
+            script = add_declarations_and_definitions(script)
             if script == '': 
                 results_list.append(('error', 'script empty'))
                 continue
@@ -325,7 +328,7 @@ def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder):
     jobs = []
     executor = ProcessPoolExecutor()
     for f, i, r in zip(functions, ids, refs):
-        i = i.replace('<unk> ', '@')
+        i = i.replace('<unk> ', '@').replace('<unk>','#')
         jobs.append(executor.submit(submit_functions, f, i, r, lang,
                                     outfolder))
 
@@ -344,7 +347,7 @@ def eval_function_output(ref_path, hyp_paths, id_path, lang2, outfolder):
                 results_stats['identical_gold'] += 1
         else:
             results_stats[results_list[0][0]] += 1
-        i = i.replace('@', '<unk> ') 
+        i = i.replace('@', '<unk> ').replace('#','<unk>') 
         results[ids.index(i+'\n')] = []
         for result, stderr in results_list:
             if stderr is not None:

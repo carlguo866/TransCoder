@@ -1,0 +1,65 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca float 
+ %6 = alloca float 
+ store i32 0 , i32 * %1 
+ store i32 90 , i32 * %2 
+ store float , float * 0.000000e+00 %5 
+ store float , float * 0.000000e+00 %6 
+ br label %7 
+ 7: 
+ %8 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %3 i32 * %4 ) 
+ %9 = load i32 , i32 * %3 
+ %10 = icmp eq i32 %9 , 0 
+ br i1 %10 , label %11 , label %15 
+ 11: 
+ %12 = load i32 , i32 * %4 
+ %13 = icmp eq i32 %12 , 0 
+ br i1 %13 , label %14 , label %15 
+ 14: 
+ br label %45 
+ 15: 
+ %16 = load float , float * %6 
+ %17 = fpext float %16 to double 
+ %18 = load i32 , i32 * %3 
+ %19 = sitofp i32 %18 to float 
+ %20 = fpext float %19 to double 
+ %21 = load i32 , i32 * %2 
+ %22 = sitofp i32 %21 to double 
+ %23 = fmul double %22 , 0x400921FB54442D11 
+ %24 = fdiv double %23 , 1.800000e+02 
+ %25 = call double @sin ( double %24 ) #3 
+ %26 = fmul double %20 , %25 
+ %27 = fadd double %17 , %26 
+ %28 = fptrunc double %27 to float 
+ store float %28 , float * %6 
+ %29 = load float , float * %5 
+ %30 = fpext float %29 to double 
+ %31 = load i32 , i32 * %3 
+ %32 = sitofp i32 %31 to float 
+ %33 = fpext float %32 to double 
+ %34 = load i32 , i32 * %2 
+ %35 = sitofp i32 %34 to double 
+ %36 = fmul double %35 , 0x400921FB54442D11 
+ %37 = fdiv double %36 , 1.800000e+02 
+ %38 = call double @cos ( double %37 ) #3 
+ %39 = fmul double %33 , %38 
+ %40 = fadd double %30 , %39 
+ %41 = fptrunc double %40 to float 
+ store float %41 , float * %5 
+ %42 = load i32 , i32 * %2 
+ %43 = load i32 , i32 * %4 
+ %44 = sub nsw i32 %42 , %43 
+ store i32 %44 , i32 * %2 
+ br label %7 
+ 45: 
+ %46 = load float , float * %5 
+ %47 = fptosi float %46 to i32 
+ %48 = load float , float * %6 
+ %49 = fptosi float %48 to i32 
+ %50 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %47 i32 %49 ) 
+ ret i32 0 
+ } 

@@ -1,0 +1,63 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca float 
+ %3 = alloca float 
+ %4 = alloca float 
+ %5 = alloca float 
+ %6 = alloca float 
+ store i32 0 , i32 * %1 
+ store float , float * 0.000000e+00 %5 
+ store float , float * 0.000000e+00 %6 
+ store float , float * 9.000000e+01 %3 
+ br label %7 
+ 7: 
+ %8 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%f,%f~00" i64 0 i64 0 ) float * %2 float * %4 ) 
+ %9 = load float , float * %2 
+ %10 = fcmp oeq float %9 , 0.000000e+00 
+ br i1 %10 , label %11 , label %15 
+ 11: 
+ %12 = load float , float * %4 
+ %13 = fcmp oeq float %12 , 0.000000e+00 
+ br i1 %13 , label %14 , label %15 
+ 14: 
+ br label %43 
+ 15: 
+ %16 = load float , float * %3 
+ %17 = fdiv float %16 , 1.800000e+02 
+ %18 = fpext float %17 to double 
+ %19 = fmul double %18 , 0x400921FB54442D18 
+ %20 = call double @sin ( double %19 ) #3 
+ %21 = load float , float * %2 
+ %22 = fpext float %21 to double 
+ %23 = fmul double %20 , %22 
+ %24 = load float , float * %6 
+ %25 = fpext float %24 to double 
+ %26 = fadd double %25 , %23 
+ %27 = fptrunc double %26 to float 
+ store float %27 , float * %6 
+ %28 = load float , float * %3 
+ %29 = fdiv float %28 , 1.800000e+02 
+ %30 = fpext float %29 to double 
+ %31 = fmul double %30 , 0x400921FB54442D18 
+ %32 = call double @cos ( double %31 ) #3 
+ %33 = load float , float * %2 
+ %34 = fpext float %33 to double 
+ %35 = fmul double %32 , %34 
+ %36 = load float , float * %5 
+ %37 = fpext float %36 to double 
+ %38 = fadd double %37 , %35 
+ %39 = fptrunc double %38 to float 
+ store float %39 , float * %5 
+ %40 = load float , float * %4 
+ %41 = load float , float * %3 
+ %42 = fsub float %41 , %40 
+ store float %42 , float * %3 
+ br label %7 
+ 43: 
+ %44 = load float , float * %5 
+ %45 = fptosi float %44 to i32 
+ %46 = load float , float * %6 
+ %47 = fptosi float %46 to i32 
+ %48 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %45 i32 %47 ) 
+ ret i32 0 
+ } 

@@ -1,0 +1,51 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca i32 
+ store i32 0 , i32 * %1 
+ %6 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %2 ) 
+ %7 = load i32 , i32 * %2 
+ %8 = sdiv i32 %7 , 1000 
+ store i32 %8 , i32 * %3 
+ %9 = load i32 , i32 * %2 
+ %10 = srem i32 %9 , 1000 
+ %11 = load i32 , i32 * %3 
+ %12 = sdiv i32 %11 , 1000 
+ store i32 %12 , i32 * %4 
+ %13 = load i32 , i32 * %2 
+ %14 = srem i32 %13 , 1000 
+ %15 = load i32 , i32 * %3 
+ %16 = sdiv i32 %15 , 1000 
+ %17 = load i32 , i32 * %4 
+ %18 = srem i32 %16 , %17 
+ %19 = icmp eq i32 %18 , 0 
+ br i1 %19 , label %20 , label %21 
+ 20: 
+ store i32 0 , i32 * %5 
+ br label %21 
+ 21: 
+ store i32 0 , i32 * %5 
+ br label %22 
+ 22: 
+ %23 = load i32 , i32 * %5 
+ %24 = load i32 , i32 * %4 
+ %25 = icmp slt i32 %23 , %24 
+ br i1 %25 , label %26 , label %41 
+ 26: 
+ %27 = load i32 , i32 * %5 
+ %28 = load i32 , i32 * %3 
+ %29 = sdiv i32 %27 , %28 
+ %30 = load i32 , i32 * %5 
+ %31 = srem i32 %29 , %30 
+ %32 = icmp eq i32 %31 , 0 
+ br i1 %32 , label %33 , label %35 
+ 33: 
+ %34 = load i32 , i32 * %5 
+ store i32 %34 , i32 * %5 
+ br label %35 
+ 35: 
+ %36 = load i32 , i32 * %3 
+ %37 = load i32 , i32 * %4 
+ %38 = sdiv i32 

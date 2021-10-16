@@ -71,7 +71,7 @@ def load_binarized(path, params):
             assert params.split_data is False
             path = split_path
 
-    print("path" + path)
+    print("data path" + path)
     assert os.path.isfile(path), path
     logger.info("Loading data from %s ..." % path)
     data = torch.load(path)

@@ -1,0 +1,23 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca [ 32 x i8 ] 
+ store i32 0 , i32 * %1 
+ %4 = call i32 @calc_prime ( ) 
+ store i32 0 , i32 * %2 
+ br label %5 
+ 5: 
+ %6 = getelementptr inbounds [ 32 x i8 ] , [ 32 x i8 ] * %3 , i64 0 , i64 0 
+ %7 = load { i32 i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * %struct._IO_marker * %struct._IO_FILE * i32 i32 i64 i16 i8 [ 1 x i8 ] i8 * i64 i8 * i8 * i8 * i8 * i64 i32 [ 20 x i8 ] } * , { i32 i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * %struct._IO_marker * %struct._IO_FILE * i32 i32 i64 i16 i8 [ 1 x i8 ] i8 * i64 i8 * i8 * i8 * i8 * i64 i32 [ 20 x i8 ] } * * @stdin 
+ %8 = call i8 * @fgets ( i8 * %6 i32 32 { i32 i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * i8 * %struct._IO_marker * %struct._IO_FILE * i32 i32 i64 i16 i8 [ 1 x i8 ] i8 * i64 i8 * i8 * i8 * i8 * i64 i32 [ 20 x i8 ] } * %7 ) 
+ %9 = icmp ne i8 * %8 , null 
+ br i1 %9 , label %10 , label %15 
+ 10: 
+ %11 = getelementptr inbounds [ 32 x i8 ] , [ 32 x i8 ] * %3 , i64 0 , i64 0 
+ %12 = call i32 ( i8 * ... ) bitcast ( i32 ( ... ) * @atoi to i32 ( i8 * ... ) * ) ( i8 * %11 ) 
+ %13 = call i32 @count ( i32 %12 ) 
+ %14 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 4 x i8 ] @".str:%d~0A~00" i64 0 i64 0 ) i32 %13 ) 
+ br label %5 
+ 15: 
+ ret i32 0 
+ } 

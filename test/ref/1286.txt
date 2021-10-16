@@ -1,0 +1,67 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca i32 
+ %6 = alloca i32 
+ %7 = alloca double 
+ %8 = alloca double 
+ store i32 0 , i32 * %1 
+ store i32 90 , i32 * %4 
+ store double , double * 0.000000e+00 %7 
+ store double , double * 0.000000e+00 %8 
+ br label %9 
+ 9: 
+ %10 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %2 i32 * %3 ) 
+ %11 = load i32 , i32 * %2 
+ %12 = icmp eq i32 %11 , 0 
+ br i1 %12 , label %13 , label %17 
+ 13: 
+ %14 = load i32 , i32 * %3 
+ %15 = icmp eq i32 %14 , 0 
+ br i1 %15 , label %16 , label %17 
+ 16: 
+ br label %47 
+ 17: 
+ %18 = load i32 , i32 * %2 
+ %19 = sitofp i32 %18 to double 
+ %20 = load i32 , i32 * %4 
+ %21 = sitofp i32 %20 to double 
+ %22 = call double @acos ( double -1.000000e+00 ) #3 
+ %23 = fmul double %21 , %22 
+ %24 = fdiv double %23 , 1.800000e+02 
+ %25 = call double @cos ( double %24 ) #3 
+ %26 = fmul double %19 , %25 
+ %27 = load double , double * %7 
+ %28 = fadd double %27 , %26 
+ store double %28 , double * %7 
+ %29 = load i32 , i32 * %2 
+ %30 = sitofp i32 %29 to double 
+ %31 = load i32 , i32 * %4 
+ %32 = sitofp i32 %31 to double 
+ %33 = call double @acos ( double -1.000000e+00 ) #3 
+ %34 = fmul double %32 , %33 
+ %35 = fdiv double %34 , 1.800000e+02 
+ %36 = call double @sin ( double %35 ) #3 
+ %37 = fmul double %30 , %36 
+ %38 = load double , double * %8 
+ %39 = fadd double %38 , %37 
+ store double %39 , double * %8 
+ %40 = load i32 , i32 * %3 
+ %41 = load i32 , i32 * %4 
+ %42 = sub nsw i32 %41 , %40 
+ store i32 %42 , i32 * %4 
+ %43 = load double , double * %7 
+ %44 = fptosi double %43 to i32 
+ store i32 %44 , i32 * %5 
+ %45 = load double , double * %8 
+ %46 = fptosi double %45 to i32 
+ store i32 %46 , i32 * %6 
+ br label %9 
+ 47: 
+ %48 = load i32 , i32 * %5 
+ %49 = load i32 , i32 * %6 
+ %50 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %48 i32 %49 ) 
+ ret i32 0 
+ } 

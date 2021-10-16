@@ -1,0 +1,51 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca i32 
+ %3 = alloca [ 80 x i8 ] 
+ store i32 0 , i32 * %1 
+ br label %4 
+ 4: 
+ %5 = getelementptr inbounds [ 80 x i8 ] , [ 80 x i8 ] * %3 , i64 0 , i64 0 
+ %6 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 9 x i8 ] @".str:%[^~0A]%*c~00" i64 0 i64 0 ) i8 * %5 ) 
+ %7 = icmp ne i32 %6 , -1 
+ br i1 %7 , label %8 , label %33 
+ 8: 
+ store i32 0 , i32 * %2 
+ br label %9 
+ 9: 
+ %10 = load i32 , i32 * %2 
+ %11 = icmp sle i32 %10 , 25 
+ br i1 %11 , label %12 , label %32 
+ 12: 
+ %13 = getelementptr inbounds [ 80 x i8 ] , [ 80 x i8 ] * %3 , i64 0 , i64 0 
+ call void @shift ( i8 * %13 i32 1 ) 
+ %14 = getelementptr inbounds [ 80 x i8 ] , [ 80 x i8 ] * %3 , i64 0 , i64 0 
+ %15 = call i32 @search ( i8 * %14 i8 * getelementptr inbounds ( [ 4 x i8 ] @".str.1:the~00" i64 0 i64 0 ) ) 
+ %16 = icmp eq i32 %15 , 1 
+ br i1 %16 , label %25 , label %17 
+ 17: 
+ %18 = getelementptr inbounds [ 80 x i8 ] , [ 80 x i8 ] * %3 , i64 0 , i64 0 
+ %19 = call i32 @search ( i8 * %18 i8 * getelementptr inbounds ( [ 5 x i8 ] @".str.2:this~00" i64 0 i64 0 ) ) 
+ %20 = icmp eq i32 %19 , 1 
+ br i1 %20 , label %25 , label %21 
+ 21: 
+ %22 = getelementptr inbounds [ 80 x i8 ] , [ 80 x i8 ] * %3 , i64 0 , i64 0 
+ %23 = call i32 @search ( i8 * %22 i8 * getelementptr inbounds ( [ 5 x i8 ] @".str.3:that~00" i64 0 i64 0 ) ) 
+ %24 = icmp eq i32 %23 , 1 
+ br i1 %24 , label %25 , label %28 
+ 25: 
+ %26 = getelementptr inbounds [ 80 x i8 ] , [ 80 x i8 ] * %3 , i64 0 , i64 0 
+ %27 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 4 x i8 ] @".str.4:%s~0A~00" i64 0 i64 0 ) i8 * %26 ) 
+ br label %32 
+ 28: 
+ br label %29 
+ 29: 
+ %30 = load i32 , i32 * %2 
+ %31 = add nsw i32 %30 , 1 
+ store i32 %31 , i32 * %2 
+ br label %9 
+ 32: 
+ br label %4 
+ 33: 
+ ret i32 0 
+ } 

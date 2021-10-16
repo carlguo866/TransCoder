@@ -1,0 +1,28 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca [ 20 x i8 ] 
+ %3 = alloca i32 
+ %4 = alloca i32 
+ %5 = alloca i32 
+ store i32 0 , i32 * %1 
+ %6 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%s~00" i64 0 i64 0 ) [ 20 x i8 ] * %2 ) 
+ %7 = getelementptr inbounds [ 20 x i8 ] , [ 20 x i8 ] * %2 , i64 0 , i64 0 
+ %8 = call i64 @strlen ( i8 * %7 ) #3 
+ %9 = trunc i64 %8 to i32 
+ store i32 %9 , i32 * %3 
+ %10 = getelementptr inbounds [ 20 x i8 ] , [ 20 x i8 ] * %2 , i64 0 , i64 0 
+ %11 = call i64 @strlen ( i8 * %10 ) #3 
+ %12 = trunc i64 %11 to i32 
+ store i32 %12 , i32 * %4 
+ %13 = getelementptr inbounds [ 20 x i8 ] , [ 20 x i8 ] * %2 , i64 0 , i64 0 
+ %14 = call i64 @strlen ( i8 * %13 ) #3 
+ %15 = trunc i64 %14 to i32 
+ store i32 %15 , i32 * %5 
+ %16 = getelementptr inbounds [ 20 x i8 ] , [ 20 x i8 ] * %2 , i64 0 , i64 0 
+ %17 = call i64 @strlen ( i8 * %16 ) #3 
+ %18 = trunc i64 %17 to i32 
+ store i32 %18 , i32 * %3 
+ %19 = getelementptr inbounds [ 20 x i8 ] , [ 20 x i8 ] * %2 , i64 0 , i64 0 
+ %20 = call i64 @strlen ( i8 * %19 ) #3 
+ %21 = trunc i64 %20 to i32 
+ store i32 %21 , i32 * 

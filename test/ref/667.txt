@@ -1,0 +1,36 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca double 
+ %3 = alloca double 
+ %4 = alloca i32 
+ %5 = alloca i32 
+ %6 = alloca i32 
+ store i32 0 , i32 * %1 
+ store double , double * 0.000000e+00 %2 
+ store double , double * 0.000000e+00 %3 
+ store i32 0 , i32 * %4 
+ br label %7 
+ 7: 
+ %8 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 6 x i8 ] @".str:%d,%d~00" i64 0 i64 0 ) i32 * %5 i32 * %6 ) 
+ %9 = load i32 , i32 * %5 
+ %10 = icmp eq i32 %9 , 0 
+ br i1 %10 , label %11 , label %15 
+ 11: 
+ %12 = load i32 , i32 * %6 
+ %13 = icmp eq i32 %12 , 0 
+ br i1 %13 , label %14 , label %15 
+ 14: 
+ br label %18 
+ 15: 
+ %16 = load i32 , i32 * %5 
+ %17 = load i32 , i32 * %6 
+ call void @calcPoint ( double * %2 double * %3 i32 * %4 i32 %16 i32 %17 ) 
+ br label %7 
+ 18: 
+ %19 = load double , double * %2 
+ %20 = fptosi double %19 to i32 
+ %21 = load double , double * %3 
+ %22 = fptosi double %21 to i32 
+ %23 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 7 x i8 ] @".str.1:%d~0A%d~0A~00" i64 0 i64 0 ) i32 %20 i32 %22 ) 
+ ret i32 0 
+ } 

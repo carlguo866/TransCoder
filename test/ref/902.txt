@@ -1,0 +1,32 @@
+define dso_local i32 @main ( ) #0 { 
+ %1 = alloca i32 
+ %2 = alloca [ 5 x i32 ] 
+ %3 = alloca i32 
+ store i32 0 , i32 * %1 
+ %4 = bitcast [ 5 x i32 ] * %2 to i8 * 
+ call void @llvm.memset.p0i8.i64 ( i8 * %4 i8 0 i64 20 i1 false ) 
+ store i32 0 , i32 * %3 
+ store i32 0 , i32 * %3 
+ br label %5 
+ 5: 
+ %6 = load i32 , i32 * %3 
+ %7 = icmp slt i32 %6 , 5 
+ br i1 %7 , label %8 , label %16 
+ 8: 
+ %9 = load i32 , i32 * %3 
+ %10 = sext i32 %9 to i64 
+ %11 = getelementptr inbounds [ 5 x i32 ] , [ 5 x i32 ] * %2 , i64 0 , i64 %10 
+ %12 = call i32 ( i8 * ... ) @__isoc99_scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %11 ) 
+ br label %13 
+ 13: 
+ %14 = load i32 , i32 * %3 
+ %15 = add nsw i32 %14 , 1 
+ store i32 %15 , i32 * %3 
+ br label %5 
+ 16: 
+ %17 = getelementptr inbounds [ 5 x i32 ] , [ 5 x i32 ] * %2 , i64 0 , i64 0 
+ call void @func_sort ( i32 * %17 ) 
+ %18 = getelementptr inbounds [ 5 x i32 ] , [ 5 x i32 ] * %2 , i64 0 , i64 0 
+ call void @func_output ( i32 * %18 ) 
+ ret i32 0 
+ } 

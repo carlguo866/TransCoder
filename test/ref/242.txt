@@ -1,0 +1,30 @@
+define dso_local i32 @main ( i32 %0 ) #0 { 
+ %2 = alloca i32 
+ %3 = alloca i32 
+ store i32 0 , i32 * %2 
+ store i32 %0 , i32 * %3 
+ br label %4 
+ 4: 
+ %5 = call i32 ( i8 * ... ) @scanf ( i8 * getelementptr inbounds ( [ 3 x i8 ] @".str:%d~00" i64 0 i64 0 ) i32 * %3 ) 
+ %6 = xor i32 %5 , -1 
+ %7 = load i32 , i32 * %3 
+ %8 = mul nsw i32 %6 , %7 
+ %9 = icmp ne i32 %8 , 0 
+ br i1 %9 , label %10 , label %20 
+ 10: 
+ %11 = load i32 , i32 * %3 
+ %12 = sub nsw i32 %11 , 600 
+ store i32 %12 , i32 * %3 
+ br label %13 
+ 13: 
+ %14 = load i32 , i32 * %3 
+ %15 = mul nsw i32 100 , %14 
+ %16 = load i32 , i32 * %3 
+ %17 = sub nsw i32 %16 , 600 
+ %18 = mul nsw i32 %15 , %17 
+ %19 = call i32 ( i8 * ... ) @printf ( i8 * getelementptr inbounds ( [ 4 x i8 ] @".str.1:%d~0A~00" i64 0 i64 0 ) i32 %18 ) 
+ br label %4 
+ 20: 
+ %21 = load i32 , i32 * %2 
+ ret i32 %21 
+ } 

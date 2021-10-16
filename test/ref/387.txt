@@ -1,0 +1,22 @@
+define dso_local i64 @fact ( i64 %0 ) #0 { 
+ %2 = alloca i64 
+ %3 = alloca i64 
+ store i64 %0 , i64 * %3 
+ %4 = load i64 , i64 * %3 
+ %5 = icmp eq i64 %4 , 1 
+ br i1 %5 , label %6 , label %7 
+ 6: 
+ store i64 1 , i64 * %2 
+ br label %13 
+ 7: 
+ %8 = load i64 , i64 * %3 
+ %9 = load i64 , i64 * %3 
+ %10 = sub nsw i64 %9 , 1 
+ %11 = call i64 @fact ( i64 %10 ) 
+ %12 = mul nsw i64 %8 , %11 
+ store i64 %12 , i64 * %2 
+ br label %13 
+ 13: 
+ %14 = load i64 , i64 * %2 
+ ret i64 %14 
+ } 
