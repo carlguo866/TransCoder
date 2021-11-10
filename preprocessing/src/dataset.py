@@ -12,7 +12,7 @@ import os
 import numpy as np
 from preprocessing.src.utils import shuf_file, apply_bpe_file, get_vocab_file, learn_bpe_file, regroup_and_select_data, LocalExecutor, binarize_for_XLM_file, truncate_files, \
     get_nlines, process_and_tokenize_json_file, extract_functions_file, extract_functions_parallel
-
+import shutil
 
 class Language:
 
@@ -63,23 +63,31 @@ class Language:
         subprocess.run(command, shell=True, stdout=subprocess.PIPE,
                     stderr=subprocess.PIPE)
         
-        #parallel
-        if(parallel_size !=0):
-            for i, lang2 in enumerate(other_langs): 
-                lang1_, lang2_ = (self.l, lang2) if self.l < lang2 else (lang2, self.l)
-                subprocess.run(f"cat {all_tok} | head -n {(2+i)*test_size+parallel_size} | tail -n {parallel_size}> {self.folder.joinpath(f'valid.{lang1_}_sa-{lang2_}_sa.{self.l}.tok')}",
-                            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print("test_size" + str(test_size))
-                print("Head " + str((2+i)*test_size) + " Tail " +str((2+i)*test_size+parallel_size))
-                subprocess.run(f"cat {all_tok} | head -n {(2+i)*(test_size+parallel_size)} | tail -n {parallel_size}> {self.folder.joinpath(f'test.{lang1_}_sa-{lang2_}_sa.{self.l}.tok')}",
-                            shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-                print("Head " + str((2+i)*test_size+parallel_size) + " Tail " +str((2+i)*(test_size+parallel_size)))
-            subprocess.run(f"cat {all_tok} | tail -n {n_lines-(2+len(other_langs)-1)*(test_size+parallel_size)}  > {self.folder.joinpath(f'train{suffix}.tok')}",
+        #parallel but historical overdue that shouldn't be used
+        # if parallel_size !=0:
+        #     for i, lang2 in enumerate(other_langs): 
+        #         lang1_, lang2_ = (self.l, lang2) if self.l < lang2 else (lang2, self.l)
+        #         subprocess.run(f"cat {all_tok} | head -n {(2+i)*test_size+parallel_size} | tail -n {parallel_size}> {self.folder.joinpath(f'valid.{lang1_}_sa-{lang2_}_sa.{self.l}.tok')}",
+        #                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #         print("test_size" + str(test_size))
+        #         print("Head " + str((2+i)*test_size) + " Tail " +str((2+i)*test_size+parallel_size))
+        #         subprocess.run(f"cat {all_tok} | head -n {(2+i)*(test_size+parallel_size)} | tail -n {parallel_size}> {self.folder.joinpath(f'test.{lang1_}_sa-{lang2_}_sa.{self.l}.tok')}",
+        #                     shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #         print("Head " + str((2+i)*test_size+parallel_size) + " Tail " +str((2+i)*(test_size+parallel_size)))
+        #     subprocess.run(f"cat {all_tok} | tail -n {n_lines-(2+len(other_langs)-1)*(test_size+parallel_size)}  > {self.folder.joinpath(f'train{suffix}.tok')}",
+        #                 shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        #     print("Head" + str((2+i)*(test_size+parallel_size))+ " Tail " + str(n_lines))
+        # else: 
+        subprocess.run(f"cat {all_tok} | tail -n {n_lines-2*test_size}  > {self.folder.joinpath(f'train{suffix}.tok')}",
                         shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            print("Head" + str((2+i)*(test_size+parallel_size))+ " Tail " + str(n_lines))
-        else: 
-            subprocess.run(f"cat {all_tok} | tail -n {n_lines-2*test_size}  > {self.folder.joinpath(f'train{suffix}.tok')}",
-                        shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        
+        for i, lang2 in enumerate(other_langs): 
+            lang1_, lang2_ = (self.l, lang2) if self.l < lang2 else (lang2, self.l)
+            shutil.copyfile(self.folder.joinpath(f'test.tok'), self.folder.joinpath(f'test.{lang1_}_sa-{lang2_}_sa.{lang1_}.tok'))
+            shutil.copyfile(self.folder.joinpath(f'valid.tok'), self.folder.joinpath(f'valid.{lang1_}_sa-{lang2_}_sa.{lang1_}.tok'))
+            shutil.copyfile(self.folder.joinpath(f'train.tok'), self.folder.joinpath(f'train.{lang1_}_sa-{lang2_}_sa.{lang1_}.tok'))
+    
+    
         #shufs 
         shuf_file(all_tok)
         shuf_file(self.folder.joinpath(f'test{suffix}.tok'))
@@ -117,8 +125,9 @@ class Language:
         files = list(self.folder.glob(f'train{suffix}.tok'))
         files.append(self.folder.joinpath(f'test{suffix}.tok'))
         files.append(self.folder.joinpath(f'valid{suffix}.tok'))
-        # files.extend(list(self.folder.glob(f'valid.*.{self.l}.tok')))
-        # files.extend(list(self.folder.glob(f'test.*.{self.l}.tok')))
+        files.extend(list(self.folder.glob(f'valid.*.{self.l}.tok')))
+        files.extend(list(self.folder.glob(f'test.*.{self.l}.tok')))
+        files.extend(list(self.folder.glob(f'train.*.{self.l}.tok')))
         print("files" + str(files))
         toks = [tok for tok in files if not tok.with_suffix('.functions_standalone.tok').is_file() ] # and tok.with_suffix('.functions_class.tok').is_file())
         if len(toks) > 0:
@@ -217,7 +226,7 @@ class Dataset:
             nlines=nlines,
             output=data_train_bpe)
 
-        print(f"training bpe on {data_train_bpe}...")
+        print(f"training bpe on {data_train_bpe}...", flush=True)
         learn_bpe_file(data_train_bpe, ncodes, self.codes)
 
     def get_vocab(self, size_gb=None):
@@ -287,8 +296,10 @@ class Dataset:
         assert lang1.l == "cpp" and lang2.l =='llvm'
         src_paths = list(lang1.folder.glob(f'valid.*.{lang1.l}.tok'))
         src_paths.extend(list(lang1.folder.glob(f'test.*.{lang1.l}.tok')))
+        src_paths.extend(list(lang2.folder.glob(f'train.*.{lang1.l}.tok')))
         tgt_paths = list(lang2.folder.glob(f'valid.*.{lang2.l}.tok'))
         tgt_paths.extend(list(lang2.folder.glob(f'test.*.{lang2.l}.tok')))
+        tgt_paths.extend(list(lang2.folder.glob(f'train.*.{lang2.l}.tok')))
         print("src_paths" + str(src_paths))             
         print("tgt_paths" + str(src_paths))                                                    
         for i in range(len(src_paths)): 
@@ -315,4 +326,6 @@ class Dataset:
         self.apply_bpe(f'valid.*.*.functions_*.tok',
                        use_vocab=False, executor=bpe_executor)
         self.apply_bpe(f'test.*.*.functions_*.tok',
+                       use_vocab=False, executor=bpe_executor)
+        self.apply_bpe(f'train.*.*.functions_*.tok',
                        use_vocab=False, executor=bpe_executor)

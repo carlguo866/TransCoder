@@ -1,7 +1,6 @@
 venv
 .env
 .gitattributes
-model_1.pth
 .idea
 /XLM/tools/fastBPE
 /apex/
@@ -12,8 +11,4 @@ data/
 output/
 myoutput/
 XLM/src/data/test_parallel_data.py
-input_test.ll
-input.ll
-tokenized-output.txt
-detokenized-output.ll
-input2.c
+Ithemal

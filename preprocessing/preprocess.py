@@ -47,6 +47,8 @@ def check_files_and_symlink_for_XLM(dataset, langs):
                         XLM_folder.joinpath(f"valid.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
             create_symlink(dataset.folder.joinpath(f"{lang}.test{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
                         XLM_folder.joinpath(f"test.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
+            create_symlink(dataset.folder.joinpath(f"{lang}.train{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
+                        XLM_folder.joinpath(f"train.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
 
 
 def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, parallel_size=0, test_size=1000, ncodes=100000, size_gb=50):
@@ -91,7 +93,6 @@ def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, parallel_si
     #dataset.binarize_for_XLM(f'train{dataset.suffix}.[0123456789].functions_class.bpe', executor=cluster_ex2)
     dataset.binarize_for_XLM(
         f'train{dataset.suffix}.functions_standalone.bpe', executor=cluster_ex2)
-
     dataset.binarize_for_XLM(
         f'test{dataset.suffix}.functions_*.bpe', executor=None)
     dataset.binarize_for_XLM(
@@ -100,6 +101,8 @@ def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, parallel_si
         f'valid.*.*.functions_*.bpe', executor=None)
     dataset.binarize_for_XLM(
         f'test.*.*.functions_*.bpe', executor=None)
+    dataset.binarize_for_XLM(
+        f'train.*.*.functions_*.bpe', executor=None)
 
     langs = [lang1, lang2] if lang3 is None else [lang1, lang2, lang3]
     check_files_and_symlink_for_XLM(dataset, langs)
