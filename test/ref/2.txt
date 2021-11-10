@@ -1,6 +1,0 @@
-define dso_local void @pop ( ) #0 { 
- %1 = load i32 , i32 * @sp 
- %2 = add nsw i32 %1 , -1 
- store i32 %2 , i32 * @sp 
- ret void 
- } 

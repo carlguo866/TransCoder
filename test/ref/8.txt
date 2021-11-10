@@ -1,8 +1,0 @@
-define dso_local double @pow2 ( double %0 ) #0 { 
- %2 = alloca double 
- store double %0 , double * %2 
- %3 = load double , double * %2 
- %4 = load double , double * %2 
- %5 = fmul double %3 , %4 
- ret double %5 
- } 
