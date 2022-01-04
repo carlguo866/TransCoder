@@ -1,14 +1,16 @@
 import matplotlib.pyplot as plt
 from itertools import chain
 import os
+import sys
 if __name__ == '__main__': 
-    log_reader = open("/home/carl/TransCoder/myoutput/old/train7.log" , 'r', encoding='utf-8')
+    log_reader = open("/home/carl/TransCoder/myoutput/train_mt2.log" , 'r', encoding='utf-8')
     log_reader2= None 
-    log_reader2 = open("/home/carl/TransCoder/myoutput/old/train8.log" , 'r')
+  #  log_reader2 = open("/home/carl/TransCoder/myoutput/old/train8.log" , 'r')
     scores = None 
     scores_train = None
     i=0
-    name = 'original_train'
+    name = sys.argv[1]
+    isBT = False
     if not os.path.exists(f'results/{name}'):
         os.mkdir(f"results/{name}")
     for log in log_reader: 
@@ -57,15 +59,27 @@ if __name__ == '__main__':
     plt.savefig(f"results/{name}/c_llvm_train_loss_ae.png")
     plt.clf()
     
-    plt.plot(scores_train['iteration'],scores_train['BT-llvm_sa-cpp_sa-llvm_sa'], label='llvm_sa-cpp_sa-llvm_sa')
-    plt.plot(scores_train['iteration'],scores_train['BT-cpp_sa-llvm_sa-cpp_sa'], label='cpp_sa-llvm_sa-cpp_sa')
-    plt.xlabel("iteration")
-    plt.ylabel('BT training loss')
-    plt.title("BT Training Loss Over Time")
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(f"results/{name}/c_llvm_train_loss_bt.png")
-    plt.clf()
+    if isBT: 
+        plt.plot(scores_train['iteration'],scores_train['BT-llvm_sa-cpp_sa-llvm_sa'], label='llvm_sa-cpp_sa-llvm_sa')
+        plt.plot(scores_train['iteration'],scores_train['BT-cpp_sa-llvm_sa-cpp_sa'], label='cpp_sa-llvm_sa-cpp_sa')
+        plt.xlabel("iteration")
+        plt.ylabel('BT training loss')
+        plt.title("BT Training Loss Over Time")
+        plt.legend()
+        plt.tight_layout()
+        plt.savefig(f"results/{name}/c_llvm_train_loss_bt.png")
+        plt.clf()
+    else: 
+        pass
+        # plt.plot(scores_train['iteration'],scores_train['MT-llvm_sa-cpp_sa'], label='llvm_sa-cpp_sa')
+        # plt.plot(scores_train['iteration'],scores_train['MT-cpp_sa-llvm_sa'], label='cpp_sa-llvm_sa')
+        # plt.xlabel("iteration")
+        # plt.ylabel('MT training loss')
+        # plt.title("MT Training Loss Over Time")
+        # plt.legend()
+        # plt.tight_layout()
+        # plt.savefig(f"results/{name}/c_llvm_train_loss_mt.png")
+        # plt.clf()
 
     plt.plot(scores['epoch'][1:],scores['valid_cpp_sa-llvm_sa_mt_acc'][1:], label='validation accuracy')
     plt.plot(scores['epoch'][1:],scores['test_cpp_sa-llvm_sa_mt_acc'][1:], label='test accuracy')
@@ -88,24 +102,16 @@ if __name__ == '__main__':
         plt.savefig(f"results/{name}/c_llvm_comp_acc.png")
         plt.legend()
         plt.clf()
+    
+    bleu_loss_epoch = [i for i in range(len(scores['valid_cpp_sa-llvm_sa_mt_bleu']))] 
 
-    plt.plot(scores['epoch'],scores['valid_cpp_sa-llvm_sa_mt_bleu'], label='validation bleu')
-    plt.plot(scores['epoch'],scores['test_cpp_sa-llvm_sa_mt_bleu'], label='test bleu')
+    plt.plot(bleu_loss_epoch,scores['valid_cpp_sa-llvm_sa_mt_bleu'], label='validation bleu')
+    plt.plot(bleu_loss_epoch,scores['test_cpp_sa-llvm_sa_mt_bleu'], label='test bleu')
     plt.xlabel("epoch")
     plt.ylabel('translation bleu')
     plt.title("C to LLVM Translation BLEU Score")
     plt.legend()
     plt.savefig(f"results/{name}/c_llvm_bleu.png")
-    plt.clf()
-
-
-    plt.plot(scores['epoch'],scores['valid_llvm_sa-cpp_sa_mt_bleu'], label='validation bleu')
-    plt.plot(scores['epoch'],scores['test_llvm_sa-cpp_sa_mt_bleu'], label='test bleu')
-    plt.xlabel("epoch")
-    plt.ylabel('translation bleu')
-    plt.title("C to LLVM Translation BLEU Score")
-    plt.legend()
-    plt.savefig(f"results/{name}/llvm_c_bleu.png")
     plt.clf()
 
     plt.plot(scores['epoch'][1:],scores['valid_llvm_sa-cpp_sa_mt_acc'][1:], label='validation bleu')

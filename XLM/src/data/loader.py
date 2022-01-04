@@ -330,6 +330,7 @@ def check_data_params(params):
         } for src in params.langs for tgt in params.langs
         if src < tgt and ((src, tgt) in required_para or (tgt, src) in required_para)
     }
+    print(f"para_dataset = {params.para_dataset}")
     for paths in params.para_dataset.values():
         for p1, p2 in paths.values():
             if not os.path.isfile(p1):

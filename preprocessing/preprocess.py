@@ -13,7 +13,7 @@ from preprocessing.src.utils import bool_flag, create_symlink
 from submitit import AutoExecutor
 import subprocess
 from pathlib import Path
-
+import time
 
 def check_files_and_symlink_for_XLM(dataset, langs):
     # create symlink for all code - used for MLM pretraining
@@ -31,7 +31,7 @@ def check_files_and_symlink_for_XLM(dataset, langs):
     XLM_folder.mkdir(exist_ok=True)
     print("create symlinks for XLM ...")
     for lang in langs:
-        for cat in ["", ".functions_standalone"]:
+        for cat in ["", ".functions_standalone"]: 
             create_symlink(dataset.folder.joinpath(f"{lang}.train{dataset.suffix}{cat}.bpe.pth"),
                             XLM_folder.joinpath(f"train.{lang}{suffixs[cat]}.pth"))
             create_symlink(dataset.folder.joinpath(f"{lang}.test{dataset.suffix}{cat}.bpe.pth"),
@@ -39,16 +39,16 @@ def check_files_and_symlink_for_XLM(dataset, langs):
             create_symlink(dataset.folder.joinpath(f"{lang}.valid{dataset.suffix}{cat}.bpe.pth"),
                            XLM_folder.joinpath(f"valid.{lang}{suffixs[cat]}.pth"))
 
-        other_langs = [lang_temp for lang_temp in langs if lang != lang_temp]
-        print("other_langs" + str(other_langs))
-        for lang2 in other_langs: 
-            lang1_, lang2_ = (lang, lang2) if lang < lang2 else (lang2, lang)
-            create_symlink(dataset.folder.joinpath(f"{lang}.valid{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
-                        XLM_folder.joinpath(f"valid.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
-            create_symlink(dataset.folder.joinpath(f"{lang}.test{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
-                        XLM_folder.joinpath(f"test.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
-            create_symlink(dataset.folder.joinpath(f"{lang}.train{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
-                        XLM_folder.joinpath(f"train.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
+        # other_langs = [lang_temp for lang_temp in langs if lang != lang_temp]
+        # print("other_langs" + str(other_langs))
+        # for lang2 in other_langs: 
+        #     lang1_, lang2_ = (lang, lang2) if lang < lang2 else (lang2, lang)
+        #     create_symlink(dataset.folder.joinpath(f"{lang}.valid{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
+        #                 XLM_folder.joinpath(f"valid.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
+        #     create_symlink(dataset.folder.joinpath(f"{lang}.test{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
+        #                 XLM_folder.joinpath(f"test.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
+        #     create_symlink(dataset.folder.joinpath(f"{lang}.train{dataset.suffix}.{lang1_}_sa-{lang2_}_sa.{lang}.functions_standalone.bpe.pth"),
+        #                 XLM_folder.joinpath(f"train.{lang1_}_sa-{lang2_}_sa.{lang}_sa.pth"))
 
 
 def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, parallel_size=0, test_size=1000, ncodes=100000, size_gb=50):
@@ -74,6 +74,7 @@ def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, parallel_si
     dataset.process_languages(
         lang_executor=mp_executor, tok_executor=cluster_ex1, split_executor=cluster_ex2)
     dataset.train_bpe(ncodes=ncodes, size_gb=size_gb)
+    print("carl guo: start applying bpe")
     dataset.apply_bpe(
         f'train{dataset.suffix}.tok', use_vocab=False, executor=cluster_ex2)
     dataset.apply_bpe(f'test{dataset.suffix}.tok',
@@ -97,18 +98,20 @@ def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, parallel_si
         f'test{dataset.suffix}.functions_*.bpe', executor=None)
     dataset.binarize_for_XLM(
         f'valid{dataset.suffix}.functions_*.bpe', executor=None)
-    dataset.binarize_for_XLM(
-        f'valid.*.*.functions_*.bpe', executor=None)
-    dataset.binarize_for_XLM(
-        f'test.*.*.functions_*.bpe', executor=None)
-    dataset.binarize_for_XLM(
-        f'train.*.*.functions_*.bpe', executor=None)
+    # dataset.binarize_for_XLM(
+    #     f'valid.*.*.functions_*.bpe', executor=None)
+    # dataset.binarize_for_XLM(
+    #     f'test.*.*.functions_*.bpe', executor=None)
+    # dataset.binarize_for_XLM(
+    #     f'train.*.*.functions_*.bpe', executor=None)
 
     langs = [lang1, lang2] if lang3 is None else [lang1, lang2, lang3]
     check_files_and_symlink_for_XLM(dataset, langs)
 
 
 if __name__ == '__main__':
+
+    start = time.time()
     parser = argparse.ArgumentParser(description='')
     parser.add_argument('root', help='root folder')
     parser.add_argument('--lang1', help='language 1')
@@ -128,3 +131,5 @@ if __name__ == '__main__':
     print("parallel" + str(args.parallel_size))
     preprocess(args.root, args.lang1, args.lang2, args.keep_comments, args.local, parallel_size=args.parallel_size,
                lang3=args.lang3, size_gb=args.bpe_train_size, test_size=args.test_size)
+    end = time.time()
+    print(f"TIME IS {(end-start)/60}")

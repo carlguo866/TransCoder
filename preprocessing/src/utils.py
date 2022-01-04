@@ -96,7 +96,9 @@ def extract_functions_file(input_path, language, test_size=None):
     if output_path_sa.is_file(): #and output_path_class.is_file()
         return
     with input_path.open('r', encoding="utf-8") as f:
+        print(f"{language}input_path{input_path}")
         lines = f.readlines()
+        print(f"input lines{lines}")
     extract_auto_code = getattr(
         code_tokenizer, f"extract_functions_{language}")
     get_function_name = getattr(
@@ -148,17 +150,16 @@ def extract_functions_parallel(src_path, tgt_path, src_lang, tgt_lang , test_siz
     tgt_function_name = getattr(
         code_tokenizer, f"get_function_name_{tgt_lang}")
     
-    print(f"extracting parallel functions to {src_output_path_sa} and {tgt_output_path_sa}")
+    print(f"extracting parallel functions to {src_output_path_sa} and {tgt_output_path_sa}", flush=True)
     for i in range(len(src_lines)): 
-        print(f"extracting parallel function for line {i}")
         src_functions = src_extract_func(src_lines[i])
         # print("src_functions[0][0]" + str(src_functions[0][0]))
         src_dict = {src_function_name(func) != "" and src_function_name(func) : func for func in src_functions[0] }
         tgt_functions = tgt_extract_func(tgt_lines[i]) 
         tgt_dict = {tgt_function_name(func) != "" and tgt_function_name(func) : func for func in tgt_functions[0] }
+        if i <5:print(src_dict.keys()) 
         with src_output_path_sa.open('a+', encoding='utf-8') as src_sa:
             with tgt_output_path_sa.open('a+', encoding='utf-8') as tgt_sa:
-                print("printing extracted functions to file " + str(src_output_path_sa) + "and" + str(tgt_output_path_sa))
                 for k, v in src_dict.items(): 
                     if '@'+k in tgt_dict.keys(): 
                         chars = 'abcdefghijklmnopqrstuvwxyz'
@@ -255,7 +256,7 @@ def get_vocab_file(file_path, vocab):
                              shell=True,
                              stdout=subprocess.PIPE,
                              stderr=subprocess.PIPE)
-    process2 = subprocess.run(f"head -n 64000 {str(vocab)}.all > {str(vocab)}",
+    process2 = subprocess.run(f"head -n 45000 {str(vocab)}.all > {str(vocab)}",
                               shell=True,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE)

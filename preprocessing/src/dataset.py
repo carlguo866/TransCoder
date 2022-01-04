@@ -83,9 +83,9 @@ class Language:
         
         for i, lang2 in enumerate(other_langs): 
             lang1_, lang2_ = (self.l, lang2) if self.l < lang2 else (lang2, self.l)
-            shutil.copyfile(self.folder.joinpath(f'test.tok'), self.folder.joinpath(f'test.{lang1_}_sa-{lang2_}_sa.{lang1_}.tok'))
-            shutil.copyfile(self.folder.joinpath(f'valid.tok'), self.folder.joinpath(f'valid.{lang1_}_sa-{lang2_}_sa.{lang1_}.tok'))
-            shutil.copyfile(self.folder.joinpath(f'train.tok'), self.folder.joinpath(f'train.{lang1_}_sa-{lang2_}_sa.{lang1_}.tok'))
+            shutil.copyfile(self.folder.joinpath(f'test.tok'), self.folder.joinpath(f'test.{lang1_}_sa-{lang2_}_sa.{self.l}.tok'))
+            shutil.copyfile(self.folder.joinpath(f'valid.tok'), self.folder.joinpath(f'valid.{lang1_}_sa-{lang2_}_sa.{self.l}.tok'))
+            shutil.copyfile(self.folder.joinpath(f'train.tok'), self.folder.joinpath(f'train.{lang1_}_sa-{lang2_}_sa.{self.l}.tok'))
     
     
         #shufs 
@@ -125,9 +125,9 @@ class Language:
         files = list(self.folder.glob(f'train{suffix}.tok'))
         files.append(self.folder.joinpath(f'test{suffix}.tok'))
         files.append(self.folder.joinpath(f'valid{suffix}.tok'))
-        files.extend(list(self.folder.glob(f'valid.*.{self.l}.tok')))
-        files.extend(list(self.folder.glob(f'test.*.{self.l}.tok')))
-        files.extend(list(self.folder.glob(f'train.*.{self.l}.tok')))
+        # files.extend(list(self.folder.glob(f'valid.*.{self.l}.tok')))
+        # files.extend(list(self.folder.glob(f'test.*.{self.l}.tok')))
+        # files.extend(list(self.folder.glob(f'train.*.{self.l}.tok')))
         print("files" + str(files))
         toks = [tok for tok in files if not tok.with_suffix('.functions_standalone.tok').is_file() ] # and tok.with_suffix('.functions_class.tok').is_file())
         if len(toks) > 0:
@@ -214,7 +214,7 @@ class Dataset:
             nlines = [int(self.sizes[l.l][0] * size_gb_ * 1024 **
                           3 / self.sizes[l.l][1]) for l in self.langs]
             print(
-                f"we need to regroup {nlines} lines for {self.langs[0].l} {self.langs[1].l} and {self.langs[2].l} to gather {size_gb} Go")
+                f"we need to regroup {nlines} lines for {self.langs[0].l} and {self.langs[1].l} to gather {size_gb} Go")
         # train bpe on only 50 GB (25 each lang) of the tokenized train set
         data_train_bpe = self.folder.joinpath(
             f'train{self.suffix}.tok.{size_gb}GB')
@@ -294,16 +294,17 @@ class Dataset:
         lang1 = self.langs[0]
         lang2 = self.langs[1]
         assert lang1.l == "cpp" and lang2.l =='llvm'
-        src_paths = list(lang1.folder.glob(f'valid.*.{lang1.l}.tok'))
-        src_paths.extend(list(lang1.folder.glob(f'test.*.{lang1.l}.tok')))
-        src_paths.extend(list(lang2.folder.glob(f'train.*.{lang1.l}.tok')))
-        tgt_paths = list(lang2.folder.glob(f'valid.*.{lang2.l}.tok'))
-        tgt_paths.extend(list(lang2.folder.glob(f'test.*.{lang2.l}.tok')))
-        tgt_paths.extend(list(lang2.folder.glob(f'train.*.{lang2.l}.tok')))
-        print("src_paths" + str(src_paths))             
-        print("tgt_paths" + str(src_paths))                                                    
-        for i in range(len(src_paths)): 
-            jobs.append(lang_executor.submit(extract_functions_parallel, src_paths[i], tgt_paths[i], 'cpp', 'llvm'))
+        # src_paths = list(lang1.folder.glob(f'valid.*.{lang1.l}.tok'))
+        # src_paths.extend(list(lang1.folder.glob(f'test.*.{lang1.l}.tok')))
+        # src_paths.extend(list(lang1.folder.glob(f'train.*.{lang1.l}.tok')))
+        # tgt_paths = list(lang2.folder.glob(f'valid.*.{lang2.l}.tok'))
+        # tgt_paths.extend(list(lang2.folder.glob(f'test.*.{lang2.l}.tok')))
+        # tgt_paths.extend(list(lang2.folder.glob(f'train.*.{lang2.l}.tok')))
+        # print("src_paths" + str(src_paths), flush=True)             
+        # print("tgt_paths" + str(tgt_paths), flush=True)   
+        # assert len(src_paths) == len(tgt_paths), f"len(src_paths){len(src_paths)} != len(tgt_paths){len(tgt_paths)}"                            
+        # for i in range(len(src_paths)): 
+        #     jobs.append(lang_executor.submit(extract_functions_parallel, src_paths[i], tgt_paths[i], 'cpp', 'llvm'))
         for job in jobs:
             job.result()
         

@@ -387,15 +387,20 @@ def get_function_name_python(s):
 
 @timeout(10)
 def get_cpp_tokens_and_types(s):
-    tokens = []
-    assert isinstance(s, str)
-    s = s.replace(r'\r', '')
-    hash = str(random.getrandbits(128))
-    parsed_code = idx.parse(
-        hash + '_tmp.cpp', args=['-std=c++11'], unsaved_files=[(hash + '_tmp.cpp', s)], options=0)
-    for tok in parsed_code.get_tokens(extent=parsed_code.cursor.extent):
-        tokens.append((tok.spelling, tok.kind))
-    return tokens
+    try: 
+        tokens = []
+        assert isinstance(s, str)
+        s = s.replace(r'\r', '')
+        hash = str(random.getrandbits(128))
+        parsed_code = idx.parse(
+            hash + '_tmp.cpp', args=['-std=c++11'], unsaved_files=[(hash + '_tmp.cpp', s)], options=0)
+        for tok in parsed_code.get_tokens(extent=parsed_code.cursor.extent):
+            tokens.append((tok.spelling, tok.kind))
+        # print(f"get_cpp_tokens_and_types tokens {tokens}")
+        return tokens
+    except: 
+        print("a problem in get_cpp_tokens_and_types",flush=True)
+        return s.split(" ")
 
 
 def tokenize_cpp(s, keep_comments=False):
@@ -426,6 +431,7 @@ def tokenize_cpp(s, keep_comments=False):
         logging.info(f'TimeOut Error for string {s}')
         return []
     except:
+        print('here?')
         return []
 
 
@@ -665,12 +671,15 @@ def clean_hashtags_functions_cpp(function):
     function = re.sub('[#][ ][i][f][d][e][f][ ][^ ]*', "", function)
     function = re.sub(
         '[#][ ][d][e][f][i][n][e][ ][^ ]*[ ][(][ ].*?[ ][)][ ][(][ ].*[ ][)]', "", function)
+    print(re.findall('[#][ ][d][e][f][i][n][e][ ][^ ]*[ ][(][ ].*?[ ][)][ ][{][ ].*[ ][}]', function))
     function = re.sub(
         '[#][ ][d][e][f][i][n][e][ ][^ ]*[ ][(][ ].*?[ ][)][ ][{][ ].*[ ][}]', "", function)
+    
     function = re.sub(
         '[#][ ][d][e][f][i][n][e][ ][^ ]*[ ]([(][ ])?["].*?["]([ ][)])?', "", function)
     function = re.sub(
         '[#][ ][d][e][f][i][n][e][ ][^ ]*[ ]([(][ ])?\d*\.?\d*([ ][+-/*][ ]?\d*\.?\d*)?([ ][)])?', "", function)
+    print(function)
     function = re.sub('[#][ ][d][e][f][i][n][e][ ][^ ]', "", function)
     function = re.sub(
         '[#][ ][i][f][ ][d][e][f][i][n][e][d][ ][(][ ].*?[ ][)]', "", function)
@@ -989,7 +998,7 @@ def tokenize_instruction_printer(tokens):
             i+=1
             if tokens[i] == 'volatile': i+=1
             __, i = get_llvm_type(tokens, i) 
-            assert tokens[i] == ',', f"no comma after type {tokens[i]} in {str(tokens)}"
+           # assert tokens[i] == ',', f"no comma after type {tokens[i]} in {str(tokens)}"
             ty, j = get_llvm_type(tokens, i+1) 
             del tokens[i:j]
             
@@ -1000,7 +1009,7 @@ def tokenize_instruction_printer(tokens):
                 i+=1 
                 par+=1 
             _, i = get_llvm_type(tokens, i) 
-            assert tokens[i] == ',', f"no comma after type {tokens[i]} in {str(tokens)}"
+           # assert tokens[i] == ',', f"no comma after type {tokens[i]} in {str(tokens)}"
             ty, j = get_llvm_type(tokens, i+1) 
             del tokens[i:j]
             i-=1
@@ -1095,9 +1104,9 @@ def tokenize_llvm(s, keep_comments=False):
     # try:
         assert isinstance(s, str)
         s = s.replace(r'\r', '')
-        global_strings_index = [] 
-        global_constants_index = [] 
-        local_constants_index = []
+        # global_strings_index = [] 
+        # global_constants_index = [] 
+        # local_constants_index = []
 
         #delete top and bottom irrelevant stuff
         # start = time()
@@ -1110,13 +1119,13 @@ def tokenize_llvm(s, keep_comments=False):
         total_len = 0 
         for line in arr: 
             toks_line, toktypes_line = tokenize_llvm_line(line)
-            toks_line = tokenize_instruction_printer(toks_line)
+            # toks_line = tokenize_instruction_printer(toks_line)
             tokens.extend(toks_line)
             if len(tokens)>0 and tokens[-1] != "NEW_LINE": 
                 tokens.append("NEW_LINE")
         # print(f"{time()-start} -- tokenize_llvm_line and tokenize_instruction_printer time", flush=True)
         # start = time()
-        tokens = remove_globals(tokens)
+        # tokens = remove_globals(tokens)
         # print(f"{time()-start} -- remove_globals time", flush=True)
         return tokens
 
@@ -1179,7 +1188,7 @@ def tokenize_llvm_line(s):
         if toktype == pyllvm.lltok.Eof:
             return tokens, toktypes
         elif toktype == pyllvm.lltok.Error: 
-            print("an error")
+            print("an pyllvm.lltok.Error error")
             return tokens, toktypes
         toktypes.append(toktype)
 

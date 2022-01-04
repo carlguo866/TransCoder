@@ -4,7 +4,7 @@ python XLM/train.py \
     --max_vocab 64000 \
     --word_mask_keep_rand '0.8,0.1,0.1' \
     --word_blank 0 \
-    --data_path '/home/carl/TransCoder/data/data_aebt/cpp-llvm-.XLM-syml' \
+    --data_path '/home/carl/TransCoder/data/anghabench/cpp-llvm-.XLM-syml' \
     --save_periodic 0 \
     --bptt 512 \
     --lambda_clm 1 \
@@ -14,7 +14,7 @@ python XLM/train.py \
     --lambda_mlm 1 \
     --sinusoidal_embeddings false \
     --word_shuffle 0 \
-    --mlm_steps 'hsw' \
+    --mlm_steps 'cpp,llvm' \
     --attention_dropout 0 \
     --split_data false \
     --length_penalty 1 \
