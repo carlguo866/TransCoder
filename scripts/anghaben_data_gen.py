@@ -13,6 +13,11 @@ def compile(i, c_name):
     c_name = str(c_name)
     assert os.path.isfile(c_name), c_name
     llvm_name = c_name[:-2]+'.ll'
+    result = subprocess.run(f"clang -E -P {c_name} -o {c_name}", shell=True, 
+                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
+    if result.stderr.decode('UTF-8').find("error:") != -1: 
+        print("compile -E -P problem")
+        print(result.stderr.decode('UTF-8')[:result.stderr.decode('UTF-8').index('\n')], flush=True)
     result = subprocess.run(f"clang {c_name} -w -femit-all-decls -S -emit-llvm -o {llvm_name}", shell=True, 
                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
     if result.stdout.decode('UTF-8') != '': 
@@ -21,11 +26,11 @@ def compile(i, c_name):
         print(result.stderr.decode('UTF-8')[:result.stderr.decode('UTF-8').index('\n')], flush=True)
         return 1
     else: 
-        result = subprocess.run(f"python /home/carl/TransCoder/scripts/json_generator.py {c_name} placeholder {(int)(i/split_json_file_num)} 1 anghabench", shell=True, 
+        result = subprocess.run(f"python /home/carl/TransCoder/scripts/json_generator.py {c_name} placeholder {(int)(i/split_json_file_num)} 1 anghabench2", shell=True, 
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
         if result.stderr.decode('UTF-8') != '': 
             print(result.stderr.decode('UTF-8'), flush=True)
-        result = subprocess.run(f"python /home/carl/TransCoder/scripts/json_generator.py {llvm_name} placeholder {(int)(i/split_json_file_num)} 0 anghabench", shell=True, 
+        result = subprocess.run(f"python /home/carl/TransCoder/scripts/json_generator.py {llvm_name} placeholder {(int)(i/split_json_file_num)} 0 anghabench2", shell=True, 
                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
         if result.stderr.decode('UTF-8') != '': 
             print(result.stderr.decode('UTF-8'), flush=True)
@@ -42,7 +47,7 @@ if __name__ == '__main__':
         print(file)
         if i == 5: 
             break
-    folder_name = Path(f"/home/carl/TransCoder/data/anghabench/")
+    folder_name = Path(f"/home/carl/TransCoder/data/anghabench2/")
     for lang in ['cpp','llvm']:
         if not folder_name.is_dir(): 
             folder_name.mkdir()

@@ -96,9 +96,9 @@ def extract_functions_file(input_path, language, test_size=None):
     if output_path_sa.is_file(): #and output_path_class.is_file()
         return
     with input_path.open('r', encoding="utf-8") as f:
-        print(f"{language}input_path{input_path}")
+        # print(f"{language}input_path{input_path}")
         lines = f.readlines()
-        print(f"input lines{lines}")
+        # print(f"input lines{lines}")
     extract_auto_code = getattr(
         code_tokenizer, f"extract_functions_{language}")
     get_function_name = getattr(

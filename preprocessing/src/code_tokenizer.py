@@ -147,7 +147,9 @@ def process_string(tok, char2tok, tok2char, is_comment):
     tok = tok.replace('\n', ' STRNEWLINE ')
     tok = tok.replace('\t', ' TABSYMBOL ')
     tok = re.sub(' +', ' ', tok)
+    # print(f"before tokenize_v14_international {tok}")
     tok = tokenize_v14_international(tok)
+    # print(f"after tokenize_v14_international {tok}")
     tok = re.sub(' +', ' ', tok)
     for special_token, char in tok2char.items():
         tok = tok.replace(special_token, char)
@@ -167,6 +169,8 @@ def process_string_llvm(tok, char2tok, tok2char, is_comment):
     tok = re.sub(' +', ' ', tok)
     # tok = tokenize_v14_international(tok)
     tok = re.sub(' +', ' ', tok)
+    for special_token, char in tok2char.items():
+        tok = tok.replace(special_token, char)
     tok = tok.replace('\r', '')
     return tok
 
@@ -1119,7 +1123,7 @@ def tokenize_llvm(s, keep_comments=False):
         total_len = 0 
         for line in arr: 
             toks_line, toktypes_line = tokenize_llvm_line(line)
-            # toks_line = tokenize_instruction_printer(toks_line)
+            toks_line = tokenize_instruction_printer(toks_line)
             tokens.extend(toks_line)
             if len(tokens)>0 and tokens[-1] != "NEW_LINE": 
                 tokens.append("NEW_LINE")
@@ -1188,7 +1192,7 @@ def tokenize_llvm_line(s):
         if toktype == pyllvm.lltok.Eof:
             return tokens, toktypes
         elif toktype == pyllvm.lltok.Error: 
-            print("an pyllvm.lltok.Error error")
+            print(f"an pyllvm.lltok.Error error {tokens} ")
             return tokens, toktypes
         toktypes.append(toktype)
 
@@ -1247,7 +1251,7 @@ def infix_to_prefix(tokens):
         if par == 0:
             return prefix
         else: 
-            print(f"par != 0 in infix to prefix at {str(tokens)}", flush=True)
+            print(f"par != 0 in infix to prefix at {str(tokens.join(' '))}", flush=True)
             return tokens  
     except: 
         print(f"error in infix to prefix at {str(tokens)}", flush=True)
@@ -1395,7 +1399,7 @@ def add_tok(tok, tokens, par, items_counts, end_par, is_type_len, num_of_star, p
 
 
 def get_one_llvm_toktype(s): 
-    assert isinstance(s, str)
+    assert isinstance(s, str) and s.strip().find(" ") == -1
     lex = pyllvm.lexer(s)
     toktype = lex.getTokType() 
     return toktype 
