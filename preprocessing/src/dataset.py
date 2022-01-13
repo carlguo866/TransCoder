@@ -11,7 +11,7 @@ from pathlib import Path
 import os
 import numpy as np
 from preprocessing.src.utils import shuf_file, apply_bpe_file, get_vocab_file, learn_bpe_file, regroup_and_select_data, LocalExecutor, binarize_for_XLM_file, truncate_files, \
-    get_nlines, process_and_tokenize_json_file, extract_functions_file, extract_functions_parallel
+    get_nlines, process_and_tokenize_json_file, extract_functions_file, extract_functions_parallel, process_and_tokenize_json_file_parallel
 import shutil
 
 class Language:
@@ -90,17 +90,17 @@ class Language:
     
         #shufs 
         shuf_file(all_tok)
-        shuf_file(self.folder.joinpath(f'test{suffix}.tok'))
-        shuf_file(self.folder.joinpath(f'valid{suffix}.tok'))
-        shuf_file(self.folder.joinpath(f'test{suffix}.tok'))
+        # shuf_file(self.folder.joinpath(f'test{suffix}.tok'))
+        # shuf_file(self.folder.joinpath(f'valid{suffix}.tok'))
+        # shuf_file(self.folder.joinpath(f'test{suffix}.tok'))
         return n_lines, size_gb
 
     def process(self, keep_comments, tok_executor=None, test_size=1000, parallel_size=0, split_executor=None, langs=None):
         suffix = '.with_comments' if keep_comments else ''
         print(f"{self.l}: process ...")
         other_langs = [lang.l for lang in langs if lang.l != self.l]
-        print("other_langs" + str(other_langs))
-        self.process_json_and_tok(keep_comments, tok_executor)
+        #print("other_langs" + str(other_langs))
+        #self.process_json_and_tok(keep_comments, tok_executor)
         if (self.folder.joinpath(f'train{suffix}.tok').is_file() and
             self.folder.joinpath(f'test{suffix}.tok').is_file() and
             self.folder.joinpath(f'valid{suffix}.tok').is_file()):
@@ -194,12 +194,43 @@ class Dataset:
         if lang_executor is None:
             lang_executor = LocalExecutor()
         print("self.test_size" + str(self.test_size))
+        langs = self.langs
+        if langs[1].l == 'cpp' and langs[0].l == 'llvm': 
+            langs = [langs[1], langs[0]]
+        assert ( langs[0].l == 'cpp' and langs[1].l == 'llvm' ), f"process_languages_parallel self.langs problem {langs}"
+        if tok_executor is None:
+            tok_executor = LocalExecutor()
+        for lang in langs:
+            assert len(list(lang.folder.glob('*.json.gz'))
+                    ) > 0, f"there is no json in {str(self.folder)}" 
+        cpp_jsons = [json for json in langs[0].folder.glob(
+                '*.json.gz') if not Path(str(json).replace('.json.gz', '.tok')).is_file() ]
+        cpp_jsons = sorted([str(json) for json in cpp_jsons])
+        llvm_jsons = [json for json in langs[1].folder.glob(
+                '*.json.gz') if not Path(str(json).replace('.json.gz', '.tok')).is_file() ]
+        llvm_jsons = sorted([str(json) for json in llvm_jsons])
+        if len(cpp_jsons)==len(llvm_jsons) and len(llvm_jsons) > 0:
+            jobs = tok_executor.map_array(process_and_tokenize_json_file_parallel, cpp_jsons, llvm_jsons, itertools.repeat(
+                langs[0].l), itertools.repeat(langs[1].l))
+            for job in jobs:
+                job.result()
+
         jobs = [lang_executor.submit(lang.process, self.keep_comments, tok_executor=tok_executor,
                                  test_size=self.test_size, split_executor=split_executor, parallel_size=self.parallel_size, langs=self.langs)
                 for lang in self.langs]
         for i, lang in enumerate(self.langs):
             self.sizes[lang.l] = jobs[i].result()
+        # jobs = lang_executor.submit(self.process_languages_parallel, self.langs, self.keep_comments, tok_executor=tok_executor,
+        #                          test_size=self.test_size, split_executor=split_executor, parallel_size=self.parallel_size)
+        # # for lang in self.langs:
+        #      self.sizes[lang.l] = jobs.result()
 
+    # def process_languages_parallel(self, langs, keep_comments, tok_executor=None, test_size=1000, parallel_size=0, split_executor=None):
+        
+
+
+
+        
     def train_bpe(self, ncodes, size_gb=None):
 
         if self.codes.is_file():
@@ -294,17 +325,17 @@ class Dataset:
         lang1 = self.langs[0]
         lang2 = self.langs[1]
         assert lang1.l == "cpp" and lang2.l =='llvm'
-        # src_paths = list(lang1.folder.glob(f'valid.*.{lang1.l}.tok'))
-        # src_paths.extend(list(lang1.folder.glob(f'test.*.{lang1.l}.tok')))
-        # src_paths.extend(list(lang1.folder.glob(f'train.*.{lang1.l}.tok')))
-        # tgt_paths = list(lang2.folder.glob(f'valid.*.{lang2.l}.tok'))
-        # tgt_paths.extend(list(lang2.folder.glob(f'test.*.{lang2.l}.tok')))
-        # tgt_paths.extend(list(lang2.folder.glob(f'train.*.{lang2.l}.tok')))
-        # print("src_paths" + str(src_paths), flush=True)             
-        # print("tgt_paths" + str(tgt_paths), flush=True)   
-        # assert len(src_paths) == len(tgt_paths), f"len(src_paths){len(src_paths)} != len(tgt_paths){len(tgt_paths)}"                            
-        # for i in range(len(src_paths)): 
-        #     jobs.append(lang_executor.submit(extract_functions_parallel, src_paths[i], tgt_paths[i], 'cpp', 'llvm'))
+        src_paths = list(lang1.folder.glob(f'valid.*.{lang1.l}.tok'))
+        src_paths.extend(list(lang1.folder.glob(f'test.*.{lang1.l}.tok')))
+        src_paths.extend(list(lang1.folder.glob(f'train.*.{lang1.l}.tok')))
+        tgt_paths = list(lang2.folder.glob(f'valid.*.{lang2.l}.tok'))
+        tgt_paths.extend(list(lang2.folder.glob(f'test.*.{lang2.l}.tok')))
+        tgt_paths.extend(list(lang2.folder.glob(f'train.*.{lang2.l}.tok')))
+        print("src_paths" + str(src_paths), flush=True)             
+        print("tgt_paths" + str(tgt_paths), flush=True)   
+        assert len(src_paths) == len(tgt_paths), f"len(src_paths){len(src_paths)} != len(tgt_paths){len(tgt_paths)}"                            
+        for i in range(len(src_paths)): 
+            jobs.append(lang_executor.submit(extract_functions_parallel, src_paths[i], tgt_paths[i], 'cpp', 'llvm'))
         for job in jobs:
             job.result()
         

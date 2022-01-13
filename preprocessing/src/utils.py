@@ -14,7 +14,8 @@ import os
 import random
 from multiprocessing import Pool, cpu_count
 import tqdm
-
+import gzip
+import itertools
 from preprocessing.src import code_tokenizer as code_tokenizer
 from preprocessing.src.timeout import timeout, TimeoutError
 
@@ -40,7 +41,16 @@ def bool_flag(s):
 def tokenize_json_helper(inpt):
     tokenizer, content, path, keep_comments = inpt
     content_tokenized = tokenizer(content, keep_comments)
+    assert content_tokenized != '', f"{content} has no tokenization result"
     return content_tokenized, path
+
+def tokenize_json_helper_parallel(inpt1, inpt2):
+    tokenizer1, content1, path1, keep_comments1 = inpt1
+    tokenizer2, content2, path2, keep_comments2 = inpt2
+    content_tokenized1 = tokenizer1(content1, keep_comments1)
+    content_tokenized2 = tokenizer2(content2, keep_comments2)
+    # assert content_tokenized1 != '', f"{content1} has no tokenization result"
+    return content_tokenized1, path1, content_tokenized2, path2
 
 
 @timeout(3600)
@@ -66,13 +76,38 @@ def output_all_tokenized_results(docs, language, f_tok):
             except:
                 continue
 
+@timeout(3600)
+def output_all_tokenized_results_parallel(lang1_docs, lang1, f_tok1, lang2_docs, lang2, f_tok2):
+    assert len(lang1_docs) == len(lang2_docs)
+    pool = Pool(cpu_count())
+    result_content_tokenized = tqdm.tqdm(pool.starmap(
+        tokenize_json_helper_parallel, zip(lang1_docs, lang2_docs)), total=len(lang1_docs))
+    for content_tokenized1, path1, content_tokenized2, path2 in result_content_tokenized:
+        if len(content_tokenized1) == 0 or len(content_tokenized2) == 0:
+            continue
+        else:
+            content_tokenized1 = ' '.join(content_tokenized1)
+            content_tokenized2 = ' '.join(content_tokenized2)
+            # if(language != "llvm"): 
+            #     s = f"<DOCUMENT_ID=\"{path}\"> {content_tokenized} </DOCUMENT>"
+            # else: 
+            # s = content_tokenized1
+            # s = f"<DOCUMENT_ID=\"{path}\"> {content_tokenized} </DOCUMENT>"
+            # for some reason sometimes, some caracters of s
+            # cannot be encoded into utf-8 and it failed to print, so use try/catch
+            try:
+                f_tok1.write(content_tokenized1+'\n')
+                f_tok2.write(content_tokenized2+'\n')
+            except:
+                continue
+
 
 def process_and_tokenize_json_file(input_path, language, keep_comments):
     suffix = '.with_comments' if keep_comments else ''
     output_path = str(input_path).replace('.json.gz', suffix + '.tok')
     tokenizer = getattr(code_tokenizer, f"tokenize_{language}")
     docs = []
-    paths = []
+    #print(f"json input_path { input_path}", flush=True)
     for line in fileinput.input(str(input_path), openhook=fileinput.hook_compressed):
         x = json.loads(line)
         content = x['content']
@@ -87,6 +122,60 @@ def process_and_tokenize_json_file(input_path, language, keep_comments):
         print('Program closed automatically after one hour')
         os._exit(0)
 
+def process_and_tokenize_json_file_parallel(lang1_input, lang2_input, lang1, lang2):
+    lang1_output = str(lang1_input).replace('.json.gz', '.tok') 
+    lang2_output = str(lang2_input).replace('.json.gz', '.tok') 
+    lang1_tokenizer = getattr(code_tokenizer, f"tokenize_{lang1}")
+    lang2_tokenizer = getattr(code_tokenizer, f"tokenize_{lang2}")
+    lang1_docs = []
+    lang2_docs = []
+
+    print(f"input path {lang1_input} {lang2_input}")
+    count = 0
+    lang2_possible_matches = list(gzip.open(str(lang2_input), 'r'))
+    for i, x_line in enumerate(fileinput.input(str(lang1_input), openhook=fileinput.hook_compressed)):
+        x = json.loads(x_line)
+        x_content = x['content']
+        x_path = f"{x['repo_name']}/tree/master/{x['path']}"
+        
+
+        isDone = False
+        y = json.loads(lang2_possible_matches[i])
+        if y['path'] == x['path'][:-2]+'.ll':
+            y_content = y['content']
+            y_path = f"{y['repo_name']}/tree/master/{y['path']}" 
+            lang2_docs.append((lang2_tokenizer, y_content, y_path, False))
+            isDone = True
+            
+        if not isDone: 
+            count += 1
+            if i < 5: 
+                arr = lang2_possible_matches[0:i+10]
+            else: 
+                arr = lang2_possible_matches[i-5:i+5]
+            for j, y_line in enumerate(arr): 
+                y = json.loads(y_line)
+                if y['path'] == x['path'][:-2]+'.ll':
+                    y_content = y['content']
+                    y_path = f"{y['repo_name']}/tree/master/{y['path']}" 
+                    lang2_docs.append((lang2_tokenizer, y_content, y_path, False))
+                    isDone = True
+                    break 
+        #  if i % 100 == 0: 
+        #     print(f"x {x['path']} y {y['path']} \n x_content {x} \n y_content {y} \n")
+        assert isDone, f"error, did not find found match i {i} {lang1_input} "
+        lang1_docs.append((lang1_tokenizer, x_content, x_path, False))
+    print(f"cpp to llvm not at position count {count}")
+    f_tok1 = open(lang1_output, 'w', encoding='utf-8')
+    f_tok2 = open(lang2_output, 'w', encoding='utf-8')
+    try:
+        output_all_tokenized_results_parallel(lang1_docs,lang1, f_tok1, lang2_docs,lang2, f_tok2)
+    except TimeoutError:
+        # The tokenization process is sometimes killed and it makes the multiprocessing hang forever
+        f_tok1.close()
+        f_tok2.close()
+        print('Program closed automatically after one hour')
+        os._exit(0)
 
 def extract_functions_file(input_path, language, test_size=None):
     print(f"extacting functions for {str(input_path)}")
@@ -151,6 +240,7 @@ def extract_functions_parallel(src_path, tgt_path, src_lang, tgt_lang , test_siz
         code_tokenizer, f"get_function_name_{tgt_lang}")
     
     print(f"extracting parallel functions to {src_output_path_sa} and {tgt_output_path_sa}", flush=True)
+    assert len(src_lines) == len(tgt_lines), f"src_lines and tgt_lines not the same length len(src_lines) {len(src_lines)} len(tgt_lines) {len(tgt_lines)}"
     for i in range(len(src_lines)): 
         src_functions = src_extract_func(src_lines[i])
         # print("src_functions[0][0]" + str(src_functions[0][0]))

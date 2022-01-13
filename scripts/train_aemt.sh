@@ -29,7 +29,7 @@ python XLM/train.py \
 --generate_hypothesis true \
 --lambda_mt 1 \
 --epoch_size 30000  \
---data_path '/home/carl/TransCoder/data/codenet2/cpp-llvm-.XLM-syml' \
+--data_path '/home/carl/TransCoder/data/anghabench/cpp-llvm-.XLM-syml' \
 --gelu_activation true \
 --split_data_accross_gpu global \
 --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0001,weight_decay=0.01' \
@@ -42,7 +42,7 @@ python XLM/train.py \
 --batch_size 32 \
 --context_size 0 \
 --word_dropout '0.1'  \
---reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/6zovdibzf9/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/6zovdibzf9/best-valid_mlm_ppl.pth' \
+--reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/rj1cniqe26/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/rj1cniqe26/best-valid_mlm_ppl.pth' \
 --min_count 0 \
 --eval_bleu_test_only false \
 --group_by_size true \

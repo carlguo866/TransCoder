@@ -18,22 +18,23 @@ if __name__ == '__main__':
     # print(fn[630:700])
 
 
-    # fn = open("/home/carl/TransCoder/input_test.ll", 'r').read()
-    # tokenized = tokenize_llvm(fn)
-    # outF = open("functions-output.ll", "w")
-    # functions, __ = extract_functions_llvm(" ".join(tokenized))
-    # #print(functions)
-    # # outF.write(" ".join(tokenized))
-    # for line in functions: 
-    #     outF.write( line + "\n")
-    # outF.close()
+    fn = open("/home/carl/AnghaBench/freebsd/cddl/contrib/opensolaris/lib/libdtrace/common/extr_dt_pragma.c_dt_pragma_attributes.ll", 'r').read()
+    tokenized = tokenize_llvm(fn)
+    print(tokenized)
+    outF = open("myoutput/functions-output.ll", "w")
+    functions, __ = extract_functions_llvm(" ".join(tokenized))
+    print(functions)
+    #outF.write(" ".join(tokenized))
+    for line in functions: 
+        outF.write( line + "\n")
+    outF.close()
 
-    # fn = open("/home/carl/AnghaBench/obs-studio/libobs/extr_utilserializer.h_s_wlf.c",'r').read()
-    fn = '''
-    # define NULL ( ( void * ) 0 ) typedef unsigned long size_t ; "adlfnadknfl adlnfkad we i wdaldn" typedef long intptr_t ; typedef unsigned long uintptr_t ; typedef long scalar_t__ ; typedef int bool ; # define false 0 # define true 1 typedef int uint32_t ; struct serializer { int dummy ; } ; int s_wl32 ( struct serializer * , int ) ; __attribute__ ( ( used ) ) static inline void s_wlf ( struct serializer * s , float f ) { s_wl32 ( s , * ( uint32_t * ) & f ) ; }
-    '''
+    fn = open("/home/carl/AnghaBench/8cc/extr_vector.c_vec_set.c",'r').read()
+    # fn = '''
+    # # define NULL ( ( void * ) 0 ) typedef unsigned long size_t ; "adlfnadknfl adlnfkad we i wdaldn" typedef long intptr_t ; typedef unsigned long uintptr_t ; typedef long scalar_t__ ; typedef int bool ; # define false 0 # define true 1 typedef int uint32_t ; struct serializer { int dummy ; } ; int s_wl32 ( struct serializer * , int ) ; __attribute__ ( ( used ) ) static inline void s_wlf ( struct serializer * s , float f ) { s_wl32 ( s , * ( uint32_t * ) & f ) ; }
+    # '''
     tokenized = tokenize_cpp(fn)
-    outF = open("functions-output.txt", "w")
+    outF = open("myoutput/functions-output.txt", "w")
     print("\n")
     functions, __ = extract_functions_cpp(" ".join(tokenized))
     print(functions)

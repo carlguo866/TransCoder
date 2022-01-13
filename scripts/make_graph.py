@@ -3,9 +3,9 @@ from itertools import chain
 import os
 import sys
 if __name__ == '__main__': 
-    log_reader = open("/home/carl/TransCoder/myoutput/train_mt2.log" , 'r', encoding='utf-8')
+    log_reader = open("/home/carl/TransCoder/myoutput/angha_train.log" , 'r', encoding='utf-8')
     log_reader2= None 
-  #  log_reader2 = open("/home/carl/TransCoder/myoutput/old/train8.log" , 'r')
+    log_reader2 = open("/home/carl/TransCoder/myoutput/angha_train2.log" , 'r')
     scores = None 
     scores_train = None
     i=0
@@ -41,6 +41,7 @@ if __name__ == '__main__':
                 for k,v in the_dict.items(): 
                     if k == 'epoch':
                         scores[k].append(prev_epoch+ v)
+                    else: 
                         scores[k].append(round(v,2))
             elif (log.find('AE-cpp_sa:') != -1): 
                 string = log[log.index('AE-cpp_sa:'):log.index('-  - model LR')]
@@ -50,6 +51,8 @@ if __name__ == '__main__':
                 i+=1
                 for k,v in the_dict.items():
                     scores_train[k].append(v)
+
+
     plt.plot(scores_train['iteration'],scores_train['AE-llvm_sa'], label='llvm_sa')
     plt.plot(scores_train['iteration'],scores_train['AE-cpp_sa'], label='cpp_sa')
     plt.xlabel("iteration")
