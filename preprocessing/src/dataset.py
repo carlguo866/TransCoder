@@ -52,7 +52,7 @@ class Language:
             print("nothing exist for all.tok why??")
         size_gb = all_tok.stat().st_size
         n_lines = get_nlines(all_tok)
-
+        print(f"all tok n_lines {self.l} {n_lines}",flush=True)
         # shuf
         # shuf_file(all_tok)
 
@@ -87,9 +87,10 @@ class Language:
             shutil.copyfile(self.folder.joinpath(f'valid.tok'), self.folder.joinpath(f'valid.{lang1_}_sa-{lang2_}_sa.{self.l}.tok'))
             shutil.copyfile(self.folder.joinpath(f'train.tok'), self.folder.joinpath(f'train.{lang1_}_sa-{lang2_}_sa.{self.l}.tok'))
     
-    
+        subprocess.run(f'rm {all_tok}', shell=True, stdout=subprocess.PIPE,
+                    stderr=subprocess.PIPE)
         #shufs 
-        shuf_file(all_tok)
+        # shuf_file(all_tok)
         # shuf_file(self.folder.joinpath(f'test{suffix}.tok'))
         # shuf_file(self.folder.joinpath(f'valid{suffix}.tok'))
         # shuf_file(self.folder.joinpath(f'test{suffix}.tok'))

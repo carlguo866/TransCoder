@@ -84,6 +84,7 @@ def output_all_tokenized_results_parallel(lang1_docs, lang1, f_tok1, lang2_docs,
         tokenize_json_helper_parallel, zip(lang1_docs, lang2_docs)), total=len(lang1_docs))
     for content_tokenized1, path1, content_tokenized2, path2 in result_content_tokenized:
         if len(content_tokenized1) == 0 or len(content_tokenized2) == 0:
+            print('error in output_all_tokenized_results_parallel')
             continue
         else:
             content_tokenized1 = ' '.join(content_tokenized1)
@@ -99,6 +100,7 @@ def output_all_tokenized_results_parallel(lang1_docs, lang1, f_tok1, lang2_docs,
                 f_tok1.write(content_tokenized1+'\n')
                 f_tok2.write(content_tokenized2+'\n')
             except:
+                print(' some caracters of s cannot be encoded into utf-8 and it failed to print, so use try/catcherror in output_all_tokenized_results_parallel')
                 continue
 
 
@@ -165,6 +167,8 @@ def process_and_tokenize_json_file_parallel(lang1_input, lang2_input, lang1, lan
         #     print(f"x {x['path']} y {y['path']} \n x_content {x} \n y_content {y} \n")
         assert isDone, f"error, did not find found match i {i} {lang1_input} "
         lang1_docs.append((lang1_tokenizer, x_content, x_path, False))
+    
+    assert len(lang1_docs) == len(lang2_docs), f"{len(lang1_docs)} != {len(lang2_docs)}"
     print(f"cpp to llvm not at position count {count}")
     f_tok1 = open(lang1_output, 'w', encoding='utf-8')
     f_tok2 = open(lang2_output, 'w', encoding='utf-8')

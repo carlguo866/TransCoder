@@ -886,7 +886,7 @@ def get_llvm_value(tokens, i, detok=False):
         return ty, i
             
 
-def get_llvm_type(tokens, i, add_comma=0): 
+def get_llvm_type(tokens, i, add_comma=0, detok=False): 
     #add_comma: 1 means only types; 2 means with value
     try: 
         ty = []
@@ -952,18 +952,17 @@ def get_llvm_type(tokens, i, add_comma=0):
         while i < len(tokens) and tokens[i] == '*':
             ty.append(tokens[i])
             i+=1
-
-        # if i < len(tokens) and tokens[i] == '(': 
-        #     par = 0
-        #     while i < len(tokens): 
-        #         if tokens[i] == '(': 
-        #             par +=1 
-        #         elif tokens[i] == ')': 
-        #             par -=1 
-        #         ty.append(tokens[i])
-        #         i+=1 
-        #         if par == 0: 
-        #             break
+        if not detok and i < len(tokens) and tokens[i] == '(': 
+            par = 0
+            while i < len(tokens): 
+                if tokens[i] == '(': 
+                    par +=1 
+                elif tokens[i] == ')': 
+                    par -=1 
+                ty.append(tokens[i])
+                i+=1 
+                if par == 0: 
+                    break
 
         while i < len(tokens) and tokens[i] == '*':
             ty.append(tokens[i])
@@ -1127,7 +1126,7 @@ def tokenize_llvm(s, keep_comments=False):
             toks_line, toktypes_line = tokenize_llvm_line(line)
             if toks_line == '': 
                 return ''
-            #toks_line = tokenize_instruction_printer(toks_line)
+            toks_line = tokenize_instruction_printer(toks_line)
             tokens.extend(toks_line)
             if len(tokens)>0 and tokens[-1] != "NEW_LINE": 
                 tokens.append("NEW_LINE")
@@ -1257,8 +1256,8 @@ def infix_to_prefix(tokens):
         else: 
             print(f"par != 0 in infix to prefix at {str(tokens.join(' '))}", flush=True)
             return tokens  
-    except: 
-        print(f"error in infix to prefix at {str(tokens)}", flush=True)
+    except Exception as e: 
+        print(f"{e} error in infix to prefix at {str(tokens)}", flush=True)
         return tokens  
     
 def remove_globals(tokens): 
