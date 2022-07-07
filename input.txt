@@ -1,0 +1,3069 @@
+; ModuleID = 'input.c'
+source_filename = "input.c"
+target datalayout = "e-m:e-p270:32:32-p271:32:32-p272:64:64-i64:64-f80:128-n8:16:32:64-S128"
+target triple = "x86_64-unknown-linux-gnu"
+
+@.str = private unnamed_addr constant [15 x i8] c"checksum = %X\0A\00", align 1
+@crc32_context = internal global i32 -1, align 4
+@crc32_tab = internal global [256 x i32] zeroinitializer, align 16
+@.str.1 = private unnamed_addr constant [36 x i8] c"...checksum after hashing %s : %lX\0A\00", align 1
+@g_4 = internal global i32 -1, align 4
+@g_5 = internal global i32 0, align 4
+@.str.2 = private unnamed_addr constant [2 x i8] c"1\00", align 1
+@.str.3 = private unnamed_addr constant [4 x i8] c"g_4\00", align 1
+@.str.4 = private unnamed_addr constant [4 x i8] c"g_5\00", align 1
+@__undefined = internal global i64 0, align 8
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal void @platform_main_begin() #0 {
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal void @platform_main_end(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([15 x i8], [15 x i8]* @.str, i64 0, i64 0), i32 %5)
+  ret void
+}
+
+declare dso_local i32 @printf(i8*, ...) #1
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_unary_minus_func_int8_t_s(i8 signext %0) #0 {
+  %2 = alloca i8, align 1
+  store i8 %0, i8* %2, align 1
+  %3 = load i8, i8* %2, align 1
+  %4 = sext i8 %3 to i32
+  %5 = sub nsw i32 0, %4
+  %6 = trunc i32 %5 to i8
+  ret i8 %6
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_add_func_int8_t_s_s(i8 signext %0, i8 signext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %3, align 1
+  %6 = sext i8 %5 to i32
+  %7 = load i8, i8* %4, align 1
+  %8 = sext i8 %7 to i32
+  %9 = add nsw i32 %6, %8
+  %10 = trunc i32 %9 to i8
+  ret i8 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_sub_func_int8_t_s_s(i8 signext %0, i8 signext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %3, align 1
+  %6 = sext i8 %5 to i32
+  %7 = load i8, i8* %4, align 1
+  %8 = sext i8 %7 to i32
+  %9 = sub nsw i32 %6, %8
+  %10 = trunc i32 %9 to i8
+  ret i8 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_mul_func_int8_t_s_s(i8 signext %0, i8 signext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %3, align 1
+  %6 = sext i8 %5 to i32
+  %7 = load i8, i8* %4, align 1
+  %8 = sext i8 %7 to i32
+  %9 = mul nsw i32 %6, %8
+  %10 = trunc i32 %9 to i8
+  ret i8 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_mod_func_int8_t_s_s(i8 signext %0, i8 signext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %4, align 1
+  %6 = sext i8 %5 to i32
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %16, label %8
+
+8:                                                ; preds = %2
+  %9 = load i8, i8* %3, align 1
+  %10 = sext i8 %9 to i32
+  %11 = icmp eq i32 %10, -128
+  br i1 %11, label %12, label %19
+
+12:                                               ; preds = %8
+  %13 = load i8, i8* %4, align 1
+  %14 = sext i8 %13 to i32
+  %15 = icmp eq i32 %14, -1
+  br i1 %15, label %16, label %19
+
+16:                                               ; preds = %12, %2
+  %17 = load i8, i8* %3, align 1
+  %18 = sext i8 %17 to i32
+  br label %25
+
+19:                                               ; preds = %12, %8
+  %20 = load i8, i8* %3, align 1
+  %21 = sext i8 %20 to i32
+  %22 = load i8, i8* %4, align 1
+  %23 = sext i8 %22 to i32
+  %24 = srem i32 %21, %23
+  br label %25
+
+25:                                               ; preds = %19, %16
+  %26 = phi i32 [ %18, %16 ], [ %24, %19 ]
+  %27 = trunc i32 %26 to i8
+  ret i8 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_div_func_int8_t_s_s(i8 signext %0, i8 signext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %4, align 1
+  %6 = sext i8 %5 to i32
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %16, label %8
+
+8:                                                ; preds = %2
+  %9 = load i8, i8* %3, align 1
+  %10 = sext i8 %9 to i32
+  %11 = icmp eq i32 %10, -128
+  br i1 %11, label %12, label %19
+
+12:                                               ; preds = %8
+  %13 = load i8, i8* %4, align 1
+  %14 = sext i8 %13 to i32
+  %15 = icmp eq i32 %14, -1
+  br i1 %15, label %16, label %19
+
+16:                                               ; preds = %12, %2
+  %17 = load i8, i8* %3, align 1
+  %18 = sext i8 %17 to i32
+  br label %25
+
+19:                                               ; preds = %12, %8
+  %20 = load i8, i8* %3, align 1
+  %21 = sext i8 %20 to i32
+  %22 = load i8, i8* %4, align 1
+  %23 = sext i8 %22 to i32
+  %24 = sdiv i32 %21, %23
+  br label %25
+
+25:                                               ; preds = %19, %16
+  %26 = phi i32 [ %18, %16 ], [ %24, %19 ]
+  %27 = trunc i32 %26 to i8
+  ret i8 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_lshift_func_int8_t_s_s(i8 signext %0, i32 %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i32, align 4
+  store i8 %0, i8* %3, align 1
+  store i32 %1, i32* %4, align 4
+  %5 = load i8, i8* %3, align 1
+  %6 = sext i8 %5 to i32
+  %7 = icmp slt i32 %6, 0
+  br i1 %7, label %20, label %8
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = icmp slt i32 %9, 0
+  br i1 %10, label %20, label %11
+
+11:                                               ; preds = %8
+  %12 = load i32, i32* %4, align 4
+  %13 = icmp sge i32 %12, 32
+  br i1 %13, label %20, label %14
+
+14:                                               ; preds = %11
+  %15 = load i8, i8* %3, align 1
+  %16 = sext i8 %15 to i32
+  %17 = load i32, i32* %4, align 4
+  %18 = ashr i32 127, %17
+  %19 = icmp sgt i32 %16, %18
+  br i1 %19, label %20, label %23
+
+20:                                               ; preds = %14, %11, %8, %2
+  %21 = load i8, i8* %3, align 1
+  %22 = sext i8 %21 to i32
+  br label %28
+
+23:                                               ; preds = %14
+  %24 = load i8, i8* %3, align 1
+  %25 = sext i8 %24 to i32
+  %26 = load i32, i32* %4, align 4
+  %27 = shl i32 %25, %26
+  br label %28
+
+28:                                               ; preds = %23, %20
+  %29 = phi i32 [ %22, %20 ], [ %27, %23 ]
+  %30 = trunc i32 %29 to i8
+  ret i8 %30
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_lshift_func_int8_t_s_u(i8 signext %0, i32 %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i32, align 4
+  store i8 %0, i8* %3, align 1
+  store i32 %1, i32* %4, align 4
+  %5 = load i8, i8* %3, align 1
+  %6 = sext i8 %5 to i32
+  %7 = icmp slt i32 %6, 0
+  br i1 %7, label %17, label %8
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = icmp uge i32 %9, 32
+  br i1 %10, label %17, label %11
+
+11:                                               ; preds = %8
+  %12 = load i8, i8* %3, align 1
+  %13 = sext i8 %12 to i32
+  %14 = load i32, i32* %4, align 4
+  %15 = ashr i32 127, %14
+  %16 = icmp sgt i32 %13, %15
+  br i1 %16, label %17, label %20
+
+17:                                               ; preds = %11, %8, %2
+  %18 = load i8, i8* %3, align 1
+  %19 = sext i8 %18 to i32
+  br label %25
+
+20:                                               ; preds = %11
+  %21 = load i8, i8* %3, align 1
+  %22 = sext i8 %21 to i32
+  %23 = load i32, i32* %4, align 4
+  %24 = shl i32 %22, %23
+  br label %25
+
+25:                                               ; preds = %20, %17
+  %26 = phi i32 [ %19, %17 ], [ %24, %20 ]
+  %27 = trunc i32 %26 to i8
+  ret i8 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_rshift_func_int8_t_s_s(i8 signext %0, i32 %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i32, align 4
+  store i8 %0, i8* %3, align 1
+  store i32 %1, i32* %4, align 4
+  %5 = load i8, i8* %3, align 1
+  %6 = sext i8 %5 to i32
+  %7 = icmp slt i32 %6, 0
+  br i1 %7, label %14, label %8
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = icmp slt i32 %9, 0
+  br i1 %10, label %14, label %11
+
+11:                                               ; preds = %8
+  %12 = load i32, i32* %4, align 4
+  %13 = icmp sge i32 %12, 32
+  br i1 %13, label %14, label %17
+
+14:                                               ; preds = %11, %8, %2
+  %15 = load i8, i8* %3, align 1
+  %16 = sext i8 %15 to i32
+  br label %22
+
+17:                                               ; preds = %11
+  %18 = load i8, i8* %3, align 1
+  %19 = sext i8 %18 to i32
+  %20 = load i32, i32* %4, align 4
+  %21 = ashr i32 %19, %20
+  br label %22
+
+22:                                               ; preds = %17, %14
+  %23 = phi i32 [ %16, %14 ], [ %21, %17 ]
+  %24 = trunc i32 %23 to i8
+  ret i8 %24
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i8 @safe_rshift_func_int8_t_s_u(i8 signext %0, i32 %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i32, align 4
+  store i8 %0, i8* %3, align 1
+  store i32 %1, i32* %4, align 4
+  %5 = load i8, i8* %3, align 1
+  %6 = sext i8 %5 to i32
+  %7 = icmp slt i32 %6, 0
+  br i1 %7, label %11, label %8
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = icmp uge i32 %9, 32
+  br i1 %10, label %11, label %14
+
+11:                                               ; preds = %8, %2
+  %12 = load i8, i8* %3, align 1
+  %13 = sext i8 %12 to i32
+  br label %19
+
+14:                                               ; preds = %8
+  %15 = load i8, i8* %3, align 1
+  %16 = sext i8 %15 to i32
+  %17 = load i32, i32* %4, align 4
+  %18 = ashr i32 %16, %17
+  br label %19
+
+19:                                               ; preds = %14, %11
+  %20 = phi i32 [ %13, %11 ], [ %18, %14 ]
+  %21 = trunc i32 %20 to i8
+  ret i8 %21
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_unary_minus_func_int16_t_s(i16 signext %0) #0 {
+  %2 = alloca i16, align 2
+  store i16 %0, i16* %2, align 2
+  %3 = load i16, i16* %2, align 2
+  %4 = sext i16 %3 to i32
+  %5 = sub nsw i32 0, %4
+  %6 = trunc i32 %5 to i16
+  ret i16 %6
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_add_func_int16_t_s_s(i16 signext %0, i16 signext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %3, align 2
+  %6 = sext i16 %5 to i32
+  %7 = load i16, i16* %4, align 2
+  %8 = sext i16 %7 to i32
+  %9 = add nsw i32 %6, %8
+  %10 = trunc i32 %9 to i16
+  ret i16 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_sub_func_int16_t_s_s(i16 signext %0, i16 signext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %3, align 2
+  %6 = sext i16 %5 to i32
+  %7 = load i16, i16* %4, align 2
+  %8 = sext i16 %7 to i32
+  %9 = sub nsw i32 %6, %8
+  %10 = trunc i32 %9 to i16
+  ret i16 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_mul_func_int16_t_s_s(i16 signext %0, i16 signext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %3, align 2
+  %6 = sext i16 %5 to i32
+  %7 = load i16, i16* %4, align 2
+  %8 = sext i16 %7 to i32
+  %9 = mul nsw i32 %6, %8
+  %10 = trunc i32 %9 to i16
+  ret i16 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_mod_func_int16_t_s_s(i16 signext %0, i16 signext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %4, align 2
+  %6 = sext i16 %5 to i32
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %16, label %8
+
+8:                                                ; preds = %2
+  %9 = load i16, i16* %3, align 2
+  %10 = sext i16 %9 to i32
+  %11 = icmp eq i32 %10, -32768
+  br i1 %11, label %12, label %19
+
+12:                                               ; preds = %8
+  %13 = load i16, i16* %4, align 2
+  %14 = sext i16 %13 to i32
+  %15 = icmp eq i32 %14, -1
+  br i1 %15, label %16, label %19
+
+16:                                               ; preds = %12, %2
+  %17 = load i16, i16* %3, align 2
+  %18 = sext i16 %17 to i32
+  br label %25
+
+19:                                               ; preds = %12, %8
+  %20 = load i16, i16* %3, align 2
+  %21 = sext i16 %20 to i32
+  %22 = load i16, i16* %4, align 2
+  %23 = sext i16 %22 to i32
+  %24 = srem i32 %21, %23
+  br label %25
+
+25:                                               ; preds = %19, %16
+  %26 = phi i32 [ %18, %16 ], [ %24, %19 ]
+  %27 = trunc i32 %26 to i16
+  ret i16 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_div_func_int16_t_s_s(i16 signext %0, i16 signext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %4, align 2
+  %6 = sext i16 %5 to i32
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %16, label %8
+
+8:                                                ; preds = %2
+  %9 = load i16, i16* %3, align 2
+  %10 = sext i16 %9 to i32
+  %11 = icmp eq i32 %10, -32768
+  br i1 %11, label %12, label %19
+
+12:                                               ; preds = %8
+  %13 = load i16, i16* %4, align 2
+  %14 = sext i16 %13 to i32
+  %15 = icmp eq i32 %14, -1
+  br i1 %15, label %16, label %19
+
+16:                                               ; preds = %12, %2
+  %17 = load i16, i16* %3, align 2
+  %18 = sext i16 %17 to i32
+  br label %25
+
+19:                                               ; preds = %12, %8
+  %20 = load i16, i16* %3, align 2
+  %21 = sext i16 %20 to i32
+  %22 = load i16, i16* %4, align 2
+  %23 = sext i16 %22 to i32
+  %24 = sdiv i32 %21, %23
+  br label %25
+
+25:                                               ; preds = %19, %16
+  %26 = phi i32 [ %18, %16 ], [ %24, %19 ]
+  %27 = trunc i32 %26 to i16
+  ret i16 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_lshift_func_int16_t_s_s(i16 signext %0, i32 %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i32, align 4
+  store i16 %0, i16* %3, align 2
+  store i32 %1, i32* %4, align 4
+  %5 = load i16, i16* %3, align 2
+  %6 = sext i16 %5 to i32
+  %7 = icmp slt i32 %6, 0
+  br i1 %7, label %20, label %8
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = icmp slt i32 %9, 0
+  br i1 %10, label %20, label %11
+
+11:                                               ; preds = %8
+  %12 = load i32, i32* %4, align 4
+  %13 = icmp sge i32 %12, 32
+  br i1 %13, label %20, label %14
+
+14:                                               ; preds = %11
+  %15 = load i16, i16* %3, align 2
+  %16 = sext i16 %15 to i32
+  %17 = load i32, i32* %4, align 4
+  %18 = ashr i32 32767, %17
+  %19 = icmp sgt i32 %16, %18
+  br i1 %19, label %20, label %23
+
+20:                                               ; preds = %14, %11, %8, %2
+  %21 = load i16, i16* %3, align 2
+  %22 = sext i16 %21 to i32
+  br label %28
+
+23:                                               ; preds = %14
+  %24 = load i16, i16* %3, align 2
+  %25 = sext i16 %24 to i32
+  %26 = load i32, i32* %4, align 4
+  %27 = shl i32 %25, %26
+  br label %28
+
+28:                                               ; preds = %23, %20
+  %29 = phi i32 [ %22, %20 ], [ %27, %23 ]
+  %30 = trunc i32 %29 to i16
+  ret i16 %30
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_lshift_func_int16_t_s_u(i16 signext %0, i32 %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i32, align 4
+  store i16 %0, i16* %3, align 2
+  store i32 %1, i32* %4, align 4
+  %5 = load i16, i16* %3, align 2
+  %6 = sext i16 %5 to i32
+  %7 = icmp slt i32 %6, 0
+  br i1 %7, label %17, label %8
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = icmp uge i32 %9, 32
+  br i1 %10, label %17, label %11
+
+11:                                               ; preds = %8
+  %12 = load i16, i16* %3, align 2
+  %13 = sext i16 %12 to i32
+  %14 = load i32, i32* %4, align 4
+  %15 = ashr i32 32767, %14
+  %16 = icmp sgt i32 %13, %15
+  br i1 %16, label %17, label %20
+
+17:                                               ; preds = %11, %8, %2
+  %18 = load i16, i16* %3, align 2
+  %19 = sext i16 %18 to i32
+  br label %25
+
+20:                                               ; preds = %11
+  %21 = load i16, i16* %3, align 2
+  %22 = sext i16 %21 to i32
+  %23 = load i32, i32* %4, align 4
+  %24 = shl i32 %22, %23
+  br label %25
+
+25:                                               ; preds = %20, %17
+  %26 = phi i32 [ %19, %17 ], [ %24, %20 ]
+  %27 = trunc i32 %26 to i16
+  ret i16 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_rshift_func_int16_t_s_s(i16 signext %0, i32 %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i32, align 4
+  store i16 %0, i16* %3, align 2
+  store i32 %1, i32* %4, align 4
+  %5 = load i16, i16* %3, align 2
+  %6 = sext i16 %5 to i32
+  %7 = icmp slt i32 %6, 0
+  br i1 %7, label %14, label %8
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = icmp slt i32 %9, 0
+  br i1 %10, label %14, label %11
+
+11:                                               ; preds = %8
+  %12 = load i32, i32* %4, align 4
+  %13 = icmp sge i32 %12, 32
+  br i1 %13, label %14, label %17
+
+14:                                               ; preds = %11, %8, %2
+  %15 = load i16, i16* %3, align 2
+  %16 = sext i16 %15 to i32
+  br label %22
+
+17:                                               ; preds = %11
+  %18 = load i16, i16* %3, align 2
+  %19 = sext i16 %18 to i32
+  %20 = load i32, i32* %4, align 4
+  %21 = ashr i32 %19, %20
+  br label %22
+
+22:                                               ; preds = %17, %14
+  %23 = phi i32 [ %16, %14 ], [ %21, %17 ]
+  %24 = trunc i32 %23 to i16
+  ret i16 %24
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal signext i16 @safe_rshift_func_int16_t_s_u(i16 signext %0, i32 %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i32, align 4
+  store i16 %0, i16* %3, align 2
+  store i32 %1, i32* %4, align 4
+  %5 = load i16, i16* %3, align 2
+  %6 = sext i16 %5 to i32
+  %7 = icmp slt i32 %6, 0
+  br i1 %7, label %11, label %8
+
+8:                                                ; preds = %2
+  %9 = load i32, i32* %4, align 4
+  %10 = icmp uge i32 %9, 32
+  br i1 %10, label %11, label %14
+
+11:                                               ; preds = %8, %2
+  %12 = load i16, i16* %3, align 2
+  %13 = sext i16 %12 to i32
+  br label %19
+
+14:                                               ; preds = %8
+  %15 = load i16, i16* %3, align 2
+  %16 = sext i16 %15 to i32
+  %17 = load i32, i32* %4, align 4
+  %18 = ashr i32 %16, %17
+  br label %19
+
+19:                                               ; preds = %14, %11
+  %20 = phi i32 [ %13, %11 ], [ %18, %14 ]
+  %21 = trunc i32 %20 to i16
+  ret i16 %21
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_unary_minus_func_int32_t_s(i32 %0) #0 {
+  %2 = alloca i32, align 4
+  store i32 %0, i32* %2, align 4
+  %3 = load i32, i32* %2, align 4
+  %4 = icmp eq i32 %3, -2147483648
+  br i1 %4, label %5, label %7
+
+5:                                                ; preds = %1
+  %6 = load i32, i32* %2, align 4
+  br label %10
+
+7:                                                ; preds = %1
+  %8 = load i32, i32* %2, align 4
+  %9 = sub nsw i32 0, %8
+  br label %10
+
+10:                                               ; preds = %7, %5
+  %11 = phi i32 [ %6, %5 ], [ %9, %7 ]
+  ret i32 %11
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_add_func_int32_t_s_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = icmp sgt i32 %5, 0
+  br i1 %6, label %7, label %15
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sgt i32 %8, 0
+  br i1 %9, label %10, label %15
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %3, align 4
+  %12 = load i32, i32* %4, align 4
+  %13 = sub nsw i32 2147483647, %12
+  %14 = icmp sgt i32 %11, %13
+  br i1 %14, label %26, label %15
+
+15:                                               ; preds = %10, %7, %2
+  %16 = load i32, i32* %3, align 4
+  %17 = icmp slt i32 %16, 0
+  br i1 %17, label %18, label %28
+
+18:                                               ; preds = %15
+  %19 = load i32, i32* %4, align 4
+  %20 = icmp slt i32 %19, 0
+  br i1 %20, label %21, label %28
+
+21:                                               ; preds = %18
+  %22 = load i32, i32* %3, align 4
+  %23 = load i32, i32* %4, align 4
+  %24 = sub nsw i32 -2147483648, %23
+  %25 = icmp slt i32 %22, %24
+  br i1 %25, label %26, label %28
+
+26:                                               ; preds = %21, %10
+  %27 = load i32, i32* %3, align 4
+  br label %32
+
+28:                                               ; preds = %21, %18, %15
+  %29 = load i32, i32* %3, align 4
+  %30 = load i32, i32* %4, align 4
+  %31 = add nsw i32 %29, %30
+  br label %32
+
+32:                                               ; preds = %28, %26
+  %33 = phi i32 [ %27, %26 ], [ %31, %28 ]
+  ret i32 %33
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_sub_func_int32_t_s_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = load i32, i32* %4, align 4
+  %7 = xor i32 %5, %6
+  %8 = load i32, i32* %3, align 4
+  %9 = load i32, i32* %3, align 4
+  %10 = load i32, i32* %4, align 4
+  %11 = xor i32 %9, %10
+  %12 = and i32 %11, -2147483648
+  %13 = xor i32 %8, %12
+  %14 = load i32, i32* %4, align 4
+  %15 = sub nsw i32 %13, %14
+  %16 = load i32, i32* %4, align 4
+  %17 = xor i32 %15, %16
+  %18 = and i32 %7, %17
+  %19 = icmp slt i32 %18, 0
+  br i1 %19, label %20, label %22
+
+20:                                               ; preds = %2
+  %21 = load i32, i32* %3, align 4
+  br label %26
+
+22:                                               ; preds = %2
+  %23 = load i32, i32* %3, align 4
+  %24 = load i32, i32* %4, align 4
+  %25 = sub nsw i32 %23, %24
+  br label %26
+
+26:                                               ; preds = %22, %20
+  %27 = phi i32 [ %21, %20 ], [ %25, %22 ]
+  ret i32 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_mul_func_int32_t_s_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = icmp sgt i32 %5, 0
+  br i1 %6, label %7, label %15
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sgt i32 %8, 0
+  br i1 %9, label %10, label %15
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %3, align 4
+  %12 = load i32, i32* %4, align 4
+  %13 = sdiv i32 2147483647, %12
+  %14 = icmp sgt i32 %11, %13
+  br i1 %14, label %51, label %15
+
+15:                                               ; preds = %10, %7, %2
+  %16 = load i32, i32* %3, align 4
+  %17 = icmp sgt i32 %16, 0
+  br i1 %17, label %18, label %26
+
+18:                                               ; preds = %15
+  %19 = load i32, i32* %4, align 4
+  %20 = icmp sle i32 %19, 0
+  br i1 %20, label %21, label %26
+
+21:                                               ; preds = %18
+  %22 = load i32, i32* %4, align 4
+  %23 = load i32, i32* %3, align 4
+  %24 = sdiv i32 -2147483648, %23
+  %25 = icmp slt i32 %22, %24
+  br i1 %25, label %51, label %26
+
+26:                                               ; preds = %21, %18, %15
+  %27 = load i32, i32* %3, align 4
+  %28 = icmp sle i32 %27, 0
+  br i1 %28, label %29, label %37
+
+29:                                               ; preds = %26
+  %30 = load i32, i32* %4, align 4
+  %31 = icmp sgt i32 %30, 0
+  br i1 %31, label %32, label %37
+
+32:                                               ; preds = %29
+  %33 = load i32, i32* %3, align 4
+  %34 = load i32, i32* %4, align 4
+  %35 = sdiv i32 -2147483648, %34
+  %36 = icmp slt i32 %33, %35
+  br i1 %36, label %51, label %37
+
+37:                                               ; preds = %32, %29, %26
+  %38 = load i32, i32* %3, align 4
+  %39 = icmp sle i32 %38, 0
+  br i1 %39, label %40, label %53
+
+40:                                               ; preds = %37
+  %41 = load i32, i32* %4, align 4
+  %42 = icmp sle i32 %41, 0
+  br i1 %42, label %43, label %53
+
+43:                                               ; preds = %40
+  %44 = load i32, i32* %3, align 4
+  %45 = icmp ne i32 %44, 0
+  br i1 %45, label %46, label %53
+
+46:                                               ; preds = %43
+  %47 = load i32, i32* %4, align 4
+  %48 = load i32, i32* %3, align 4
+  %49 = sdiv i32 2147483647, %48
+  %50 = icmp slt i32 %47, %49
+  br i1 %50, label %51, label %53
+
+51:                                               ; preds = %46, %32, %21, %10
+  %52 = load i32, i32* %3, align 4
+  br label %57
+
+53:                                               ; preds = %46, %43, %40, %37
+  %54 = load i32, i32* %3, align 4
+  %55 = load i32, i32* %4, align 4
+  %56 = mul nsw i32 %54, %55
+  br label %57
+
+57:                                               ; preds = %53, %51
+  %58 = phi i32 [ %52, %51 ], [ %56, %53 ]
+  ret i32 %58
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_mod_func_int32_t_s_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp eq i32 %5, 0
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %3, align 4
+  %9 = icmp eq i32 %8, -2147483648
+  br i1 %9, label %10, label %15
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %4, align 4
+  %12 = icmp eq i32 %11, -1
+  br i1 %12, label %13, label %15
+
+13:                                               ; preds = %10, %2
+  %14 = load i32, i32* %3, align 4
+  br label %19
+
+15:                                               ; preds = %10, %7
+  %16 = load i32, i32* %3, align 4
+  %17 = load i32, i32* %4, align 4
+  %18 = srem i32 %16, %17
+  br label %19
+
+19:                                               ; preds = %15, %13
+  %20 = phi i32 [ %14, %13 ], [ %18, %15 ]
+  ret i32 %20
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_div_func_int32_t_s_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp eq i32 %5, 0
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %3, align 4
+  %9 = icmp eq i32 %8, -2147483648
+  br i1 %9, label %10, label %15
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %4, align 4
+  %12 = icmp eq i32 %11, -1
+  br i1 %12, label %13, label %15
+
+13:                                               ; preds = %10, %2
+  %14 = load i32, i32* %3, align 4
+  br label %19
+
+15:                                               ; preds = %10, %7
+  %16 = load i32, i32* %3, align 4
+  %17 = load i32, i32* %4, align 4
+  %18 = sdiv i32 %16, %17
+  br label %19
+
+19:                                               ; preds = %15, %13
+  %20 = phi i32 [ %14, %13 ], [ %18, %15 ]
+  ret i32 %20
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_lshift_func_int32_t_s_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %18, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp slt i32 %8, 0
+  br i1 %9, label %18, label %10
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %4, align 4
+  %12 = icmp sge i32 %11, 32
+  br i1 %12, label %18, label %13
+
+13:                                               ; preds = %10
+  %14 = load i32, i32* %3, align 4
+  %15 = load i32, i32* %4, align 4
+  %16 = ashr i32 2147483647, %15
+  %17 = icmp sgt i32 %14, %16
+  br i1 %17, label %18, label %20
+
+18:                                               ; preds = %13, %10, %7, %2
+  %19 = load i32, i32* %3, align 4
+  br label %24
+
+20:                                               ; preds = %13
+  %21 = load i32, i32* %3, align 4
+  %22 = load i32, i32* %4, align 4
+  %23 = shl i32 %21, %22
+  br label %24
+
+24:                                               ; preds = %20, %18
+  %25 = phi i32 [ %19, %18 ], [ %23, %20 ]
+  ret i32 %25
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_lshift_func_int32_t_s_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %15, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp uge i32 %8, 32
+  br i1 %9, label %15, label %10
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %3, align 4
+  %12 = load i32, i32* %4, align 4
+  %13 = ashr i32 2147483647, %12
+  %14 = icmp sgt i32 %11, %13
+  br i1 %14, label %15, label %17
+
+15:                                               ; preds = %10, %7, %2
+  %16 = load i32, i32* %3, align 4
+  br label %21
+
+17:                                               ; preds = %10
+  %18 = load i32, i32* %3, align 4
+  %19 = load i32, i32* %4, align 4
+  %20 = shl i32 %18, %19
+  br label %21
+
+21:                                               ; preds = %17, %15
+  %22 = phi i32 [ %16, %15 ], [ %20, %17 ]
+  ret i32 %22
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_rshift_func_int32_t_s_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp slt i32 %8, 0
+  br i1 %9, label %13, label %10
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %4, align 4
+  %12 = icmp sge i32 %11, 32
+  br i1 %12, label %13, label %15
+
+13:                                               ; preds = %10, %7, %2
+  %14 = load i32, i32* %3, align 4
+  br label %19
+
+15:                                               ; preds = %10
+  %16 = load i32, i32* %3, align 4
+  %17 = load i32, i32* %4, align 4
+  %18 = ashr i32 %16, %17
+  br label %19
+
+19:                                               ; preds = %15, %13
+  %20 = phi i32 [ %14, %13 ], [ %18, %15 ]
+  ret i32 %20
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_rshift_func_int32_t_s_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %10, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp uge i32 %8, 32
+  br i1 %9, label %10, label %12
+
+10:                                               ; preds = %7, %2
+  %11 = load i32, i32* %3, align 4
+  br label %16
+
+12:                                               ; preds = %7
+  %13 = load i32, i32* %3, align 4
+  %14 = load i32, i32* %4, align 4
+  %15 = ashr i32 %13, %14
+  br label %16
+
+16:                                               ; preds = %12, %10
+  %17 = phi i32 [ %11, %10 ], [ %15, %12 ]
+  ret i32 %17
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_unary_minus_func_int64_t_s(i64 %0) #0 {
+  %2 = alloca i64, align 8
+  store i64 %0, i64* %2, align 8
+  %3 = load i64, i64* %2, align 8
+  %4 = icmp eq i64 %3, -9223372036854775808
+  br i1 %4, label %5, label %7
+
+5:                                                ; preds = %1
+  %6 = load i64, i64* %2, align 8
+  br label %10
+
+7:                                                ; preds = %1
+  %8 = load i64, i64* %2, align 8
+  %9 = sub nsw i64 0, %8
+  br label %10
+
+10:                                               ; preds = %7, %5
+  %11 = phi i64 [ %6, %5 ], [ %9, %7 ]
+  ret i64 %11
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_add_func_int64_t_s_s(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %3, align 8
+  %6 = icmp sgt i64 %5, 0
+  br i1 %6, label %7, label %15
+
+7:                                                ; preds = %2
+  %8 = load i64, i64* %4, align 8
+  %9 = icmp sgt i64 %8, 0
+  br i1 %9, label %10, label %15
+
+10:                                               ; preds = %7
+  %11 = load i64, i64* %3, align 8
+  %12 = load i64, i64* %4, align 8
+  %13 = sub nsw i64 9223372036854775807, %12
+  %14 = icmp sgt i64 %11, %13
+  br i1 %14, label %26, label %15
+
+15:                                               ; preds = %10, %7, %2
+  %16 = load i64, i64* %3, align 8
+  %17 = icmp slt i64 %16, 0
+  br i1 %17, label %18, label %28
+
+18:                                               ; preds = %15
+  %19 = load i64, i64* %4, align 8
+  %20 = icmp slt i64 %19, 0
+  br i1 %20, label %21, label %28
+
+21:                                               ; preds = %18
+  %22 = load i64, i64* %3, align 8
+  %23 = load i64, i64* %4, align 8
+  %24 = sub nsw i64 -9223372036854775808, %23
+  %25 = icmp slt i64 %22, %24
+  br i1 %25, label %26, label %28
+
+26:                                               ; preds = %21, %10
+  %27 = load i64, i64* %3, align 8
+  br label %32
+
+28:                                               ; preds = %21, %18, %15
+  %29 = load i64, i64* %3, align 8
+  %30 = load i64, i64* %4, align 8
+  %31 = add nsw i64 %29, %30
+  br label %32
+
+32:                                               ; preds = %28, %26
+  %33 = phi i64 [ %27, %26 ], [ %31, %28 ]
+  ret i64 %33
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_sub_func_int64_t_s_s(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %3, align 8
+  %6 = load i64, i64* %4, align 8
+  %7 = xor i64 %5, %6
+  %8 = load i64, i64* %3, align 8
+  %9 = load i64, i64* %3, align 8
+  %10 = load i64, i64* %4, align 8
+  %11 = xor i64 %9, %10
+  %12 = and i64 %11, -9223372036854775808
+  %13 = xor i64 %8, %12
+  %14 = load i64, i64* %4, align 8
+  %15 = sub nsw i64 %13, %14
+  %16 = load i64, i64* %4, align 8
+  %17 = xor i64 %15, %16
+  %18 = and i64 %7, %17
+  %19 = icmp slt i64 %18, 0
+  br i1 %19, label %20, label %22
+
+20:                                               ; preds = %2
+  %21 = load i64, i64* %3, align 8
+  br label %26
+
+22:                                               ; preds = %2
+  %23 = load i64, i64* %3, align 8
+  %24 = load i64, i64* %4, align 8
+  %25 = sub nsw i64 %23, %24
+  br label %26
+
+26:                                               ; preds = %22, %20
+  %27 = phi i64 [ %21, %20 ], [ %25, %22 ]
+  ret i64 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_mul_func_int64_t_s_s(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %3, align 8
+  %6 = icmp sgt i64 %5, 0
+  br i1 %6, label %7, label %15
+
+7:                                                ; preds = %2
+  %8 = load i64, i64* %4, align 8
+  %9 = icmp sgt i64 %8, 0
+  br i1 %9, label %10, label %15
+
+10:                                               ; preds = %7
+  %11 = load i64, i64* %3, align 8
+  %12 = load i64, i64* %4, align 8
+  %13 = sdiv i64 9223372036854775807, %12
+  %14 = icmp sgt i64 %11, %13
+  br i1 %14, label %51, label %15
+
+15:                                               ; preds = %10, %7, %2
+  %16 = load i64, i64* %3, align 8
+  %17 = icmp sgt i64 %16, 0
+  br i1 %17, label %18, label %26
+
+18:                                               ; preds = %15
+  %19 = load i64, i64* %4, align 8
+  %20 = icmp sle i64 %19, 0
+  br i1 %20, label %21, label %26
+
+21:                                               ; preds = %18
+  %22 = load i64, i64* %4, align 8
+  %23 = load i64, i64* %3, align 8
+  %24 = sdiv i64 -9223372036854775808, %23
+  %25 = icmp slt i64 %22, %24
+  br i1 %25, label %51, label %26
+
+26:                                               ; preds = %21, %18, %15
+  %27 = load i64, i64* %3, align 8
+  %28 = icmp sle i64 %27, 0
+  br i1 %28, label %29, label %37
+
+29:                                               ; preds = %26
+  %30 = load i64, i64* %4, align 8
+  %31 = icmp sgt i64 %30, 0
+  br i1 %31, label %32, label %37
+
+32:                                               ; preds = %29
+  %33 = load i64, i64* %3, align 8
+  %34 = load i64, i64* %4, align 8
+  %35 = sdiv i64 -9223372036854775808, %34
+  %36 = icmp slt i64 %33, %35
+  br i1 %36, label %51, label %37
+
+37:                                               ; preds = %32, %29, %26
+  %38 = load i64, i64* %3, align 8
+  %39 = icmp sle i64 %38, 0
+  br i1 %39, label %40, label %53
+
+40:                                               ; preds = %37
+  %41 = load i64, i64* %4, align 8
+  %42 = icmp sle i64 %41, 0
+  br i1 %42, label %43, label %53
+
+43:                                               ; preds = %40
+  %44 = load i64, i64* %3, align 8
+  %45 = icmp ne i64 %44, 0
+  br i1 %45, label %46, label %53
+
+46:                                               ; preds = %43
+  %47 = load i64, i64* %4, align 8
+  %48 = load i64, i64* %3, align 8
+  %49 = sdiv i64 9223372036854775807, %48
+  %50 = icmp slt i64 %47, %49
+  br i1 %50, label %51, label %53
+
+51:                                               ; preds = %46, %32, %21, %10
+  %52 = load i64, i64* %3, align 8
+  br label %57
+
+53:                                               ; preds = %46, %43, %40, %37
+  %54 = load i64, i64* %3, align 8
+  %55 = load i64, i64* %4, align 8
+  %56 = mul nsw i64 %54, %55
+  br label %57
+
+57:                                               ; preds = %53, %51
+  %58 = phi i64 [ %52, %51 ], [ %56, %53 ]
+  ret i64 %58
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_mod_func_int64_t_s_s(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %4, align 8
+  %6 = icmp eq i64 %5, 0
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i64, i64* %3, align 8
+  %9 = icmp eq i64 %8, -9223372036854775808
+  br i1 %9, label %10, label %15
+
+10:                                               ; preds = %7
+  %11 = load i64, i64* %4, align 8
+  %12 = icmp eq i64 %11, -1
+  br i1 %12, label %13, label %15
+
+13:                                               ; preds = %10, %2
+  %14 = load i64, i64* %3, align 8
+  br label %19
+
+15:                                               ; preds = %10, %7
+  %16 = load i64, i64* %3, align 8
+  %17 = load i64, i64* %4, align 8
+  %18 = srem i64 %16, %17
+  br label %19
+
+19:                                               ; preds = %15, %13
+  %20 = phi i64 [ %14, %13 ], [ %18, %15 ]
+  ret i64 %20
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_div_func_int64_t_s_s(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %4, align 8
+  %6 = icmp eq i64 %5, 0
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i64, i64* %3, align 8
+  %9 = icmp eq i64 %8, -9223372036854775808
+  br i1 %9, label %10, label %15
+
+10:                                               ; preds = %7
+  %11 = load i64, i64* %4, align 8
+  %12 = icmp eq i64 %11, -1
+  br i1 %12, label %13, label %15
+
+13:                                               ; preds = %10, %2
+  %14 = load i64, i64* %3, align 8
+  br label %19
+
+15:                                               ; preds = %10, %7
+  %16 = load i64, i64* %3, align 8
+  %17 = load i64, i64* %4, align 8
+  %18 = sdiv i64 %16, %17
+  br label %19
+
+19:                                               ; preds = %15, %13
+  %20 = phi i64 [ %14, %13 ], [ %18, %15 ]
+  ret i64 %20
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_lshift_func_int64_t_s_s(i64 %0, i32 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i32, align 4
+  store i64 %0, i64* %3, align 8
+  store i32 %1, i32* %4, align 4
+  %5 = load i64, i64* %3, align 8
+  %6 = icmp slt i64 %5, 0
+  br i1 %6, label %19, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp slt i32 %8, 0
+  br i1 %9, label %19, label %10
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %4, align 4
+  %12 = icmp sge i32 %11, 32
+  br i1 %12, label %19, label %13
+
+13:                                               ; preds = %10
+  %14 = load i64, i64* %3, align 8
+  %15 = load i32, i32* %4, align 4
+  %16 = zext i32 %15 to i64
+  %17 = ashr i64 9223372036854775807, %16
+  %18 = icmp sgt i64 %14, %17
+  br i1 %18, label %19, label %21
+
+19:                                               ; preds = %13, %10, %7, %2
+  %20 = load i64, i64* %3, align 8
+  br label %26
+
+21:                                               ; preds = %13
+  %22 = load i64, i64* %3, align 8
+  %23 = load i32, i32* %4, align 4
+  %24 = zext i32 %23 to i64
+  %25 = shl i64 %22, %24
+  br label %26
+
+26:                                               ; preds = %21, %19
+  %27 = phi i64 [ %20, %19 ], [ %25, %21 ]
+  ret i64 %27
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_lshift_func_int64_t_s_u(i64 %0, i32 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i32, align 4
+  store i64 %0, i64* %3, align 8
+  store i32 %1, i32* %4, align 4
+  %5 = load i64, i64* %3, align 8
+  %6 = icmp slt i64 %5, 0
+  br i1 %6, label %16, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp uge i32 %8, 32
+  br i1 %9, label %16, label %10
+
+10:                                               ; preds = %7
+  %11 = load i64, i64* %3, align 8
+  %12 = load i32, i32* %4, align 4
+  %13 = zext i32 %12 to i64
+  %14 = ashr i64 9223372036854775807, %13
+  %15 = icmp sgt i64 %11, %14
+  br i1 %15, label %16, label %18
+
+16:                                               ; preds = %10, %7, %2
+  %17 = load i64, i64* %3, align 8
+  br label %23
+
+18:                                               ; preds = %10
+  %19 = load i64, i64* %3, align 8
+  %20 = load i32, i32* %4, align 4
+  %21 = zext i32 %20 to i64
+  %22 = shl i64 %19, %21
+  br label %23
+
+23:                                               ; preds = %18, %16
+  %24 = phi i64 [ %17, %16 ], [ %22, %18 ]
+  ret i64 %24
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_rshift_func_int64_t_s_s(i64 %0, i32 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i32, align 4
+  store i64 %0, i64* %3, align 8
+  store i32 %1, i32* %4, align 4
+  %5 = load i64, i64* %3, align 8
+  %6 = icmp slt i64 %5, 0
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp slt i32 %8, 0
+  br i1 %9, label %13, label %10
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %4, align 4
+  %12 = icmp sge i32 %11, 32
+  br i1 %12, label %13, label %15
+
+13:                                               ; preds = %10, %7, %2
+  %14 = load i64, i64* %3, align 8
+  br label %20
+
+15:                                               ; preds = %10
+  %16 = load i64, i64* %3, align 8
+  %17 = load i32, i32* %4, align 4
+  %18 = zext i32 %17 to i64
+  %19 = ashr i64 %16, %18
+  br label %20
+
+20:                                               ; preds = %15, %13
+  %21 = phi i64 [ %14, %13 ], [ %19, %15 ]
+  ret i64 %21
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_rshift_func_int64_t_s_u(i64 %0, i32 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i32, align 4
+  store i64 %0, i64* %3, align 8
+  store i32 %1, i32* %4, align 4
+  %5 = load i64, i64* %3, align 8
+  %6 = icmp slt i64 %5, 0
+  br i1 %6, label %10, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp uge i32 %8, 32
+  br i1 %9, label %10, label %12
+
+10:                                               ; preds = %7, %2
+  %11 = load i64, i64* %3, align 8
+  br label %17
+
+12:                                               ; preds = %7
+  %13 = load i64, i64* %3, align 8
+  %14 = load i32, i32* %4, align 4
+  %15 = zext i32 %14 to i64
+  %16 = ashr i64 %13, %15
+  br label %17
+
+17:                                               ; preds = %12, %10
+  %18 = phi i64 [ %11, %10 ], [ %16, %12 ]
+  ret i64 %18
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_unary_minus_func_uint8_t_u(i8 zeroext %0) #0 {
+  %2 = alloca i8, align 1
+  store i8 %0, i8* %2, align 1
+  %3 = load i8, i8* %2, align 1
+  %4 = zext i8 %3 to i32
+  %5 = sub nsw i32 0, %4
+  %6 = trunc i32 %5 to i8
+  ret i8 %6
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_add_func_uint8_t_u_u(i8 zeroext %0, i8 zeroext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %3, align 1
+  %6 = zext i8 %5 to i32
+  %7 = load i8, i8* %4, align 1
+  %8 = zext i8 %7 to i32
+  %9 = add nsw i32 %6, %8
+  %10 = trunc i32 %9 to i8
+  ret i8 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_sub_func_uint8_t_u_u(i8 zeroext %0, i8 zeroext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %3, align 1
+  %6 = zext i8 %5 to i32
+  %7 = load i8, i8* %4, align 1
+  %8 = zext i8 %7 to i32
+  %9 = sub nsw i32 %6, %8
+  %10 = trunc i32 %9 to i8
+  ret i8 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_mul_func_uint8_t_u_u(i8 zeroext %0, i8 zeroext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %3, align 1
+  %6 = zext i8 %5 to i32
+  %7 = load i8, i8* %4, align 1
+  %8 = zext i8 %7 to i32
+  %9 = mul i32 %6, %8
+  %10 = trunc i32 %9 to i8
+  ret i8 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_mod_func_uint8_t_u_u(i8 zeroext %0, i8 zeroext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %4, align 1
+  %6 = zext i8 %5 to i32
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %8, label %11
+
+8:                                                ; preds = %2
+  %9 = load i8, i8* %3, align 1
+  %10 = zext i8 %9 to i32
+  br label %17
+
+11:                                               ; preds = %2
+  %12 = load i8, i8* %3, align 1
+  %13 = zext i8 %12 to i32
+  %14 = load i8, i8* %4, align 1
+  %15 = zext i8 %14 to i32
+  %16 = srem i32 %13, %15
+  br label %17
+
+17:                                               ; preds = %11, %8
+  %18 = phi i32 [ %10, %8 ], [ %16, %11 ]
+  %19 = trunc i32 %18 to i8
+  ret i8 %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_div_func_uint8_t_u_u(i8 zeroext %0, i8 zeroext %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i8, align 1
+  store i8 %0, i8* %3, align 1
+  store i8 %1, i8* %4, align 1
+  %5 = load i8, i8* %4, align 1
+  %6 = zext i8 %5 to i32
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %8, label %11
+
+8:                                                ; preds = %2
+  %9 = load i8, i8* %3, align 1
+  %10 = zext i8 %9 to i32
+  br label %17
+
+11:                                               ; preds = %2
+  %12 = load i8, i8* %3, align 1
+  %13 = zext i8 %12 to i32
+  %14 = load i8, i8* %4, align 1
+  %15 = zext i8 %14 to i32
+  %16 = sdiv i32 %13, %15
+  br label %17
+
+17:                                               ; preds = %11, %8
+  %18 = phi i32 [ %10, %8 ], [ %16, %11 ]
+  %19 = trunc i32 %18 to i8
+  ret i8 %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_lshift_func_uint8_t_u_s(i8 zeroext %0, i32 %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i32, align 4
+  store i8 %0, i8* %3, align 1
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %16, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sge i32 %8, 32
+  br i1 %9, label %16, label %10
+
+10:                                               ; preds = %7
+  %11 = load i8, i8* %3, align 1
+  %12 = zext i8 %11 to i32
+  %13 = load i32, i32* %4, align 4
+  %14 = ashr i32 255, %13
+  %15 = icmp sgt i32 %12, %14
+  br i1 %15, label %16, label %19
+
+16:                                               ; preds = %10, %7, %2
+  %17 = load i8, i8* %3, align 1
+  %18 = zext i8 %17 to i32
+  br label %24
+
+19:                                               ; preds = %10
+  %20 = load i8, i8* %3, align 1
+  %21 = zext i8 %20 to i32
+  %22 = load i32, i32* %4, align 4
+  %23 = shl i32 %21, %22
+  br label %24
+
+24:                                               ; preds = %19, %16
+  %25 = phi i32 [ %18, %16 ], [ %23, %19 ]
+  %26 = trunc i32 %25 to i8
+  ret i8 %26
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_lshift_func_uint8_t_u_u(i8 zeroext %0, i32 %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i32, align 4
+  store i8 %0, i8* %3, align 1
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp uge i32 %5, 32
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i8, i8* %3, align 1
+  %9 = zext i8 %8 to i32
+  %10 = load i32, i32* %4, align 4
+  %11 = ashr i32 255, %10
+  %12 = icmp sgt i32 %9, %11
+  br i1 %12, label %13, label %16
+
+13:                                               ; preds = %7, %2
+  %14 = load i8, i8* %3, align 1
+  %15 = zext i8 %14 to i32
+  br label %21
+
+16:                                               ; preds = %7
+  %17 = load i8, i8* %3, align 1
+  %18 = zext i8 %17 to i32
+  %19 = load i32, i32* %4, align 4
+  %20 = shl i32 %18, %19
+  br label %21
+
+21:                                               ; preds = %16, %13
+  %22 = phi i32 [ %15, %13 ], [ %20, %16 ]
+  %23 = trunc i32 %22 to i8
+  ret i8 %23
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_rshift_func_uint8_t_u_s(i8 zeroext %0, i32 %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i32, align 4
+  store i8 %0, i8* %3, align 1
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %10, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sge i32 %8, 32
+  br i1 %9, label %10, label %13
+
+10:                                               ; preds = %7, %2
+  %11 = load i8, i8* %3, align 1
+  %12 = zext i8 %11 to i32
+  br label %18
+
+13:                                               ; preds = %7
+  %14 = load i8, i8* %3, align 1
+  %15 = zext i8 %14 to i32
+  %16 = load i32, i32* %4, align 4
+  %17 = ashr i32 %15, %16
+  br label %18
+
+18:                                               ; preds = %13, %10
+  %19 = phi i32 [ %12, %10 ], [ %17, %13 ]
+  %20 = trunc i32 %19 to i8
+  ret i8 %20
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i8 @safe_rshift_func_uint8_t_u_u(i8 zeroext %0, i32 %1) #0 {
+  %3 = alloca i8, align 1
+  %4 = alloca i32, align 4
+  store i8 %0, i8* %3, align 1
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp uge i32 %5, 32
+  br i1 %6, label %7, label %10
+
+7:                                                ; preds = %2
+  %8 = load i8, i8* %3, align 1
+  %9 = zext i8 %8 to i32
+  br label %15
+
+10:                                               ; preds = %2
+  %11 = load i8, i8* %3, align 1
+  %12 = zext i8 %11 to i32
+  %13 = load i32, i32* %4, align 4
+  %14 = ashr i32 %12, %13
+  br label %15
+
+15:                                               ; preds = %10, %7
+  %16 = phi i32 [ %9, %7 ], [ %14, %10 ]
+  %17 = trunc i32 %16 to i8
+  ret i8 %17
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_unary_minus_func_uint16_t_u(i16 zeroext %0) #0 {
+  %2 = alloca i16, align 2
+  store i16 %0, i16* %2, align 2
+  %3 = load i16, i16* %2, align 2
+  %4 = zext i16 %3 to i32
+  %5 = sub nsw i32 0, %4
+  %6 = trunc i32 %5 to i16
+  ret i16 %6
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_add_func_uint16_t_u_u(i16 zeroext %0, i16 zeroext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %3, align 2
+  %6 = zext i16 %5 to i32
+  %7 = load i16, i16* %4, align 2
+  %8 = zext i16 %7 to i32
+  %9 = add nsw i32 %6, %8
+  %10 = trunc i32 %9 to i16
+  ret i16 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_sub_func_uint16_t_u_u(i16 zeroext %0, i16 zeroext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %3, align 2
+  %6 = zext i16 %5 to i32
+  %7 = load i16, i16* %4, align 2
+  %8 = zext i16 %7 to i32
+  %9 = sub nsw i32 %6, %8
+  %10 = trunc i32 %9 to i16
+  ret i16 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_mul_func_uint16_t_u_u(i16 zeroext %0, i16 zeroext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %3, align 2
+  %6 = zext i16 %5 to i32
+  %7 = load i16, i16* %4, align 2
+  %8 = zext i16 %7 to i32
+  %9 = mul i32 %6, %8
+  %10 = trunc i32 %9 to i16
+  ret i16 %10
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_mod_func_uint16_t_u_u(i16 zeroext %0, i16 zeroext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %4, align 2
+  %6 = zext i16 %5 to i32
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %8, label %11
+
+8:                                                ; preds = %2
+  %9 = load i16, i16* %3, align 2
+  %10 = zext i16 %9 to i32
+  br label %17
+
+11:                                               ; preds = %2
+  %12 = load i16, i16* %3, align 2
+  %13 = zext i16 %12 to i32
+  %14 = load i16, i16* %4, align 2
+  %15 = zext i16 %14 to i32
+  %16 = srem i32 %13, %15
+  br label %17
+
+17:                                               ; preds = %11, %8
+  %18 = phi i32 [ %10, %8 ], [ %16, %11 ]
+  %19 = trunc i32 %18 to i16
+  ret i16 %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_div_func_uint16_t_u_u(i16 zeroext %0, i16 zeroext %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i16, align 2
+  store i16 %0, i16* %3, align 2
+  store i16 %1, i16* %4, align 2
+  %5 = load i16, i16* %4, align 2
+  %6 = zext i16 %5 to i32
+  %7 = icmp eq i32 %6, 0
+  br i1 %7, label %8, label %11
+
+8:                                                ; preds = %2
+  %9 = load i16, i16* %3, align 2
+  %10 = zext i16 %9 to i32
+  br label %17
+
+11:                                               ; preds = %2
+  %12 = load i16, i16* %3, align 2
+  %13 = zext i16 %12 to i32
+  %14 = load i16, i16* %4, align 2
+  %15 = zext i16 %14 to i32
+  %16 = sdiv i32 %13, %15
+  br label %17
+
+17:                                               ; preds = %11, %8
+  %18 = phi i32 [ %10, %8 ], [ %16, %11 ]
+  %19 = trunc i32 %18 to i16
+  ret i16 %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_lshift_func_uint16_t_u_s(i16 zeroext %0, i32 %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i32, align 4
+  store i16 %0, i16* %3, align 2
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %16, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sge i32 %8, 32
+  br i1 %9, label %16, label %10
+
+10:                                               ; preds = %7
+  %11 = load i16, i16* %3, align 2
+  %12 = zext i16 %11 to i32
+  %13 = load i32, i32* %4, align 4
+  %14 = ashr i32 65535, %13
+  %15 = icmp sgt i32 %12, %14
+  br i1 %15, label %16, label %19
+
+16:                                               ; preds = %10, %7, %2
+  %17 = load i16, i16* %3, align 2
+  %18 = zext i16 %17 to i32
+  br label %24
+
+19:                                               ; preds = %10
+  %20 = load i16, i16* %3, align 2
+  %21 = zext i16 %20 to i32
+  %22 = load i32, i32* %4, align 4
+  %23 = shl i32 %21, %22
+  br label %24
+
+24:                                               ; preds = %19, %16
+  %25 = phi i32 [ %18, %16 ], [ %23, %19 ]
+  %26 = trunc i32 %25 to i16
+  ret i16 %26
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_lshift_func_uint16_t_u_u(i16 zeroext %0, i32 %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i32, align 4
+  store i16 %0, i16* %3, align 2
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp uge i32 %5, 32
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i16, i16* %3, align 2
+  %9 = zext i16 %8 to i32
+  %10 = load i32, i32* %4, align 4
+  %11 = ashr i32 65535, %10
+  %12 = icmp sgt i32 %9, %11
+  br i1 %12, label %13, label %16
+
+13:                                               ; preds = %7, %2
+  %14 = load i16, i16* %3, align 2
+  %15 = zext i16 %14 to i32
+  br label %21
+
+16:                                               ; preds = %7
+  %17 = load i16, i16* %3, align 2
+  %18 = zext i16 %17 to i32
+  %19 = load i32, i32* %4, align 4
+  %20 = shl i32 %18, %19
+  br label %21
+
+21:                                               ; preds = %16, %13
+  %22 = phi i32 [ %15, %13 ], [ %20, %16 ]
+  %23 = trunc i32 %22 to i16
+  ret i16 %23
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_rshift_func_uint16_t_u_s(i16 zeroext %0, i32 %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i32, align 4
+  store i16 %0, i16* %3, align 2
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %10, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sge i32 %8, 32
+  br i1 %9, label %10, label %13
+
+10:                                               ; preds = %7, %2
+  %11 = load i16, i16* %3, align 2
+  %12 = zext i16 %11 to i32
+  br label %18
+
+13:                                               ; preds = %7
+  %14 = load i16, i16* %3, align 2
+  %15 = zext i16 %14 to i32
+  %16 = load i32, i32* %4, align 4
+  %17 = ashr i32 %15, %16
+  br label %18
+
+18:                                               ; preds = %13, %10
+  %19 = phi i32 [ %12, %10 ], [ %17, %13 ]
+  %20 = trunc i32 %19 to i16
+  ret i16 %20
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal zeroext i16 @safe_rshift_func_uint16_t_u_u(i16 zeroext %0, i32 %1) #0 {
+  %3 = alloca i16, align 2
+  %4 = alloca i32, align 4
+  store i16 %0, i16* %3, align 2
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp uge i32 %5, 32
+  br i1 %6, label %7, label %10
+
+7:                                                ; preds = %2
+  %8 = load i16, i16* %3, align 2
+  %9 = zext i16 %8 to i32
+  br label %15
+
+10:                                               ; preds = %2
+  %11 = load i16, i16* %3, align 2
+  %12 = zext i16 %11 to i32
+  %13 = load i32, i32* %4, align 4
+  %14 = ashr i32 %12, %13
+  br label %15
+
+15:                                               ; preds = %10, %7
+  %16 = phi i32 [ %9, %7 ], [ %14, %10 ]
+  %17 = trunc i32 %16 to i16
+  ret i16 %17
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_unary_minus_func_uint32_t_u(i32 %0) #0 {
+  %2 = alloca i32, align 4
+  store i32 %0, i32* %2, align 4
+  %3 = load i32, i32* %2, align 4
+  %4 = sub i32 0, %3
+  ret i32 %4
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_add_func_uint32_t_u_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = load i32, i32* %4, align 4
+  %7 = add i32 %5, %6
+  ret i32 %7
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_sub_func_uint32_t_u_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = load i32, i32* %4, align 4
+  %7 = sub i32 %5, %6
+  ret i32 %7
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_mul_func_uint32_t_u_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %3, align 4
+  %6 = load i32, i32* %4, align 4
+  %7 = mul i32 %5, %6
+  ret i32 %7
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_mod_func_uint32_t_u_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp eq i32 %5, 0
+  br i1 %6, label %7, label %9
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %3, align 4
+  br label %13
+
+9:                                                ; preds = %2
+  %10 = load i32, i32* %3, align 4
+  %11 = load i32, i32* %4, align 4
+  %12 = urem i32 %10, %11
+  br label %13
+
+13:                                               ; preds = %9, %7
+  %14 = phi i32 [ %8, %7 ], [ %12, %9 ]
+  ret i32 %14
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_div_func_uint32_t_u_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp eq i32 %5, 0
+  br i1 %6, label %7, label %9
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %3, align 4
+  br label %13
+
+9:                                                ; preds = %2
+  %10 = load i32, i32* %3, align 4
+  %11 = load i32, i32* %4, align 4
+  %12 = udiv i32 %10, %11
+  br label %13
+
+13:                                               ; preds = %9, %7
+  %14 = phi i32 [ %8, %7 ], [ %12, %9 ]
+  ret i32 %14
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_lshift_func_uint32_t_u_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %15, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sge i32 %8, 32
+  br i1 %9, label %15, label %10
+
+10:                                               ; preds = %7
+  %11 = load i32, i32* %3, align 4
+  %12 = load i32, i32* %4, align 4
+  %13 = lshr i32 -1, %12
+  %14 = icmp ugt i32 %11, %13
+  br i1 %14, label %15, label %17
+
+15:                                               ; preds = %10, %7, %2
+  %16 = load i32, i32* %3, align 4
+  br label %21
+
+17:                                               ; preds = %10
+  %18 = load i32, i32* %3, align 4
+  %19 = load i32, i32* %4, align 4
+  %20 = shl i32 %18, %19
+  br label %21
+
+21:                                               ; preds = %17, %15
+  %22 = phi i32 [ %16, %15 ], [ %20, %17 ]
+  ret i32 %22
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_lshift_func_uint32_t_u_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp uge i32 %5, 32
+  br i1 %6, label %12, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %3, align 4
+  %9 = load i32, i32* %4, align 4
+  %10 = lshr i32 -1, %9
+  %11 = icmp ugt i32 %8, %10
+  br i1 %11, label %12, label %14
+
+12:                                               ; preds = %7, %2
+  %13 = load i32, i32* %3, align 4
+  br label %18
+
+14:                                               ; preds = %7
+  %15 = load i32, i32* %3, align 4
+  %16 = load i32, i32* %4, align 4
+  %17 = shl i32 %15, %16
+  br label %18
+
+18:                                               ; preds = %14, %12
+  %19 = phi i32 [ %13, %12 ], [ %17, %14 ]
+  ret i32 %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_rshift_func_uint32_t_u_s(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %10, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sge i32 %8, 32
+  br i1 %9, label %10, label %12
+
+10:                                               ; preds = %7, %2
+  %11 = load i32, i32* %3, align 4
+  br label %16
+
+12:                                               ; preds = %7
+  %13 = load i32, i32* %3, align 4
+  %14 = load i32, i32* %4, align 4
+  %15 = lshr i32 %13, %14
+  br label %16
+
+16:                                               ; preds = %12, %10
+  %17 = phi i32 [ %11, %10 ], [ %15, %12 ]
+  ret i32 %17
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_rshift_func_uint32_t_u_u(i32 %0, i32 %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 %0, i32* %3, align 4
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp uge i32 %5, 32
+  br i1 %6, label %7, label %9
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %3, align 4
+  br label %13
+
+9:                                                ; preds = %2
+  %10 = load i32, i32* %3, align 4
+  %11 = load i32, i32* %4, align 4
+  %12 = lshr i32 %10, %11
+  br label %13
+
+13:                                               ; preds = %9, %7
+  %14 = phi i32 [ %8, %7 ], [ %12, %9 ]
+  ret i32 %14
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_unary_minus_func_uint64_t_u(i64 %0) #0 {
+  %2 = alloca i64, align 8
+  store i64 %0, i64* %2, align 8
+  %3 = load i64, i64* %2, align 8
+  %4 = sub i64 0, %3
+  ret i64 %4
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_add_func_uint64_t_u_u(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %3, align 8
+  %6 = load i64, i64* %4, align 8
+  %7 = add i64 %5, %6
+  ret i64 %7
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_sub_func_uint64_t_u_u(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %3, align 8
+  %6 = load i64, i64* %4, align 8
+  %7 = sub i64 %5, %6
+  ret i64 %7
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_mul_func_uint64_t_u_u(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %3, align 8
+  %6 = load i64, i64* %4, align 8
+  %7 = mul i64 %5, %6
+  ret i64 %7
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_mod_func_uint64_t_u_u(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %4, align 8
+  %6 = icmp eq i64 %5, 0
+  br i1 %6, label %7, label %9
+
+7:                                                ; preds = %2
+  %8 = load i64, i64* %3, align 8
+  br label %13
+
+9:                                                ; preds = %2
+  %10 = load i64, i64* %3, align 8
+  %11 = load i64, i64* %4, align 8
+  %12 = urem i64 %10, %11
+  br label %13
+
+13:                                               ; preds = %9, %7
+  %14 = phi i64 [ %8, %7 ], [ %12, %9 ]
+  ret i64 %14
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_div_func_uint64_t_u_u(i64 %0, i64 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i64, align 8
+  store i64 %0, i64* %3, align 8
+  store i64 %1, i64* %4, align 8
+  %5 = load i64, i64* %4, align 8
+  %6 = icmp eq i64 %5, 0
+  br i1 %6, label %7, label %9
+
+7:                                                ; preds = %2
+  %8 = load i64, i64* %3, align 8
+  br label %13
+
+9:                                                ; preds = %2
+  %10 = load i64, i64* %3, align 8
+  %11 = load i64, i64* %4, align 8
+  %12 = udiv i64 %10, %11
+  br label %13
+
+13:                                               ; preds = %9, %7
+  %14 = phi i64 [ %8, %7 ], [ %12, %9 ]
+  ret i64 %14
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_lshift_func_uint64_t_u_s(i64 %0, i32 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i32, align 4
+  store i64 %0, i64* %3, align 8
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %16, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sge i32 %8, 32
+  br i1 %9, label %16, label %10
+
+10:                                               ; preds = %7
+  %11 = load i64, i64* %3, align 8
+  %12 = load i32, i32* %4, align 4
+  %13 = zext i32 %12 to i64
+  %14 = lshr i64 -1, %13
+  %15 = icmp ugt i64 %11, %14
+  br i1 %15, label %16, label %18
+
+16:                                               ; preds = %10, %7, %2
+  %17 = load i64, i64* %3, align 8
+  br label %23
+
+18:                                               ; preds = %10
+  %19 = load i64, i64* %3, align 8
+  %20 = load i32, i32* %4, align 4
+  %21 = zext i32 %20 to i64
+  %22 = shl i64 %19, %21
+  br label %23
+
+23:                                               ; preds = %18, %16
+  %24 = phi i64 [ %17, %16 ], [ %22, %18 ]
+  ret i64 %24
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_lshift_func_uint64_t_u_u(i64 %0, i32 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i32, align 4
+  store i64 %0, i64* %3, align 8
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp uge i32 %5, 32
+  br i1 %6, label %13, label %7
+
+7:                                                ; preds = %2
+  %8 = load i64, i64* %3, align 8
+  %9 = load i32, i32* %4, align 4
+  %10 = zext i32 %9 to i64
+  %11 = lshr i64 -1, %10
+  %12 = icmp ugt i64 %8, %11
+  br i1 %12, label %13, label %15
+
+13:                                               ; preds = %7, %2
+  %14 = load i64, i64* %3, align 8
+  br label %20
+
+15:                                               ; preds = %7
+  %16 = load i64, i64* %3, align 8
+  %17 = load i32, i32* %4, align 4
+  %18 = zext i32 %17 to i64
+  %19 = shl i64 %16, %18
+  br label %20
+
+20:                                               ; preds = %15, %13
+  %21 = phi i64 [ %14, %13 ], [ %19, %15 ]
+  ret i64 %21
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_rshift_func_uint64_t_u_s(i64 %0, i32 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i32, align 4
+  store i64 %0, i64* %3, align 8
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp slt i32 %5, 0
+  br i1 %6, label %10, label %7
+
+7:                                                ; preds = %2
+  %8 = load i32, i32* %4, align 4
+  %9 = icmp sge i32 %8, 32
+  br i1 %9, label %10, label %12
+
+10:                                               ; preds = %7, %2
+  %11 = load i64, i64* %3, align 8
+  br label %17
+
+12:                                               ; preds = %7
+  %13 = load i64, i64* %3, align 8
+  %14 = load i32, i32* %4, align 4
+  %15 = zext i32 %14 to i64
+  %16 = lshr i64 %13, %15
+  br label %17
+
+17:                                               ; preds = %12, %10
+  %18 = phi i64 [ %11, %10 ], [ %16, %12 ]
+  ret i64 %18
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @safe_rshift_func_uint64_t_u_u(i64 %0, i32 %1) #0 {
+  %3 = alloca i64, align 8
+  %4 = alloca i32, align 4
+  store i64 %0, i64* %3, align 8
+  store i32 %1, i32* %4, align 4
+  %5 = load i32, i32* %4, align 4
+  %6 = icmp uge i32 %5, 32
+  br i1 %6, label %7, label %9
+
+7:                                                ; preds = %2
+  %8 = load i64, i64* %3, align 8
+  br label %14
+
+9:                                                ; preds = %2
+  %10 = load i64, i64* %3, align 8
+  %11 = load i32, i32* %4, align 4
+  %12 = zext i32 %11 to i64
+  %13 = lshr i64 %10, %12
+  br label %14
+
+14:                                               ; preds = %9, %7
+  %15 = phi i64 [ %8, %7 ], [ %13, %9 ]
+  ret i64 %15
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal float @safe_add_func_float_f_f(float %0, float %1) #0 {
+  %3 = alloca float, align 4
+  %4 = alloca float, align 4
+  store float %0, float* %3, align 4
+  store float %1, float* %4, align 4
+  %5 = load float, float* %3, align 4
+  %6 = fmul float 5.000000e-01, %5
+  %7 = load float, float* %4, align 4
+  %8 = fmul float 5.000000e-01, %7
+  %9 = fadd float %6, %8
+  %10 = call float @llvm.fabs.f32(float %9)
+  %11 = fcmp ogt float %10, 0x47DFFFFFE0000000
+  br i1 %11, label %12, label %14
+
+12:                                               ; preds = %2
+  %13 = load float, float* %3, align 4
+  br label %18
+
+14:                                               ; preds = %2
+  %15 = load float, float* %3, align 4
+  %16 = load float, float* %4, align 4
+  %17 = fadd float %15, %16
+  br label %18
+
+18:                                               ; preds = %14, %12
+  %19 = phi float [ %13, %12 ], [ %17, %14 ]
+  ret float %19
+}
+
+; Function Attrs: nounwind readnone speculatable willreturn
+declare float @llvm.fabs.f32(float) #2
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal float @safe_sub_func_float_f_f(float %0, float %1) #0 {
+  %3 = alloca float, align 4
+  %4 = alloca float, align 4
+  store float %0, float* %3, align 4
+  store float %1, float* %4, align 4
+  %5 = load float, float* %3, align 4
+  %6 = fmul float 5.000000e-01, %5
+  %7 = load float, float* %4, align 4
+  %8 = fmul float 5.000000e-01, %7
+  %9 = fsub float %6, %8
+  %10 = call float @llvm.fabs.f32(float %9)
+  %11 = fcmp ogt float %10, 0x47DFFFFFE0000000
+  br i1 %11, label %12, label %14
+
+12:                                               ; preds = %2
+  %13 = load float, float* %3, align 4
+  br label %18
+
+14:                                               ; preds = %2
+  %15 = load float, float* %3, align 4
+  %16 = load float, float* %4, align 4
+  %17 = fsub float %15, %16
+  br label %18
+
+18:                                               ; preds = %14, %12
+  %19 = phi float [ %13, %12 ], [ %17, %14 ]
+  ret float %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal float @safe_mul_func_float_f_f(float %0, float %1) #0 {
+  %3 = alloca float, align 4
+  %4 = alloca float, align 4
+  store float %0, float* %3, align 4
+  store float %1, float* %4, align 4
+  %5 = load float, float* %3, align 4
+  %6 = fmul float 0x39B0000000000000, %5
+  %7 = load float, float* %4, align 4
+  %8 = fmul float 0x3E30000000000000, %7
+  %9 = fmul float %6, %8
+  %10 = call float @llvm.fabs.f32(float %9)
+  %11 = fcmp ogt float %10, 0x3FEFFFFFE0000000
+  br i1 %11, label %12, label %14
+
+12:                                               ; preds = %2
+  %13 = load float, float* %3, align 4
+  br label %18
+
+14:                                               ; preds = %2
+  %15 = load float, float* %3, align 4
+  %16 = load float, float* %4, align 4
+  %17 = fmul float %15, %16
+  br label %18
+
+18:                                               ; preds = %14, %12
+  %19 = phi float [ %13, %12 ], [ %17, %14 ]
+  ret float %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal float @safe_div_func_float_f_f(float %0, float %1) #0 {
+  %3 = alloca float, align 4
+  %4 = alloca float, align 4
+  store float %0, float* %3, align 4
+  store float %1, float* %4, align 4
+  %5 = load float, float* %4, align 4
+  %6 = call float @llvm.fabs.f32(float %5)
+  %7 = fcmp olt float %6, 1.000000e+00
+  br i1 %7, label %8, label %21
+
+8:                                                ; preds = %2
+  %9 = load float, float* %4, align 4
+  %10 = fcmp oeq float %9, 0.000000e+00
+  br i1 %10, label %19, label %11
+
+11:                                               ; preds = %8
+  %12 = load float, float* %3, align 4
+  %13 = fmul float 0x3CE0000000000000, %12
+  %14 = load float, float* %4, align 4
+  %15 = fmul float 0x4630000000000000, %14
+  %16 = fdiv float %13, %15
+  %17 = call float @llvm.fabs.f32(float %16)
+  %18 = fcmp ogt float %17, 0x3E9FFFFFE0000000
+  br i1 %18, label %19, label %21
+
+19:                                               ; preds = %11, %8
+  %20 = load float, float* %3, align 4
+  br label %25
+
+21:                                               ; preds = %11, %2
+  %22 = load float, float* %3, align 4
+  %23 = load float, float* %4, align 4
+  %24 = fdiv float %22, %23
+  br label %25
+
+25:                                               ; preds = %21, %19
+  %26 = phi float [ %20, %19 ], [ %24, %21 ]
+  ret float %26
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal double @safe_add_func_double_f_f(double %0, double %1) #0 {
+  %3 = alloca double, align 8
+  %4 = alloca double, align 8
+  store double %0, double* %3, align 8
+  store double %1, double* %4, align 8
+  %5 = load double, double* %3, align 8
+  %6 = fmul double 5.000000e-01, %5
+  %7 = load double, double* %4, align 8
+  %8 = fmul double 5.000000e-01, %7
+  %9 = fadd double %6, %8
+  %10 = call double @llvm.fabs.f64(double %9)
+  %11 = fcmp ogt double %10, 0x7FDFFFFFFFFFFFFF
+  br i1 %11, label %12, label %14
+
+12:                                               ; preds = %2
+  %13 = load double, double* %3, align 8
+  br label %18
+
+14:                                               ; preds = %2
+  %15 = load double, double* %3, align 8
+  %16 = load double, double* %4, align 8
+  %17 = fadd double %15, %16
+  br label %18
+
+18:                                               ; preds = %14, %12
+  %19 = phi double [ %13, %12 ], [ %17, %14 ]
+  ret double %19
+}
+
+; Function Attrs: nounwind readnone speculatable willreturn
+declare double @llvm.fabs.f64(double) #2
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal double @safe_sub_func_double_f_f(double %0, double %1) #0 {
+  %3 = alloca double, align 8
+  %4 = alloca double, align 8
+  store double %0, double* %3, align 8
+  store double %1, double* %4, align 8
+  %5 = load double, double* %3, align 8
+  %6 = fmul double 5.000000e-01, %5
+  %7 = load double, double* %4, align 8
+  %8 = fmul double 5.000000e-01, %7
+  %9 = fsub double %6, %8
+  %10 = call double @llvm.fabs.f64(double %9)
+  %11 = fcmp ogt double %10, 0x7FDFFFFFFFFFFFFF
+  br i1 %11, label %12, label %14
+
+12:                                               ; preds = %2
+  %13 = load double, double* %3, align 8
+  br label %18
+
+14:                                               ; preds = %2
+  %15 = load double, double* %3, align 8
+  %16 = load double, double* %4, align 8
+  %17 = fsub double %15, %16
+  br label %18
+
+18:                                               ; preds = %14, %12
+  %19 = phi double [ %13, %12 ], [ %17, %14 ]
+  ret double %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal double @safe_mul_func_double_f_f(double %0, double %1) #0 {
+  %3 = alloca double, align 8
+  %4 = alloca double, align 8
+  store double %0, double* %3, align 8
+  store double %1, double* %4, align 8
+  %5 = load double, double* %3, align 8
+  %6 = fmul double 0x39B0000000000000, %5
+  %7 = load double, double* %4, align 8
+  %8 = fmul double 0x630000000000000, %7
+  %9 = fmul double %6, %8
+  %10 = call double @llvm.fabs.f64(double %9)
+  %11 = fcmp ogt double %10, 0x3FEFFFFFFFFFFFFF
+  br i1 %11, label %12, label %14
+
+12:                                               ; preds = %2
+  %13 = load double, double* %3, align 8
+  br label %18
+
+14:                                               ; preds = %2
+  %15 = load double, double* %3, align 8
+  %16 = load double, double* %4, align 8
+  %17 = fmul double %15, %16
+  br label %18
+
+18:                                               ; preds = %14, %12
+  %19 = phi double [ %13, %12 ], [ %17, %14 ]
+  ret double %19
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal double @safe_div_func_double_f_f(double %0, double %1) #0 {
+  %3 = alloca double, align 8
+  %4 = alloca double, align 8
+  store double %0, double* %3, align 8
+  store double %1, double* %4, align 8
+  %5 = load double, double* %4, align 8
+  %6 = call double @llvm.fabs.f64(double %5)
+  %7 = fcmp olt double %6, 1.000000e+00
+  br i1 %7, label %8, label %21
+
+8:                                                ; preds = %2
+  %9 = load double, double* %4, align 8
+  %10 = fcmp oeq double %9, 0.000000e+00
+  br i1 %10, label %19, label %11
+
+11:                                               ; preds = %8
+  %12 = load double, double* %3, align 8
+  %13 = fmul double 0x310000000000000, %12
+  %14 = load double, double* %4, align 8
+  %15 = fmul double 0x4630000000000000, %14
+  %16 = fdiv double %13, %15
+  %17 = call double @llvm.fabs.f64(double %16)
+  %18 = fcmp ogt double %17, 0x3CCFFFFFFFFFFFFF
+  br i1 %18, label %19, label %21
+
+19:                                               ; preds = %11, %8
+  %20 = load double, double* %3, align 8
+  br label %25
+
+21:                                               ; preds = %11, %2
+  %22 = load double, double* %3, align 8
+  %23 = load double, double* %4, align 8
+  %24 = fdiv double %22, %23
+  br label %25
+
+25:                                               ; preds = %21, %19
+  %26 = phi double [ %20, %19 ], [ %24, %21 ]
+  ret double %26
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i32 @safe_convert_func_float_to_int32_t(float %0) #0 {
+  %2 = alloca float, align 4
+  store float %0, float* %2, align 4
+  %3 = load float, float* %2, align 4
+  %4 = fcmp ole float %3, 0xC1E0000000000000
+  br i1 %4, label %8, label %5
+
+5:                                                ; preds = %1
+  %6 = load float, float* %2, align 4
+  %7 = fcmp oge float %6, 0x41E0000000000000
+  br i1 %7, label %8, label %9
+
+8:                                                ; preds = %5, %1
+  br label %12
+
+9:                                                ; preds = %5
+  %10 = load float, float* %2, align 4
+  %11 = fptosi float %10 to i32
+  br label %12
+
+12:                                               ; preds = %9, %8
+  %13 = phi i32 [ 2147483647, %8 ], [ %11, %9 ]
+  ret i32 %13
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal void @crc32_gentab() #0 {
+  %1 = alloca i32, align 4
+  %2 = alloca i32, align 4
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  store i32 -306674912, i32* %2, align 4
+  store i32 0, i32* %3, align 4
+  br label %5
+
+5:                                                ; preds = %33, %0
+  %6 = load i32, i32* %3, align 4
+  %7 = icmp slt i32 %6, 256
+  br i1 %7, label %8, label %36
+
+8:                                                ; preds = %5
+  %9 = load i32, i32* %3, align 4
+  store i32 %9, i32* %1, align 4
+  store i32 8, i32* %4, align 4
+  br label %10
+
+10:                                               ; preds = %25, %8
+  %11 = load i32, i32* %4, align 4
+  %12 = icmp sgt i32 %11, 0
+  br i1 %12, label %13, label %28
+
+13:                                               ; preds = %10
+  %14 = load i32, i32* %1, align 4
+  %15 = and i32 %14, 1
+  %16 = icmp ne i32 %15, 0
+  br i1 %16, label %17, label %21
+
+17:                                               ; preds = %13
+  %18 = load i32, i32* %1, align 4
+  %19 = lshr i32 %18, 1
+  %20 = xor i32 %19, -306674912
+  store i32 %20, i32* %1, align 4
+  br label %24
+
+21:                                               ; preds = %13
+  %22 = load i32, i32* %1, align 4
+  %23 = lshr i32 %22, 1
+  store i32 %23, i32* %1, align 4
+  br label %24
+
+24:                                               ; preds = %21, %17
+  br label %25
+
+25:                                               ; preds = %24
+  %26 = load i32, i32* %4, align 4
+  %27 = add nsw i32 %26, -1
+  store i32 %27, i32* %4, align 4
+  br label %10
+
+28:                                               ; preds = %10
+  %29 = load i32, i32* %1, align 4
+  %30 = load i32, i32* %3, align 4
+  %31 = sext i32 %30 to i64
+  %32 = getelementptr inbounds [256 x i32], [256 x i32]* @crc32_tab, i64 0, i64 %31
+  store i32 %29, i32* %32, align 4
+  br label %33
+
+33:                                               ; preds = %28
+  %34 = load i32, i32* %3, align 4
+  %35 = add nsw i32 %34, 1
+  store i32 %35, i32* %3, align 4
+  br label %5
+
+36:                                               ; preds = %5
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal void @crc32_byte(i8 zeroext %0) #0 {
+  %2 = alloca i8, align 1
+  store i8 %0, i8* %2, align 1
+  %3 = load i32, i32* @crc32_context, align 4
+  %4 = lshr i32 %3, 8
+  %5 = and i32 %4, 16777215
+  %6 = load i32, i32* @crc32_context, align 4
+  %7 = load i8, i8* %2, align 1
+  %8 = zext i8 %7 to i32
+  %9 = xor i32 %6, %8
+  %10 = and i32 %9, 255
+  %11 = zext i32 %10 to i64
+  %12 = getelementptr inbounds [256 x i32], [256 x i32]* @crc32_tab, i64 0, i64 %11
+  %13 = load i32, i32* %12, align 4
+  %14 = xor i32 %5, %13
+  store i32 %14, i32* @crc32_context, align 4
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal void @crc32_8bytes(i64 %0) #0 {
+  %2 = alloca i64, align 8
+  store i64 %0, i64* %2, align 8
+  %3 = load i64, i64* %2, align 8
+  %4 = lshr i64 %3, 0
+  %5 = and i64 %4, 255
+  %6 = trunc i64 %5 to i8
+  call void @crc32_byte(i8 zeroext %6)
+  %7 = load i64, i64* %2, align 8
+  %8 = lshr i64 %7, 8
+  %9 = and i64 %8, 255
+  %10 = trunc i64 %9 to i8
+  call void @crc32_byte(i8 zeroext %10)
+  %11 = load i64, i64* %2, align 8
+  %12 = lshr i64 %11, 16
+  %13 = and i64 %12, 255
+  %14 = trunc i64 %13 to i8
+  call void @crc32_byte(i8 zeroext %14)
+  %15 = load i64, i64* %2, align 8
+  %16 = lshr i64 %15, 24
+  %17 = and i64 %16, 255
+  %18 = trunc i64 %17 to i8
+  call void @crc32_byte(i8 zeroext %18)
+  %19 = load i64, i64* %2, align 8
+  %20 = lshr i64 %19, 32
+  %21 = and i64 %20, 255
+  %22 = trunc i64 %21 to i8
+  call void @crc32_byte(i8 zeroext %22)
+  %23 = load i64, i64* %2, align 8
+  %24 = lshr i64 %23, 40
+  %25 = and i64 %24, 255
+  %26 = trunc i64 %25 to i8
+  call void @crc32_byte(i8 zeroext %26)
+  %27 = load i64, i64* %2, align 8
+  %28 = lshr i64 %27, 48
+  %29 = and i64 %28, 255
+  %30 = trunc i64 %29 to i8
+  call void @crc32_byte(i8 zeroext %30)
+  %31 = load i64, i64* %2, align 8
+  %32 = lshr i64 %31, 56
+  %33 = and i64 %32, 255
+  %34 = trunc i64 %33 to i8
+  call void @crc32_byte(i8 zeroext %34)
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal void @transparent_crc(i64 %0, i8* %1, i32 %2) #0 {
+  %4 = alloca i64, align 8
+  %5 = alloca i8*, align 8
+  %6 = alloca i32, align 4
+  store i64 %0, i64* %4, align 8
+  store i8* %1, i8** %5, align 8
+  store i32 %2, i32* %6, align 4
+  %7 = load i64, i64* %4, align 8
+  call void @crc32_8bytes(i64 %7)
+  %8 = load i32, i32* %6, align 4
+  %9 = icmp ne i32 %8, 0
+  br i1 %9, label %10, label %16
+
+10:                                               ; preds = %3
+  %11 = load i8*, i8** %5, align 8
+  %12 = load i32, i32* @crc32_context, align 4
+  %13 = zext i32 %12 to i64
+  %14 = xor i64 %13, 4294967295
+  %15 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([36 x i8], [36 x i8]* @.str.1, i64 0, i64 0), i8* %11, i64 %14)
+  br label %16
+
+16:                                               ; preds = %10, %3
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal void @transparent_crc_bytes(i8* %0, i32 %1, i8* %2, i32 %3) #0 {
+  %5 = alloca i8*, align 8
+  %6 = alloca i32, align 4
+  %7 = alloca i8*, align 8
+  %8 = alloca i32, align 4
+  %9 = alloca i32, align 4
+  store i8* %0, i8** %5, align 8
+  store i32 %1, i32* %6, align 4
+  store i8* %2, i8** %7, align 8
+  store i32 %3, i32* %8, align 4
+  store i32 0, i32* %9, align 4
+  br label %10
+
+10:                                               ; preds = %20, %4
+  %11 = load i32, i32* %9, align 4
+  %12 = load i32, i32* %6, align 4
+  %13 = icmp slt i32 %11, %12
+  br i1 %13, label %14, label %23
+
+14:                                               ; preds = %10
+  %15 = load i8*, i8** %5, align 8
+  %16 = load i32, i32* %9, align 4
+  %17 = sext i32 %16 to i64
+  %18 = getelementptr inbounds i8, i8* %15, i64 %17
+  %19 = load i8, i8* %18, align 1
+  call void @crc32_byte(i8 zeroext %19)
+  br label %20
+
+20:                                               ; preds = %14
+  %21 = load i32, i32* %9, align 4
+  %22 = add nsw i32 %21, 1
+  store i32 %22, i32* %9, align 4
+  br label %10
+
+23:                                               ; preds = %10
+  %24 = load i32, i32* %8, align 4
+  %25 = icmp ne i32 %24, 0
+  br i1 %25, label %26, label %32
+
+26:                                               ; preds = %23
+  %27 = load i8*, i8** %7, align 8
+  %28 = load i32, i32* @crc32_context, align 4
+  %29 = zext i32 %28 to i64
+  %30 = xor i64 %29, 4294967295
+  %31 = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([36 x i8], [36 x i8]* @.str.1, i64 0, i64 0), i8* %27, i64 %30)
+  br label %32
+
+32:                                               ; preds = %26, %23
+  ret void
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define internal i64 @func_1() #0 {
+  %1 = alloca i32*, align 8
+  %2 = alloca [4 x i32*], align 16
+  %3 = alloca [4 x i64], align 16
+  %4 = alloca i32, align 4
+  store i32* null, i32** %1, align 8
+  store i32 0, i32* %4, align 4
+  br label %5
+
+5:                                                ; preds = %12, %0
+  %6 = load i32, i32* %4, align 4
+  %7 = icmp slt i32 %6, 4
+  br i1 %7, label %8, label %15
+
+8:                                                ; preds = %5
+  %9 = load i32, i32* %4, align 4
+  %10 = sext i32 %9 to i64
+  %11 = getelementptr inbounds [4 x i32*], [4 x i32*]* %2, i64 0, i64 %10
+  store i32* @g_4, i32** %11, align 8
+  br label %12
+
+12:                                               ; preds = %8
+  %13 = load i32, i32* %4, align 4
+  %14 = add nsw i32 %13, 1
+  store i32 %14, i32* %4, align 4
+  br label %5
+
+15:                                               ; preds = %5
+  store i32 0, i32* %4, align 4
+  br label %16
+
+16:                                               ; preds = %23, %15
+  %17 = load i32, i32* %4, align 4
+  %18 = icmp slt i32 %17, 4
+  br i1 %18, label %19, label %26
+
+19:                                               ; preds = %16
+  %20 = load i32, i32* %4, align 4
+  %21 = sext i32 %20 to i64
+  %22 = getelementptr inbounds [4 x i64], [4 x i64]* %3, i64 0, i64 %21
+  store i64 -1, i64* %22, align 8
+  br label %23
+
+23:                                               ; preds = %19
+  %24 = load i32, i32* %4, align 4
+  %25 = add nsw i32 %24, 1
+  store i32 %25, i32* %4, align 4
+  br label %16
+
+26:                                               ; preds = %16
+  %27 = load i32, i32* @g_5, align 4
+  %28 = add i32 %27, -1
+  store i32 %28, i32* @g_5, align 4
+  %29 = getelementptr inbounds [4 x i64], [4 x i64]* %3, i64 0, i64 2
+  %30 = load i64, i64* %29, align 16
+  ret i64 %30
+}
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @main(i32 %0, i8** %1) #0 {
+  %3 = alloca i32, align 4
+  %4 = alloca i32, align 4
+  %5 = alloca i8**, align 8
+  %6 = alloca i32, align 4
+  store i32 0, i32* %3, align 4
+  store i32 %0, i32* %4, align 4
+  store i8** %1, i8*** %5, align 8
+  store i32 0, i32* %6, align 4
+  %7 = load i32, i32* %4, align 4
+  %8 = icmp eq i32 %7, 2
+  br i1 %8, label %9, label %16
+
+9:                                                ; preds = %2
+  %10 = load i8**, i8*** %5, align 8
+  %11 = getelementptr inbounds i8*, i8** %10, i64 1
+  %12 = load i8*, i8** %11, align 8
+  %13 = call i32 @strcmp(i8* %12, i8* getelementptr inbounds ([2 x i8], [2 x i8]* @.str.2, i64 0, i64 0)) #4
+  %14 = icmp eq i32 %13, 0
+  br i1 %14, label %15, label %16
+
+15:                                               ; preds = %9
+  store i32 1, i32* %6, align 4
+  br label %16
+
+16:                                               ; preds = %15, %9, %2
+  call void @platform_main_begin()
+  call void @crc32_gentab()
+  %17 = call i64 @func_1()
+  %18 = load i32, i32* @g_4, align 4
+  %19 = sext i32 %18 to i64
+  %20 = load i32, i32* %6, align 4
+  call void @transparent_crc(i64 %19, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.3, i64 0, i64 0), i32 %20)
+  %21 = load i32, i32* @g_5, align 4
+  %22 = zext i32 %21 to i64
+  %23 = load i32, i32* %6, align 4
+  call void @transparent_crc(i64 %22, i8* getelementptr inbounds ([4 x i8], [4 x i8]* @.str.4, i64 0, i64 0), i32 %23)
+  %24 = load i32, i32* @crc32_context, align 4
+  %25 = zext i32 %24 to i64
+  %26 = xor i64 %25, 4294967295
+  %27 = trunc i64 %26 to i32
+  %28 = load i32, i32* %6, align 4
+  call void @platform_main_end(i32 %27, i32 %28)
+  ret i32 0
+}
+
+; Function Attrs: nounwind readonly
+declare dso_local i32 @strcmp(i8*, i8*) #3
+
+attributes #0 = { noinline nounwind optnone uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "frame-pointer"="all" "less-precise-fpmad"="false" "min-legal-vector-width"="0" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #1 = { "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "frame-pointer"="all" "less-precise-fpmad"="false" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #2 = { nounwind readnone speculatable willreturn }
+attributes #3 = { nounwind readonly "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "frame-pointer"="all" "less-precise-fpmad"="false" "no-infs-fp-math"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }
+attributes #4 = { nounwind readonly }
+
+!llvm.module.flags = !{!0}
+!llvm.ident = !{!1}
+
+!0 = !{i32 1, !"wchar_size", i32 4}
+!1 = !{!"clang version 10.0.1 (https://github.com/SusanTan/llvm-project 5333d1cec176f770304774e56288a753e79a49b6)"}

@@ -16,7 +16,7 @@ if __name__ == '__main__':
         
         
         x = {
-            "repo_name": f"anghabench{file_num}",
+            "repo_name": f"codenet_new{file_num}",
             "path": file_name,  
             "language": lang,
             "content": input

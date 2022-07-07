@@ -4,5 +4,5 @@ python -m preprocessing.preprocess \
 --lang2 cpp \
 --keep_comments False \
 --bpe_train_size 0 \
---test_size 50000 \
+--test_size 2000 \
 --local True \

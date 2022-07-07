@@ -3,9 +3,9 @@ from itertools import chain
 import os
 import sys
 if __name__ == '__main__': 
-    log_reader = open("/home/carl/TransCoder/myoutput/angha_train.log" , 'r', encoding='utf-8')
+    log_reader = open("/home/carl/TransCoder/myoutput/patient_anghabench_train.log" , 'r', encoding='utf-8')
     log_reader2= None 
-    log_reader2 = open("/home/carl/TransCoder/myoutput/angha_train2.log" , 'r')
+   # log_reader2 = open("/home/carl/TransCoder/myoutput/struct_train2.log" , 'r')
     scores = None 
     scores_train = None
     i=0
@@ -133,3 +133,7 @@ if __name__ == '__main__':
     plt.title("C to LLVM Translation Perplexity")
     plt.legend()
     plt.savefig(f"results/{name}/c_llvm_ppl.png")
+
+    print(f"max(scores['test_cpp_sa-llvm_sa_mt_bleu {max(scores['test_cpp_sa-llvm_sa_mt_bleu'])}")
+    print(f"max(scores['test_cpp_sa-llvm_sa_mt_acc'] {max(scores['test_cpp_sa-llvm_sa_mt_acc'])}")
+    

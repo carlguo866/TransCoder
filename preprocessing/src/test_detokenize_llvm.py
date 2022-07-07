@@ -4,22 +4,36 @@ import re
 import subprocess
 
 if __name__ == '__main__':
-    fn = open('/home/carl/TransCoder/output/bt_sa/ep3h2mhu84/hypotheses/hyp35.cpp_sa-llvm_sa.test_beam0.txt','r').readlines()
-    count = 0 
-    for string in fn: 
-        s = detokenize_llvm(string)
-        if isinstance(s, list): 
-            s = " ".join(s)
-        outF = open('myoutput/detokenize-output.ll','w')
-        outF.write(s)
-        outF.close()
-        result = subprocess.run(f"clang myoutput/detokenize-output.ll -S", shell=True, 
-                            stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
-        if result.stderr.decode('UTF-8').find("error:") != -1: 
-            print(result.stderr.decode('UTF-8')[:result.stderr.decode('UTF-8').index('\n')], flush=True)
-            count += 1
+    # file = '/home/carl/TransCoder/output/bt_sa/jydrihumj5/hypotheses/ref.cpp_sa-llvm_sa.test.txt'
+    # fn = open(file,'r').readlines()
+    # count = 0 
+    # for j, string in enumerate(fn): 
+    #     s = detokenize_llvm(string)
+    #     if not (s == '' and s == []): 
+    #         if isinstance(s, list): 
+    #             s = " ".join(s)
+    #         output_name = f'/home/carl/TransCoder/tmp/detokenize/{file[file.rindex("/")+1:-3]}{j}.ll'
+    #         outF = open(output_name,'w')
+    #         outF.write(s)
+    #         outF.close()
+    #         result = subprocess.run(f"clang {output_name} -S", shell=True, 
+    #                             stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
+    #         if result.stderr.decode('UTF-8').find("error:") != -1: 
+    #             print(result.stderr.decode('UTF-8')[:result.stderr.decode('UTF-8').index('\n')], flush=True)
+    #         else:  
+    #             count += 1
         
-    print(count)
+    # print(count)
+    # print(count/len(fn))
+
+
+    fn = open('/home/carl/TransCoder/tokenized-output.txt', 'r').read()
+    # fn = 'define dso_local i64 @mysignal ( i32 %0 , i64 %1 ) #0 { NEW_LINE %3 = alloca i32 NEW_LINE %4 = alloca i64 NEW_LINE store i32 %0 %3 NEW_LINE store i64 %1 %4 NEW_LINE %5 = load i32 %3 NEW_LINE %6 = load i64 %4 NEW_LINE %7 = call i64 @signal ( i32 %5 , i64 %6 ) NEW_LINE ret i64 %7 NEW_LINE }'
+    s = detokenize_llvm(fn)
+    outF = open('detokenized-output.ll', 'w')
+    outF.write(s)
+    outF.close()
+    
     # s = ['define', 'dso_local', 'i8', '*', '@CTLOG_get0_name', '(', '%struct.TYPE_3__', '*', '%0', ')', '#0', '{', 'NEW_LINE', '%2', '=', 'alloca', '%struct.TYPE_3__', '*', 'NEW_LINE', 'store', '%struct.TYPE_3__', '*', '%0', ',', '%struct.TYPE_3__', '*', '*', '%2', 'NEW_LINE', '%3', '=', 'load', '%struct.TYPE_3__', '*', ',', '%struct.TYPE_3__', '*', '*', '%2', 'NEW_LINE', '%4', '=', 'getelementptr', 'inbounds', '%struct.TYPE_3__', ',', '%struct.TYPE_3__', '*', '%3', ',', 'i32', '0', ',', 'i32', '0', 'NEW_LINE', '%5', '=', 'load', 'i8', '*', ',', 'i8', '*', '*', '%4', 'NEW_LINE', 'ret', 'i8', '*', '%5', 'NEW_LINE', '}', 'NEW_LINE']
     # s = name_variables(s)
     # print(s)\

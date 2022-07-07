@@ -9,11 +9,11 @@ if __name__ == '__main__':
         isC = util.strtobool(sys.argv[4])
         lang = "cpp" if isC else "llvm"
         suffix = "c" if isC else "ll" 
-        file_num = (int) (sys.argv[3]) - 1 
+        file_num = (int) (sys.argv[3]) 
         folder_name = sys.argv[5]
         x = {
-            "repo_name": "codenet"+sys.argv[3],
-            "path":f"/codenet+{sys.argv[3]}/{sys.argv[5]}/{sys.argv[6]}/input{sys.argv[2]}.{suffix}", # 
+            "repo_name": "csmith"+sys.argv[3],
+            "path":f"{sys.argv[5]}/{sys.argv[6]}/input{sys.argv[2]}.{suffix}", 
             "language": f"{lang}",
             "content": input
         }
@@ -25,7 +25,7 @@ if __name__ == '__main__':
             print(folder_name.joinpath(lang))
             folder_name.joinpath(lang).mkdir()
         
-        if(sys.argv[2]=="1"): 
+        if(sys.argv[2]=="0"): 
             outF = gzip.open(folder_name.joinpath(f"{lang}/{lang}.{'{:03d}'.format(file_num)}.json.gz"), "wt")
         else: 
             outF = gzip.open(folder_name.joinpath(f"{lang}/{lang}.{'{:03d}'.format(file_num)}.json.gz"), "at")

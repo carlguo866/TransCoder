@@ -79,7 +79,7 @@ def preprocess(root, lang1, lang2, keep_comments, local, lang3=None, parallel_si
     dataset.apply_bpe(f'test{dataset.suffix}.tok',
                       use_vocab=False, executor=None)
     dataset.apply_bpe(f'valid{dataset.suffix}.tok',
-                      use_vocab=False, executor=None)
+                      use_vocab=False , executor=None)
     dataset.get_vocab(size_gb=size_gb)
 
     dataset.binarize_for_XLM(

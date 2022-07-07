@@ -84,11 +84,16 @@ def output_all_tokenized_results_parallel(lang1_docs, lang1, f_tok1, lang2_docs,
         tokenize_json_helper_parallel, zip(lang1_docs, lang2_docs)), total=len(lang1_docs))
     for content_tokenized1, path1, content_tokenized2, path2 in result_content_tokenized:
         if len(content_tokenized1) == 0 or len(content_tokenized2) == 0:
-            print('error in output_all_tokenized_results_parallel')
+            print('error in output_all_tokenized_results_parallel len(content_tokenized1) == 0 or len(content_tokenized2) == 0 ')
             continue
         else:
             content_tokenized1 = ' '.join(content_tokenized1)
             content_tokenized2 = ' '.join(content_tokenized2)
+            # print(type(content_tokenized1))
+            # if content_tokenized1.find("\n") != -1: 
+            #     content_tokenized1 = re.sub(' \n ',' NEW_LINE ', content_tokenized1)
+            #content_tokenized2 = re.sub('\n','NEW_LINE', content_tokenized2)
+            
             # if(language != "llvm"): 
             #     s = f"<DOCUMENT_ID=\"{path}\"> {content_tokenized} </DOCUMENT>"
             # else: 
@@ -97,6 +102,7 @@ def output_all_tokenized_results_parallel(lang1_docs, lang1, f_tok1, lang2_docs,
             # for some reason sometimes, some caracters of s
             # cannot be encoded into utf-8 and it failed to print, so use try/catch
             try:
+                assert content_tokenized1.find("\n") == -1, f"{content_tokenized1}"
                 f_tok1.write(content_tokenized1+'\n')
                 f_tok2.write(content_tokenized2+'\n')
             except:
@@ -134,52 +140,59 @@ def process_and_tokenize_json_file_parallel(lang1_input, lang2_input, lang1, lan
 
     print(f"input path {lang1_input} {lang2_input}")
     count = 0
-    lang2_possible_matches = list(gzip.open(str(lang2_input), 'r'))
-    for i, x_line in enumerate(fileinput.input(str(lang1_input), openhook=fileinput.hook_compressed)):
-        x = json.loads(x_line)
-        x_content = x['content']
-        x_path = f"{x['repo_name']}/tree/master/{x['path']}"
-        
-
-        isDone = False
-        y = json.loads(lang2_possible_matches[i])
-        if y['path'] == x['path'][:-2]+'.ll':
-            y_content = y['content']
-            y_path = f"{y['repo_name']}/tree/master/{y['path']}" 
-            lang2_docs.append((lang2_tokenizer, y_content, y_path, False))
-            isDone = True
+    try: 
+        lang2_possible_matches = list(gzip.open(str(lang2_input), 'r'))
+        lang1_possible_matches = list(gzip.open(str(lang1_input), 'r'))
+    except Exception as e: 
+        print(f"gzip error {e}")
+        lang2_possible_matches = [] 
+        lang1_possible_matches = []
+    if lang2_possible_matches != [] and lang1_possible_matches != [] and len(lang1_possible_matches) == len(lang2_possible_matches):
+        for i, x_line in enumerate(lang1_possible_matches):
+            x = json.loads(x_line)
+            x_content = x['content']
+            x_path = f"{x['repo_name']}/tree/master/{x['path']}"
             
-        if not isDone: 
-            count += 1
-            if i < 5: 
-                arr = lang2_possible_matches[0:i+10]
-            else: 
-                arr = lang2_possible_matches[i-5:i+5]
-            for j, y_line in enumerate(arr): 
-                y = json.loads(y_line)
-                if y['path'] == x['path'][:-2]+'.ll':
-                    y_content = y['content']
-                    y_path = f"{y['repo_name']}/tree/master/{y['path']}" 
-                    lang2_docs.append((lang2_tokenizer, y_content, y_path, False))
-                    isDone = True
-                    break 
-        #  if i % 100 == 0: 
-        #     print(f"x {x['path']} y {y['path']} \n x_content {x} \n y_content {y} \n")
-        assert isDone, f"error, did not find found match i {i} {lang1_input} "
-        lang1_docs.append((lang1_tokenizer, x_content, x_path, False))
+            isDone = False
+            y = json.loads(lang2_possible_matches[i])
+            if y['path'] == x['path'][:-2]+'.ll':
+                y_content = y['content']
+                y_path = f"{y['repo_name']}/tree/master/{y['path']}" 
+                lang2_docs.append((lang2_tokenizer, y_content, y_path, False))
+                isDone = True
+                
+            if not isDone: 
+                count += 1
+                if i < 100: 
+                    arr = lang2_possible_matches[0:i+100]
+                else: 
+                    arr = lang2_possible_matches[i-100:i+100]
+                for j, y_line in enumerate(arr): 
+                    y = json.loads(y_line)
+                    if y['path'] == x['path'][:-2]+'.ll':
+                        y_content = y['content']
+                        y_path = f"{y['repo_name']}/tree/master/{y['path']}" 
+                        lang2_docs.append((lang2_tokenizer, y_content, y_path, False))
+                        isDone = True
+                        break 
+            #  if i % 100 == 0: 
+            #     print(f"x {x['path']} y {y['path']} \n x_content {x} \n y_content {y} \n")
+            assert isDone, f"error, did not find found match i {i} {lang1_input} "
+            lang1_docs.append((lang1_tokenizer, x_content, x_path, False))
     
-    assert len(lang1_docs) == len(lang2_docs), f"{len(lang1_docs)} != {len(lang2_docs)}"
-    print(f"cpp to llvm not at position count {count}")
-    f_tok1 = open(lang1_output, 'w', encoding='utf-8')
-    f_tok2 = open(lang2_output, 'w', encoding='utf-8')
-    try:
-        output_all_tokenized_results_parallel(lang1_docs,lang1, f_tok1, lang2_docs,lang2, f_tok2)
-    except TimeoutError:
-        # The tokenization process is sometimes killed and it makes the multiprocessing hang forever
-        f_tok1.close()
-        f_tok2.close()
-        print('Program closed automatically after one hour')
-        os._exit(0)
+        assert len(lang1_docs) == len(lang2_docs), f"{len(lang1_docs)} != {len(lang2_docs)}"
+        print(f"{len(lang1_docs)} == {len(lang2_docs)}")
+        print(f"cpp to llvm not at position count {count}")
+        f_tok1 = open(lang1_output, 'w', encoding='utf-8')
+        f_tok2 = open(lang2_output, 'w', encoding='utf-8')
+        try:
+            output_all_tokenized_results_parallel(lang1_docs,lang1, f_tok1, lang2_docs,lang2, f_tok2)
+        except TimeoutError:
+            # The tokenization process is sometimes killed and it makes the multiprocessing hang forever
+            f_tok1.close()
+            f_tok2.close()
+            print('Program closed automatically after one hour')
+            os._exit(0)
 
 def extract_functions_file(input_path, language, test_size=None):
     print(f"extacting functions for {str(input_path)}")
@@ -222,7 +235,7 @@ def extract_functions_file(input_path, language, test_size=None):
                 # for func in func_class:
                 #     f_class.write(func)
                 #     f_class.write('\n')
-
+                
 def extract_functions_parallel(src_path, tgt_path, src_lang, tgt_lang , test_size=None):
     print(f"extacting parallel functions for {str(src_path)} and {str(tgt_path)} ")
     src_output_path_sa = src_path.with_suffix('.functions_standalone.tok')
@@ -246,6 +259,7 @@ def extract_functions_parallel(src_path, tgt_path, src_lang, tgt_lang , test_siz
     print(f"extracting parallel functions to {src_output_path_sa} and {tgt_output_path_sa}", flush=True)
     assert len(src_lines) == len(tgt_lines), f"src_lines and tgt_lines not the same length len(src_lines) {len(src_lines)} len(tgt_lines) {len(tgt_lines)}"
     for i in range(len(src_lines)): 
+        print(f"src line index{i}", flush=True)
         src_functions = src_extract_func(src_lines[i])
         # print("src_functions[0][0]" + str(src_functions[0][0]))
         src_dict = {src_function_name(func) != "" and src_function_name(func) : func for func in src_functions[0] }
@@ -266,8 +280,63 @@ def extract_functions_parallel(src_path, tgt_path, src_lang, tgt_lang , test_siz
                         src_sa.write('\n')
                         tgt_sa.write(name + " | " + tgt_dict['@'+k])
                         tgt_sa.write('\n')
+    # print(f"extacting parallel functions for {str(src_path)} and {str(tgt_path)} ")
+    # src_output_path_sa = src_path.with_suffix('.functions_standalone.tok')
+    # tgt_output_path_sa = tgt_path.with_suffix('.functions_standalone.tok')
 
+    # if src_output_path_sa.is_file() or tgt_output_path_sa.is_file(): 
+    #     return
+    # with src_path.open('r', encoding="utf-8") as f:
+    #     src_lines = f.readlines()
+    # with tgt_path.open('r', encoding="utf-8") as f:
+    #     tgt_lines = f.readlines()
+    
+    # print(f"extracting parallel functions to {src_output_path_sa} and {tgt_output_path_sa}", flush=True)
+    # assert len(src_lines) == len(tgt_lines), f"src_lines and tgt_lines not the same length len(src_lines) {len(src_lines)} len(tgt_lines) {len(tgt_lines)}"
+    # for y in zip(src_lines, tgt_lines): 
+    #     assert len(y) == 2
+    # pool = Pool(cpu_count())
+    # functions = tqdm.tqdm(pool.starmap(
+    #      extract_function_parallel_single, zip(src_lines, tgt_lines)), total=len(src_lines))
+    
+    # with src_output_path_sa.open('a+', encoding='utf-8') as src_sa:
+    #     with tgt_output_path_sa.open('a+', encoding='utf-8') as tgt_sa:
+    #         for src_function, tgt_function in functions: 
+    #             for src_func, tgt_func in zip(src_function, tgt_function):
 
+    #                 src_sa.write(src_func)
+    #                 src_sa.write('\n')
+    #                 tgt_sa.write(tgt_func)
+    #                 tgt_sa.write('\n')
+       
+def extract_function_parallel_single(src_line, tgt_line): 
+    src_extract_func = getattr(
+        code_tokenizer, f"extract_functions_cpp")
+    tgt_extract_func = getattr(
+        code_tokenizer, f"extract_functions_llvm")
+    src_function_name = getattr(
+        code_tokenizer, f"get_function_name_cpp")
+    tgt_function_name = getattr(
+        code_tokenizer, f"get_function_name_llvm")
+    src_functions = src_extract_func(src_line)
+    # print("src_functions[0][0]" + str(src_functions[0][0]))
+    src_dict = {src_function_name(func) != "" and src_function_name(func) : func for func in src_functions[0] }
+    tgt_functions = tgt_extract_func(tgt_line) 
+    tgt_dict = {tgt_function_name(func) != "" and tgt_function_name(func) : func for func in tgt_functions[0] }
+    
+    res_src_functions = [] 
+    res_tgt_functions = []
+    for k, v in src_dict.items(): 
+        if '@'+k in tgt_dict.keys(): 
+            chars = 'abcdefghijklmnopqrstuvwxyz'
+            name = k + ''.join(random.choice(chars) for _ in range(5)) 
+            res_src_functions.append(name + " | " + src_dict[k])
+            res_tgt_functions.append(name + " | " + src_dict[k])
+
+    assert len(res_src_functions) == len(res_tgt_functions)
+    return res_src_functions, res_tgt_functions
+
+    
 def get_nlines(file_path):
     assert file_path.is_file()
     process = subprocess.run(

@@ -6,7 +6,7 @@ python XLM/train.py \
 --gen_tpb_multiplier 1 \
 --word_blank '0.1' \
 --n_layers 6 \
---save_periodic 2 \
+--save_periodic 3 \
 --dump_path '/home/carl/TransCoder/output' \
 --max_len 512 \
 --bptt 256 \
@@ -24,7 +24,7 @@ python XLM/train.py \
 --split_data false \
 --length_penalty 1 \
 --max_epoch 300 \
---stopping_criterion '' \
+--stopping_criterion '_valid_cpp_sa-llvm_sa_mt_ppl,10' \
 --lambda_bt 1 \
 --generate_hypothesis true \
 --lambda_mt 1 \
@@ -34,7 +34,7 @@ python XLM/train.py \
 --split_data_accross_gpu global \
 --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0001,weight_decay=0.01' \
 --eval_computation false \
---validation_metrics '' \
+--validation_metrics '_valid_cpp_sa-llvm_sa_mt_ppl' \
 --eval_bleu true \
 --dropout '0.1' \
 --mt_steps 'cpp_sa-llvm_sa,llvm_sa-cpp_sa' \
@@ -42,7 +42,7 @@ python XLM/train.py \
 --batch_size 32 \
 --context_size 0 \
 --word_dropout '0.1'  \
---reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/rj1cniqe26/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/rj1cniqe26/best-valid_mlm_ppl.pth' \
+--reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/0new/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/0new/best-valid_mlm_ppl.pth' \
 --min_count 0 \
 --eval_bleu_test_only false \
 --group_by_size true \
@@ -56,7 +56,7 @@ python XLM/train.py \
 --encoder_only false \
 --lgs 'cpp_sa-llvm_sa' \
 --clm_steps '' \
---exp_name bt_sa \
+--exp_name mt_sa_angha \
 --beam_size 1 \
 --lambda_ae '0:1,100000:0.1,300000:0' \
 --lg_sampling_factor '-1' \

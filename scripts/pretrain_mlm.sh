@@ -4,7 +4,7 @@ python XLM/train.py \
     --max_vocab 64000 \
     --word_mask_keep_rand '0.8,0.1,0.1' \
     --word_blank 0 \
-    --data_path '/home/carl/TransCoder/data/anghaO1/cpp-llvm-.XLM-syml' \
+    --data_path '/home/carl/TransCoder/data/struct/cpp-llvm-.XLM-syml' \
     --save_periodic 0 \
     --bptt 512 \
     --lambda_clm 1 \
@@ -36,7 +36,7 @@ python XLM/train.py \
     --batch_size 32 \
     --context_size 0 \
     --word_dropout 0 \
-    --reload_model '' \
+    --reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/uka5fmjqvb/best-valid_mlm_ppl.pth' \
     --min_count 0 \
     --lgs 'cpp-llvm' \
     --sample_alpha 0 \
@@ -48,7 +48,7 @@ python XLM/train.py \
     --encoder_only true \
     --beam_size 1 \
     --clm_steps '' \
-    --exp_name mlm_cpp_llvm \
+    --exp_name mlm_cpp_llvm_codenet \
     --lambda_ae 1 \
     --lg_sampling_factor '-1' \
     --eval_only false \

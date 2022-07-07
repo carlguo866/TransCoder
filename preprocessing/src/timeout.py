@@ -25,7 +25,9 @@ def timeout(seconds=10, error_message=os.strerror(errno.ETIME)):
             signal.signal(signal.SIGALRM, partial(
                 _handle_timeout, repeat_id + 1))
             signal.alarm(seconds)
-            raise TimeoutError(error_message)
+            print("timer out")
+            pass
+            # raise TimeoutError(error_message)
 
         def wrapper(*args, **kwargs):
             old_signal = signal.signal(

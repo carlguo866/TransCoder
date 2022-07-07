@@ -30,7 +30,7 @@ class Language:
                    ) > 0, f"there is no json in {str(self.folder)}"
         jsons = [json for json in self.folder.glob(
             '*.json.gz') if not Path(str(json).replace('.json.gz', suffix + '.tok')).is_file()]
-        print(f"{self.l}: tokenizing {len(jsons)} json files ...") 
+        print(f"{self.l}: tokenizing {len(jsons)} json files ...",flush=True) 
         if len(jsons) > 0:
             jobs = executor.map_array(process_and_tokenize_json_file, jsons, itertools.repeat(
                 self.l), itertools.repeat(keep_comments))
@@ -53,6 +53,7 @@ class Language:
         size_gb = all_tok.stat().st_size
         n_lines = get_nlines(all_tok)
         print(f"all tok n_lines {self.l} {n_lines}",flush=True)
+        
         # shuf
         # shuf_file(all_tok)
 
@@ -187,6 +188,7 @@ class Dataset:
             f"{lang1}-{lang2}-{'' if lang3 is None else lang3}{self.suffix}")
         self.codes = self.folder.joinpath("codes")
         self.vocab = self.folder.joinpath("vocab")
+        print(f"vocab {self.vocab}")
         self.sizes = {l.l: [] for l in self.langs}
         if not self.folder.is_dir():
             self.folder.mkdir()
@@ -251,7 +253,7 @@ class Dataset:
         data_train_bpe = self.folder.joinpath(
             f'train{self.suffix}.tok.{size_gb}GB')
         print(
-            f"regroup and select data for training bpe in {data_train_bpe} ...")
+            f"regroup and select data for training bpe in {data_train_bpe} ...",flush=True) 
         regroup_and_select_data(
             files=[l.folder.glob(
                 f'train{self.suffix}.tok') for l in self.langs],
@@ -293,11 +295,11 @@ class Dataset:
         jobs = []
         for l in self.langs:
             for f in l.folder.glob(files_regex):
-                print("folder glob" + str(f))
+                print("folder glob" + str(f),flush=True) 
                 out = self.folder.joinpath(
                     f"{l.l}.{f.name}").with_suffix('.bpe')
                 if not out.is_file():
-                    print(f'apply bpe on {f} ...')
+                    print(f'apply bpe on {f} ...',flush=True) 
                     jobs.append(executor.submit(
                         apply_bpe_file, f, out, self.codes, vocab))
         for job in jobs:
@@ -316,13 +318,13 @@ class Dataset:
                         binarize_for_XLM_file, f, self.vocab))
         for job in jobs:
             job.result()
-
+    
     def extract_functions_and_apply_bpe(self, lang_executor=None, function_executor=None, bpe_executor=None):
         print("extract functions ... ", flush=True)
         if lang_executor is None:
             lang_executor = LocalExecutor()
         jobs = [lang_executor.submit(lang.extract_functions, self.keep_comments,
-                                     self.test_size, function_executor) for lang in self.langs]
+                                      self.test_size, function_executor) for lang in self.langs]
         lang1 = self.langs[0]
         lang2 = self.langs[1]
         assert lang1.l == "cpp" and lang2.l =='llvm'
@@ -350,12 +352,12 @@ class Dataset:
         print("apply bpe on train ... ", flush=True)
         self.apply_bpe(
             f'train{self.suffix}.functions_*.tok', use_vocab=False, executor=bpe_executor)
-        print("apply bpe on test and valid ...")
+        print("apply bpe on test and valid ...",flush=True)
         self.apply_bpe(f'test{self.suffix}.functions_*.tok',
                        use_vocab=False, executor=bpe_executor)
         self.apply_bpe(f'valid{self.suffix}.functions_*.tok',
                        use_vocab=False, executor=bpe_executor)
-        print("apply bpe on parallel data ...")
+        print("apply bpe on parallel data ...",flush=True)
         self.apply_bpe(f'valid.*.*.functions_*.tok',
                        use_vocab=False, executor=bpe_executor)
         self.apply_bpe(f'test.*.*.functions_*.tok',

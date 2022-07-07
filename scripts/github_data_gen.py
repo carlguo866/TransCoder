@@ -18,7 +18,7 @@ def execute(json_file):
             os.mkdir(json_folder)
         
         fail_dict = dict()
-        for i in range(200):
+        for i in range(len(data)):
             item = data[i].decode("utf-8")
             item = json.loads(item)
             try: 
@@ -31,7 +31,7 @@ def execute(json_file):
             except: 
                 print(f"dont have any content {item}")
             writer.close()
-            result = subprocess.run(f"clang {file_name} -w -s -I/home/carl/linux-5.10.85/include", shell=True, 
+            result = subprocess.run(f"clang {file_name} -w -s", shell=True, 
                                 stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')
             
             if result.stderr.decode('UTF-8') != '': 
@@ -39,8 +39,8 @@ def execute(json_file):
                 error_msg = error_msg[:error_msg.index('\n')]
                 if error_msg.find('fatal error: ') != -1 and error_msg.find('file not found') != -1:
                     file_needed = error_msg[error_msg.index('fatal error: ')+14:error_msg.index(' file not found')-1]
-                    if file_needed == 'config.h': 
-                        print(open(file_name,'r').read())
+                    # if file_needed == 'config.h': 
+                    #     print(open(file_name,'r').read())
                     if file_needed in fail_dict.keys(): 
                         fail_dict[file_needed] +=1 
                     else: 
@@ -57,7 +57,7 @@ def execute(json_file):
         return success_count, result
 if __name__ == '__main__':
     data_folder = Path('/home/carl/datasets/')
-    json_files = list(data_folder.glob("withstar*"))
+    json_files = list(data_folder.glob("withstar*"))[:20]
     total_dict = dict()
     print(json_files)
     with Pool(processes=60) as pool:
@@ -83,4 +83,5 @@ if __name__ == '__main__':
         print(f"time: {end-start}",flush=True)
         print(f"total_success_count{total_success_count}")
     total_dict = sorted(total_dict.items(), key=lambda x: x[1], reverse=True) 
-    print(total_dict)
+    #
+    # print(total_dict)

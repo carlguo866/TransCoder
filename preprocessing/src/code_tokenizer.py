@@ -402,8 +402,8 @@ def get_cpp_tokens_and_types(s):
             tokens.append((tok.spelling, tok.kind))
         # print(f"get_cpp_tokens_and_types tokens {tokens}")
         return tokens
-    except: 
-        print("a problem in get_cpp_tokens_and_types",flush=True)
+    except Exception as e: 
+        print(f"a problem in get_cpp_tokens_and_types {e}",flush=True)
         return ''
 
 def tokenize_cpp(s, keep_comments=False):
@@ -967,7 +967,6 @@ def get_llvm_type(tokens, i, add_comma=0, detok=False):
         while i < len(tokens) and tokens[i] == '*':
             ty.append(tokens[i])
             i+=1
-
         return ty, i 
     except:
         print("an error in get_llvm_type" + str(tokens) + "\n" + str(ty) )
@@ -1039,39 +1038,41 @@ def detokenize_instruction_printer(tokens):
     try: 
         i = 0 
         while i < len(tokens): 
-            ty, _ = get_llvm_type(tokens, i)
+            ty, _ = get_llvm_type(tokens, i, detok=True)
             
             if tokens[i] == 'load': 
                 i+=1
                 if tokens[i] == 'volatile': i+=1
-                ty, j = get_llvm_type(tokens, i)
+                ty, j = get_llvm_type(tokens, i, add_comma=1, detok=True)
                 tokens[i:j] = ty 
+                i += len(ty)
                 ty =  [','] + ty + ['*']
-                tokens[j:j] = ty
-                i = j+len(ty)-1
+                tokens[i:i] = ty
+                i += len(ty)-1
             elif tokens[i] == 'store': 
                 i+=1
                 if tokens[i] == 'volatile': i+=1
-                ty, j = get_llvm_type(tokens, i)
+                ty, j = get_llvm_type(tokens, i, add_comma=1, detok=True)
                 tokens[i:j] = ty
-                ty2, x = get_llvm_value(tokens,j, detok=True)
-                tokens[j:x] = ty2
-                i = j +len(ty2)
-                ty = [','] + ty + ['*']  
+                i += len(ty) 
+                ty2, x = get_llvm_value(tokens,i, detok=True)
+                tokens[i:x] = ty2
+                i = i +len(ty2)
+                ty = [','] + ty + ['*'] 
                 tokens[i:i] = ty 
                 i += len(ty)-1
             elif tokens[i] == 'getelementptr': 
                 i+=1
                 if tokens[i] == 'inbounds': i+=1
                 if tokens[i] == '(': i+=1 
-                ty, j = get_llvm_type(tokens, i, add_comma=1)
+                ty, j = get_llvm_type(tokens, i, add_comma=1, detok=True)
                 tokens[i:j] = ty 
                 i += len(ty) 
                 ty = [','] + ty + ['*']
                 tokens[i:i] = ty
-                i-=1 
+                i += len(ty) -1
             if ty != [] and len(ty) >1: 
-                ty, j  = get_llvm_type(tokens, i, add_comma=1)
+                ty, j  = get_llvm_type(tokens, i, add_comma=1, detok=True)
                 tokens[i:j] = ty 
                 i += len(ty)-1
             #don't need to consider this case anymore because we train on a function level
@@ -1099,8 +1100,8 @@ def detokenize_instruction_printer(tokens):
         #     i += len(ty)-1
             i+=1
         return tokens
-    except: 
-        print("a problem in detokenize_instruction_printer")
+    except Exception as e: 
+        print(f"a problem in detokenize_instruction_printer{e}")
         return tokens
     
 def tokenize_llvm(s, keep_comments=False):
@@ -1116,7 +1117,8 @@ def tokenize_llvm(s, keep_comments=False):
 
         if s.find('attributes #0 = {') != -1: 
             s = s[:s.index('attributes #0 = {')]
-        s = re.sub("(.*\n){4}\n","",s, 1)
+        if s.find('target triple') != -1: 
+            s = re.sub("(.*\n){4}\n","",s, 1)
         # if s.find("\"x86_64-unknown-linux-gnu\"") != -1: 
         #     s = s[s.index("\"x86_64-unknown-linux-gnu\"")+len("\"x86_64-unknown-linux-gnu\"\n\n"):]
         arr = s.split('\n')
@@ -1132,7 +1134,9 @@ def tokenize_llvm(s, keep_comments=False):
                 tokens.append("NEW_LINE")
         # print(f"{time()-start} -- tokenize_llvm_line and tokenize_instruction_printer time", flush=True)
         # start = time()
+        # print(len(tokens))
         tokens = remove_globals(tokens)
+        # print(len(tokens))
         # print(f"{time()-start} -- remove_globals time", flush=True)
         return tokens
 
@@ -1277,7 +1281,6 @@ def remove_globals(tokens):
             #             break
             if tokens[i][0] == '%' and not re.fullmatch("%\d+",tokens[i]): 
                 global_constants_index.append(i)
-
         # for i in global_global_index[:]: 
         #     # print(str(len(tokens)) + " " + str(i))
         #     temp_name = tokens[i]
@@ -1303,9 +1306,10 @@ def remove_globals(tokens):
                             res_name += ' ' + tokens[index] 
                             index+=1 
                         res_name = res_name.replace('\"', '\'').strip()
-                        for i in res_name.split(" "): 
-                            if i in defs.keys(): 
-                                res_name = res_name.replace(i,defs[i])
+                        # for i in res_name.split(" "): 
+                        #     if i in defs.keys(): 
+                        #         print(f"res name {res_name}",flush=True)
+                        #         res_name = res_name.replace(i,defs[i])
                         defs[temp_name] = res_name
                     else: 
                         break
@@ -1313,12 +1317,17 @@ def remove_globals(tokens):
             #     for i in v.split(" "): 
             #         if i in defs.keys(): 
             #             defs[k] = defs[k].replace(i,defs[i])
+            add = 0
             for i in global_constants_index: 
+                i+= add
                 if tokens[i] in defs.keys(): 
-                    if i+1 >= len(tokens) or i+2 >= len(tokens): 
-                        tokens[i] = defs[tokens[i]]
-                    elif (tokens[i+1] != '=' and tokens[i+2] != 'type'): 
-                        tokens[i] = defs[tokens[i]]
+                    # if i+1 >= len(tokens) or i+2 >= len(tokens):
+                    #     tokens[i:i+1] = defs[tokens[i]].split(' ')
+                    if (tokens[i+1] != '=' and tokens[i+2] != 'type'):
+                        add_in = defs[tokens[i]].split(" ")
+                        add+= len(add_in)-1
+                        tokens[i:i+1] = add_in
+                        
             
         return tokens     
     except MemoryError as err: 
@@ -1418,6 +1427,7 @@ def get_one_llvm_toktype(s):
     toktype = lex.getTokType() 
     return toktype 
     
+@timeout(120)
 def detokenize_llvm(s):
     try: 
         assert isinstance(s, list) or isinstance(s, str) 
@@ -1439,7 +1449,8 @@ def detokenize_llvm(s):
             toks_line = []
             while i < len(line):
                 if line[i] == ' ' or line[i] == '\n': 
-                    if tok != '': par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma = \
+                    if tok != '': 
+                        par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma = \
                             add_tok(tok, toks_line, par, items_counts, end_par, is_type_len, num_of_star, pars, add_comma)
                     tok = ''
                 elif line[i] == '\"': 
@@ -1463,7 +1474,7 @@ def detokenize_llvm(s):
             tokens.extend(toks_line)
             tokens.append("NEW_LINE")
         tokens = add_declares(tokens)
-        tokens = name_variables(tokens)
+        # tokens = name_variables(tokens)
        
         lines = re.split('NEW_LINE', ' '.join(tokens))
         untok_s = "\n".join(lines)
@@ -1483,11 +1494,11 @@ def add_declares(toks):
         globals_defs = dict()
         for i, tok in enumerate(toks): 
             if not toks[i] in globals_defs.keys(): 
-                if tok[0] == '%' and re.findall('%\d+', tok) == []: 
-                    assert tok.find("%struct") != -1, f"tok {tok}"
-                    expression = (tok + '= type { i32 }').split(" ")
-                    expression.append('NEW_LINE')
-                    globals_defs[tok] = expression
+                # if tok[0] == '%' and re.findall('%\d+', tok) == []: 
+                #     assert tok.find("%struct") != -1, f"tok {tok}"
+                #     expression = (tok + '= type { i32 }').split(" ")
+                #     expression.append('NEW_LINE')
+                #     globals_defs[tok] = expression
                 if(tok[:5] == "@.str"): 
                     j = i
                     while toks[j-1] == '*': 
@@ -1501,7 +1512,7 @@ def add_declares(toks):
                 elif i-2 >= 0 and tok[0] == '@':
                     j = i-1
                     type, j = get_reverse_type(toks, j)
-
+                    
                     args = ''
                     if type.find('...') != -1:
                         args = ' ( ... ) '
@@ -1522,6 +1533,10 @@ def add_declares(toks):
                                 expression += f" ( {' , '.join(args)} ) "
                         expression = expression.split(" ")
                         expression.append('NEW_LINE')
+                    elif toks[j-1] == ',':
+                        if type[-2:] == ' *': 
+                            type = type[:-3]
+                        expression = (toks[i] + " = internal global " + type + " zeroinitializer ").split(' ')
                     else: 
                         expression = (toks[i] + " = internal global " + type + " zeroinitializer ").split(' ')
                     expression.append('NEW_LINE')
@@ -1573,6 +1588,7 @@ def add_declares(toks):
 def get_reverse_type(toks, j):
     type = ''
     while toks[j] == '*': 
+        type = type + ' ' + toks[j]
         j-=1
     if (toks[j] == ']' or toks[j] == '}'): 
         type = ''
@@ -1582,14 +1598,15 @@ def get_reverse_type(toks, j):
                 par += 1
             elif toks[j] == '[' or toks[j] == '{':
                 par -= 1
-            type = tok + ' ' + type
+            type = toks[j] + ' ' + type
             if par == 0:
                 break
             j-=1
     elif get_one_llvm_toktype(toks[j]) == pyllvm.lltok.Type: 
-        type = toks[j]
+        type = toks[j] + ' ' + type
 
     return type, j
+
 
 
 def name_variables(tokens): 
@@ -1610,119 +1627,129 @@ def name_variables(tokens):
     return tokens
 
 
-
 def extract_functions_llvm(s):
+    try: 
     # assert isinstance(s, str) or isinstance(s, list)
     # if isinstance(s, list):
     #     tokens = s
     # else:
-    if(s.find("DOCUMENT_ID")!= -1):
-        s = s[s.index("\">")+2:]
-        s = s[:s.index("</DOCUMENT>")]
-    tokens = s.split(" ")
-    i = -1
-    functions = []
-    while True:
-        if(i+1 < len(tokens)): 
-            i+=1
-            tok = tokens[i]
-        else:
-            break
-        if tok == 'define':
-            par = 1
-            firstBrace = True
-            function = []
-            while True: 
-                function.append(tok)
-                if tok == '(' and firstBrace: 
-                    firstBrace = False
-                elif tok == '(': 
-                    par+=1
-                elif tok == ')':
-                    par-=1
+        if(s.find("DOCUMENT_ID")!= -1):
+            s = s[s.index("\">")+2:]
+            s = s[:s.index("</DOCUMENT>")]
+        tokens = s.split(" ")
+        i = -1
+        functions = []
+        while True:
+            if(i+1 < len(tokens)): 
+                i+=1
+                tok = tokens[i]
+            else:
+                break
+            if tok == 'define':
+                par = 1
+                firstBrace = True
+                function = []
+                while True: 
+                    function.append(tok)
+                    if tok == '(' and firstBrace: 
+                        firstBrace = False
+                    elif tok == '(': 
+                        par+=1
+                    elif tok == ')':
+                        par-=1
+                    if par == 0:
+                        break
+                    if(i+1 < len(tokens)): 
+                        i+=1
+                        tok = tokens[i]
+                    else:
+                        break
+                i+=1
+                tok = tokens[i]
+                firstBrace = True
+                par = 1
+                while True:
+                    function.append(tok)
+                    if tok == '{' and firstBrace: 
+                        firstBrace = False
+                    elif tok == '{': 
+                        par+=1
+                    elif tok == '}':
+                        par-=1
+                    if par == 0:
+                        break
+                    if(i+1 < len(tokens)): 
+                        i+=1
+                        tok = tokens[i]
+                    else:
+                        break
                 if par == 0:
-                    break
-                if(i+1 < len(tokens)): 
-                    i+=1
-                    tok = tokens[i]
-                else:
-                    break
-            i+=1
-            tok = tokens[i]
-            firstBrace = True
-            par = 1
-            while True:
-                function.append(tok)
-                if tok == '{' and firstBrace: 
-                    firstBrace = False
-                elif tok == '{': 
-                    par+=1
-                elif tok == '}':
-                    par-=1
-                if par == 0:
-                    break
-                if(i+1 < len(tokens)): 
-                    i+=1
-                    tok = tokens[i]
-                else:
-                    break
-            if par == 0:
-                function = ' '.join(function)
-                function = function.strip()
-                #do i need this?
-                # if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
-                functions.append(function)
-    return functions, [] 
-
+                    function = ' '.join(function)
+                    function = function.strip()
+                    #do i need this?
+                    # if not re.sub('[^ ]*[ ][(][ ]\w*([ ][,][ ]\w*)*[ ][)]', "", function[:function.index('{')]).strip().startswith('{'):
+                    functions.append(function)
+        return functions, [] 
+    except: 
+        return [], []
+        
 def get_function_name_llvm(s):
     return get_first_token_before_first_parenthesis(s)
 
-def extract_arguments_llvm(f):
+def extract_arguments_llvm(tokens):
     try: 
-        assert isinstance(f, str) or isinstance(f, list)
-        if isinstance(f, str):
-            f = f.split(' ')
+        assert isinstance(tokens, str) or isinstance(tokens, list)
+        if isinstance(tokens, str):
+            tokens = tokens.split(' ')
         types = []
         names = []
         par = 0
         arguments = []
-        f = f[f.index('('):]
+        tokens = tokens[tokens.index('('):]
         arg = ''
-        for tok in f:
-            if tok == '(':
+        i = 0 
+        break_loop = False
+        while i < len(tokens) and not break_loop :
+            if tokens[i] == '(' :
                 par += 1
-            elif tok == ')':
+                
+            elif tokens[i] == ')':
                 par -= 1
-            if par == 1 and tok == ',': 
-                arguments.append(arg[:-1])
-                arg = ''
+                
             else: 
-                arg += tok + " " 
-            if par == 0:
-                arguments.append(arg[:-1])
+                type, j = get_llvm_type(tokens,i) 
+                if i != j: 
+                    i = j
+                    arguments.append(' '.join(type) )
+                    while i < len(tokens) and tokens[i] != ',': 
+                        i+=1
+                        if tokens[i] == ')': 
+                            break_loop = True
+                            break
+            if par == 0 :
+                # arguments.append(arg[:-1])
                 break
+            i+=1
         #delete ( and )
-        arguments[0] = arguments[0][2:]
-        arguments[-1] = arguments[-1][:-2]
         if arguments == []:
             return ['None'], ['None']
-        argtypes = []
-        modifiers = [] 
-        for i in range(len(arguments)):
-            if(arguments[i].find(' ') > -1):
-                index = arguments[i].index(' ')
-                if arguments[i][index+1] == "*": 
-                    argtypes.append(arguments[i][:index+2])
-                    modifiers.append(arguments[i][index+2:].strip())
-                else:
-                    argtypes.append(arguments[i][:index])
-                    modifiers.append(arguments[i][index:].strip())
-            else: 
-                argtypes.append(arguments[i])
-                modifiers.append('')    
-        return argtypes, modifiers
-    except: 
-        print("no arg after define (", flush=True)
+        # argtypes = []
+        # modifiers = [] 
+        # for i in range(len(arguments)):
+        #     if(arguments[i].find(' ') > -1):
+        #         index = arguments[i].index(' ')
+        #         if arguments[i][index+1] == "*": 
+        #             argtypes.append(arguments[i][:index+2])
+        #             modifiers.append(arguments[i][index+2:].strip())
+        #         else:
+        #             argtypes.append(arguments[i][:index])
+        #             modifiers.append(arguments[i][index:].strip())
+        #     else: 
+        #         argtypes.append(arguments[i])
+        #         modifiers.append('')    
+        return arguments, ['None']
+    except Exception as e: 
+        print(f"no arg after define ( {e}", flush=True)
         # print("arguments" + str(arguments))
         return [], []
 

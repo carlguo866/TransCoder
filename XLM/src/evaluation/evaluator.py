@@ -226,10 +226,10 @@ class Evaluator(object):
                 for lang1, lang2 in set(params.mt_steps + [(l2, l3) for _, l2, l3 in params.bt_steps]):
                     eval_bleu = params.eval_bleu and params.is_master and 'cl' not in lang1
                     eval_computation = params.eval_computation and params.is_master and 'cl' not in lang1
-                    # if trainer.epoch % 2 == 0: # only evaluate on bleu every 2 epochs
-                    #     self.evaluate_mt(scores, data_set, lang1, lang2, eval_bleu, eval_computation)
-                    # else:
-                    self.evaluate_mt(scores, data_set, lang1, lang2, eval_bleu, eval_computation)
+                    if trainer.epoch % 3 == 0: # only evaluate on bleu every 2 epochs
+                        self.evaluate_mt(scores, data_set, lang1, lang2, eval_bleu, eval_computation)
+                    else:
+                        self.evaluate_mt(scores, data_set, lang1, lang2, False, eval_computation)
 
                 # report average metrics per language
                 _clm_mono = [l1 for (l1, l2) in params.clm_steps if l2 is None]
