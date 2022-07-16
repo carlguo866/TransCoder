@@ -15,4 +15,11 @@ Ithemal
 test_cases
 test
 temp 
+tmp
+aws
+results
 playground
+__pycache__
+detokenized-output.ll
+tokenized-output.txt
+test.ll

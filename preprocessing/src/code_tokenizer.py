@@ -1105,7 +1105,7 @@ def detokenize_instruction_printer(tokens):
         return tokens
     
 def tokenize_llvm(s, keep_comments=False):
-    # try:
+    try:
         assert isinstance(s, str)
         s = s.replace(r'\r', '')
         # global_strings_index = [] 
@@ -1136,14 +1136,16 @@ def tokenize_llvm(s, keep_comments=False):
         # start = time()
         # print(len(tokens))
         tokens = remove_globals(tokens)
+        if tokens == []: 
+            raise Exception 
         # print(len(tokens))
         # print(f"{time()-start} -- remove_globals time", flush=True)
         return tokens
 
-    # except KeyboardInterrupt:
-    #     raise
-    # except:
-    #     return []
+    except KeyboardInterrupt:
+        raise
+    except:
+        return []
 
 def tokenize_llvm_line(s): 
     assert isinstance(s, str)
@@ -1266,9 +1268,10 @@ def infix_to_prefix(tokens):
     
 def remove_globals(tokens): 
     try: 
-        # global_strings_index = [] 
-        # global_global_index = []
+            # global_strings_index = [] 
+            # global_global_index = []
         global_constants_index = []
+        define_index = 0 
         for i in range(len(tokens)): 
             #add proper definition and declaration 
             # if tokens[i][:5] == '@.str':
@@ -1281,6 +1284,8 @@ def remove_globals(tokens):
             #             break
             if tokens[i][0] == '%' and not re.fullmatch("%\d+",tokens[i]): 
                 global_constants_index.append(i)
+            if tokens[i] == 'define': 
+                define_index = i 
         # for i in global_global_index[:]: 
         #     # print(str(len(tokens)) + " " + str(i))
         #     temp_name = tokens[i]
@@ -1298,11 +1303,15 @@ def remove_globals(tokens):
             defs = dict()
             for i in global_constants_index: 
                 temp_name = tokens[i]
+                
                 res_name = ''
                 if temp_name not in defs.keys(): 
-                    if tokens[i+1] == '=' and tokens[i+2] == 'type': 
+
+                    if i >= define_index: 
+                        break
+                    elif tokens[i+1] == '=' and tokens[i+2] == 'type': 
                         index = i + 3
-                        while tokens[index] != 'NEW_LINE' :
+                        while tokens[index] != 'NEW_LINE':
                             res_name += ' ' + tokens[index] 
                             index+=1 
                         res_name = res_name.replace('\"', '\'').strip()
@@ -1311,12 +1320,21 @@ def remove_globals(tokens):
                         #         print(f"res name {res_name}",flush=True)
                         #         res_name = res_name.replace(i,defs[i])
                         defs[temp_name] = res_name
-                    else: 
-                        break
-            # for k, v in defs.items(): 
-            #     for i in v.split(" "): 
-            #         if i in defs.keys(): 
-            #             defs[k] = defs[k].replace(i,defs[i])
+ 
+            for k, v in defs.items(): 
+                if v.find("%struct") != -1: 
+                    for i in v.split(" "): 
+                        if i in defs.keys() and i != k: 
+                            defs[k] = defs[k].replace(i,defs[i])
+                        elif i in defs.keys() and i == k:
+                            raise Exception('recursive struct throw out data')
+            for k, v in defs.items(): 
+                if v.find("%struct") != -1: 
+                    for i in v.split(" "): 
+                        if i in defs.keys() and i != k: 
+                            defs[k] = defs[k].replace(i,defs[i])
+                        elif i in defs.keys() and i == k:
+                            raise Exception('recursive struct throw out data')
             add = 0
             for i in global_constants_index: 
                 i+= add
@@ -1327,15 +1345,13 @@ def remove_globals(tokens):
                         add_in = defs[tokens[i]].split(" ")
                         add+= len(add_in)-1
                         tokens[i:i+1] = add_in
-                        
-            
         return tokens     
     except MemoryError as err: 
-        print(f"memoery error and {len(defs)}", flush=True) 
-        return ''
+        print(f"memoery error and {len(defs)} {tokens}", flush=True) 
+        return []
     except Exception as e:
         print(f"a non memory error exception {e} for remove_global tokens", flush=True) 
-        return ''
+        return []
 
 def get_llvm_tokens_and_types(s):
     # try: 
@@ -1447,6 +1463,12 @@ def detokenize_llvm(s):
             num_of_star = 0
             pars = dict()
             toks_line = []
+            if line.find('<<unk>> ') != -1: 
+                toks = line[line.find('<<unk>> ')+8:].split(' ')
+                if get_one_llvm_toktype(toks[0]) == pyllvm.lltok.Error: 
+                    line = line.replace('<<unk>> ', 'unk')
+                else:
+                    line = line.replace('<<unk>>', 'unk')
             while i < len(line):
                 if line[i] == ' ' or line[i] == '\n': 
                     if tok != '': 
@@ -1475,9 +1497,9 @@ def detokenize_llvm(s):
             tokens.append("NEW_LINE")
         tokens = add_declares(tokens)
         # tokens = name_variables(tokens)
-       
         lines = re.split('NEW_LINE', ' '.join(tokens))
         untok_s = "\n".join(lines)
+        
         # untok_s = indent_lines(lines)
         return untok_s
     except KeyboardInterrupt:
@@ -1512,12 +1534,11 @@ def add_declares(toks):
                 elif i-2 >= 0 and tok[0] == '@':
                     j = i-1
                     type, j = get_reverse_type(toks, j)
-                    
                     args = ''
                     if type.find('...') != -1:
                         args = ' ( ... ) '
                         type, j = get_reverse_type(toks, j-1) 
-                        
+
                     if toks[j-1] == 'call': 
                         expression = f'declare {type} {tok}'
                         assert toks[i+1] == '('
@@ -1533,9 +1554,9 @@ def add_declares(toks):
                                 expression += f" ( {' , '.join(args)} ) "
                         expression = expression.split(" ")
                         expression.append('NEW_LINE')
-                    elif toks[j-1] == ',':
+                    elif toks[j-1] in set([',','(','ret']):
                         if type[-2:] == ' *': 
-                            type = type[:-3]
+                            type = type[:-2]
                         expression = (toks[i] + " = internal global " + type + " zeroinitializer ").split(' ')
                     else: 
                         expression = (toks[i] + " = internal global " + type + " zeroinitializer ").split(' ')
@@ -1590,20 +1611,20 @@ def get_reverse_type(toks, j):
     while toks[j] == '*': 
         type = type + ' ' + toks[j]
         j-=1
-    if (toks[j] == ']' or toks[j] == '}'): 
+    if (toks[j] in set([']','}',')'])): 
         type = ''
         par = 0 
         while True:
-            if toks[j] == ']' or toks[j] == '}':
+            if toks[j] in set([']','}',')']):
                 par += 1
-            elif toks[j] == '[' or toks[j] == '{':
+            elif toks[j] in set(['[','{','(']):
                 par -= 1
             type = toks[j] + ' ' + type
             if par == 0:
                 break
             j-=1
     elif get_one_llvm_toktype(toks[j]) == pyllvm.lltok.Type: 
-        type = toks[j] + ' ' + type
+        type = toks[j] + ' ' + type.strip()
 
     return type, j
 
@@ -1715,17 +1736,23 @@ def extract_arguments_llvm(tokens):
                 
             elif tokens[i] == ')':
                 par -= 1
-                
+                break
             else: 
                 type, j = get_llvm_type(tokens,i) 
                 if i != j: 
                     i = j
-                    arguments.append(' '.join(type) )
-                    while i < len(tokens) and tokens[i] != ',': 
-                        i+=1
-                        if tokens[i] == ')': 
-                            break_loop = True
-                            break
+                    value, j = get_llvm_value(tokens, i)
+                    if i != j: 
+                        i = j 
+                    assert tokens[i] == ',' or tokens[i] == ')'  , f'tokens[i] {tokens[i]} not , '
+                    arguments.append(' '.join(type))
+                    if tokens[i] == ')':
+                        break
+                    # while i < len(tokens) and tokens[i] != ',': 
+                    #     i+=1
+                    #     if tokens[i] == ')': 
+                    #         break_loop = True
+                    #         break
             if par == 0 :
                 # arguments.append(arg[:-1])
                 break

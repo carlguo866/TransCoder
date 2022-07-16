@@ -76,12 +76,13 @@ def output_all_tokenized_results(docs, language, f_tok):
             except:
                 continue
 
-@timeout(3600)
+@timeout(360)
 def output_all_tokenized_results_parallel(lang1_docs, lang1, f_tok1, lang2_docs, lang2, f_tok2):
     assert len(lang1_docs) == len(lang2_docs)
     pool = Pool(cpu_count())
     result_content_tokenized = tqdm.tqdm(pool.starmap(
         tokenize_json_helper_parallel, zip(lang1_docs, lang2_docs)), total=len(lang1_docs))
+    print(f"len(result_content_tokenized){len(result_content_tokenized)}")
     for content_tokenized1, path1, content_tokenized2, path2 in result_content_tokenized:
         if len(content_tokenized1) == 0 or len(content_tokenized2) == 0:
             print('error in output_all_tokenized_results_parallel len(content_tokenized1) == 0 or len(content_tokenized2) == 0 ')
@@ -103,10 +104,14 @@ def output_all_tokenized_results_parallel(lang1_docs, lang1, f_tok1, lang2_docs,
             # cannot be encoded into utf-8 and it failed to print, so use try/catch
             try:
                 assert content_tokenized1.find("\n") == -1, f"{content_tokenized1}"
+                assert content_tokenized2.find("\n") == -1, f"{content_tokenized2}"
                 f_tok1.write(content_tokenized1+'\n')
                 f_tok2.write(content_tokenized2+'\n')
-            except:
-                print(' some caracters of s cannot be encoded into utf-8 and it failed to print, so use try/catcherror in output_all_tokenized_results_parallel')
+            except TimeoutError: 
+                print('timeout')
+                continue
+            except Exception as e:
+                print(f'{e} some caracters of s cannot be encoded into utf-8 and it failed to print, so use try/catcherror in output_all_tokenized_results_parallel')
                 continue
 
 
@@ -187,12 +192,13 @@ def process_and_tokenize_json_file_parallel(lang1_input, lang2_input, lang1, lan
         f_tok2 = open(lang2_output, 'w', encoding='utf-8')
         try:
             output_all_tokenized_results_parallel(lang1_docs,lang1, f_tok1, lang2_docs,lang2, f_tok2)
-        except TimeoutError:
+        except Exception:
             # The tokenization process is sometimes killed and it makes the multiprocessing hang forever
             f_tok1.close()
             f_tok2.close()
             print('Program closed automatically after one hour')
-            os._exit(0)
+        f_tok1.close()
+        f_tok2.close()
 
 def extract_functions_file(input_path, language, test_size=None):
     print(f"extacting functions for {str(input_path)}")

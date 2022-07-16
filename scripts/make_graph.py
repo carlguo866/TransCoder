@@ -3,7 +3,7 @@ from itertools import chain
 import os
 import sys
 if __name__ == '__main__': 
-    log_reader = open("/home/carl/TransCoder/myoutput/patient_anghabench_train.log" , 'r', encoding='utf-8')
+    log_reader = open("/home/carl/TransCoder/myoutput/patient_struct_train.log" , 'r', encoding='utf-8')
     log_reader2= None 
    # log_reader2 = open("/home/carl/TransCoder/myoutput/struct_train2.log" , 'r')
     scores = None 

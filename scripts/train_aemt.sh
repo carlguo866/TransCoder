@@ -24,12 +24,12 @@ python XLM/train.py \
 --split_data false \
 --length_penalty 1 \
 --max_epoch 300 \
---stopping_criterion '_valid_cpp_sa-llvm_sa_mt_ppl,10' \
+--stopping_criterion '_valid_cpp_sa-llvm_sa_mt_ppl,5' \
 --lambda_bt 1 \
 --generate_hypothesis true \
 --lambda_mt 1 \
 --epoch_size 30000  \
---data_path '/home/carl/TransCoder/data/anghabench/cpp-llvm-.XLM-syml' \
+--data_path '/home/carl/TransCoder/data/struct2/cpp-llvm-.XLM-syml' \
 --gelu_activation true \
 --split_data_accross_gpu global \
 --optimizer 'adam_inverse_sqrt,warmup_updates=10000,lr=0.0001,weight_decay=0.01' \
@@ -42,7 +42,7 @@ python XLM/train.py \
 --batch_size 32 \
 --context_size 0 \
 --word_dropout '0.1'  \
---reload_model '/home/carl/TransCoder/output/mlm_cpp_llvm/0new/best-valid_mlm_ppl.pth,/home/carl/TransCoder/output/mlm_cpp_llvm/0new/best-valid_mlm_ppl.pth' \
+--reload_model '/mnt/sabrent/carl/TransCoder/output/mlm_cpp_llvm_struct/arw1jqpy8n/best-valid_mlm_ppl.pth,/mnt/sabrent/carl/TransCoder/output/mlm_cpp_llvm_struct/arw1jqpy8n/best-valid_mlm_ppl.pth' \
 --min_count 0 \
 --eval_bleu_test_only false \
 --group_by_size true \
@@ -56,7 +56,7 @@ python XLM/train.py \
 --encoder_only false \
 --lgs 'cpp_sa-llvm_sa' \
 --clm_steps '' \
---exp_name mt_sa_angha \
+--exp_name mt_sa_struct \
 --beam_size 1 \
 --lambda_ae '0:1,100000:0.1,300000:0' \
 --lg_sampling_factor '-1' \

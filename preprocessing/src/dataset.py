@@ -209,6 +209,7 @@ class Dataset:
         cpp_jsons = [json for json in langs[0].folder.glob(
                 '*.json.gz') if not Path(str(json).replace('.json.gz', '.tok')).is_file() ]
         cpp_jsons = sorted([str(json) for json in cpp_jsons])
+        print(f"cpp_jsons {cpp_jsons}")
         llvm_jsons = [json for json in langs[1].folder.glob(
                 '*.json.gz') if not Path(str(json).replace('.json.gz', '.tok')).is_file() ]
         llvm_jsons = sorted([str(json) for json in llvm_jsons])
@@ -229,9 +230,6 @@ class Dataset:
         #      self.sizes[lang.l] = jobs.result()
 
     # def process_languages_parallel(self, langs, keep_comments, tok_executor=None, test_size=1000, parallel_size=0, split_executor=None):
-        
-
-
 
         
     def train_bpe(self, ncodes, size_gb=None):
