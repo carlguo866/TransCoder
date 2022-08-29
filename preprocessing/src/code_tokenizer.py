@@ -891,7 +891,7 @@ def get_llvm_type(tokens, i, add_comma=0, detok=False):
     try: 
         ty = []
         word_types = set(['half', 'bfloat', 'float', 'double', 
-                    'fp128', 'x86_fp80', 'ppc_fp128', 'x86_amx', 'x86_mmx','void'])
+                    'fp128', 'x86_fp80', 'ppc_fp128', 'x86_amx', 'x86_mmx','void','false','true'])
         if tokens[i] in word_types:
             ty.append(tokens[i])
             i+=1
@@ -932,6 +932,8 @@ def get_llvm_type(tokens, i, add_comma=0, detok=False):
                     ty2 = [','] + ty2 + ['*']
                     ty.extend(ty2)
                     i-=1
+                elif add_comma ==3 and tokens[i] != '[' and tokens[i] != ']' and tokens[i+1] != ']': 
+                    ty.extend(',')
 
                 i+=1
                 if par==0: 
@@ -1039,7 +1041,6 @@ def detokenize_instruction_printer(tokens):
         i = 0 
         while i < len(tokens): 
             ty, _ = get_llvm_type(tokens, i, detok=True)
-            
             if tokens[i] == 'load': 
                 i+=1
                 if tokens[i] == 'volatile': i+=1
@@ -1071,6 +1072,23 @@ def detokenize_instruction_printer(tokens):
                 ty = [','] + ty + ['*']
                 tokens[i:i] = ty
                 i += len(ty) -1
+            elif tokens[i] == 'phi': 
+                i+=1 
+                ty, i = get_llvm_type(tokens, i, add_comma=1, detok=True)
+                ty, j = get_llvm_type(tokens, i, add_comma=3, detok=True)
+                tokens[i:j] = ty
+                i += len(ty)
+                assert tokens[i] == ','
+                i +=1 
+                ty, j = get_llvm_type(tokens, i, add_comma=3, detok=True)
+                tokens[i:j] = ty 
+                i += len(ty) 
+                if i < len(tokens) and tokens[i] == ',': 
+                    i+= 1
+                    ty, j = get_llvm_type(tokens, i, add_comma=3, detok=True)
+                    tokens[i:j] = ty 
+                    i += len(ty) 
+                i-=1 
             if ty != [] and len(ty) >1: 
                 ty, j  = get_llvm_type(tokens, i, add_comma=1, detok=True)
                 tokens[i:j] = ty 
@@ -1135,7 +1153,7 @@ def tokenize_llvm(s, keep_comments=False):
         # print(f"{time()-start} -- tokenize_llvm_line and tokenize_instruction_printer time", flush=True)
         # start = time()
         # print(len(tokens))
-        tokens = remove_globals(tokens)
+        # tokens = remove_globals(tokens)
         if tokens == []: 
             raise Exception 
         # print(len(tokens))
@@ -1612,7 +1630,6 @@ def get_reverse_type(toks, j):
         type = type + ' ' + toks[j]
         j-=1
     if (toks[j] in set([']','}',')'])): 
-        type = ''
         par = 0 
         while True:
             if toks[j] in set([']','}',')']):
@@ -1625,7 +1642,6 @@ def get_reverse_type(toks, j):
             j-=1
     elif get_one_llvm_toktype(toks[j]) == pyllvm.lltok.Type: 
         type = toks[j] + ' ' + type.strip()
-
     return type, j
 
 

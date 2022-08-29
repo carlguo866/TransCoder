@@ -4,7 +4,7 @@ import re
 import subprocess
 
 if __name__ == '__main__':
-    file = '/home/carl/TransCoder/output/mt_sa_angha/5kykqqgj0s/hypotheses/ref.cpp_sa-llvm_sa.test.txt'
+    file = '/home/carl/TransCoder/output/mt_sa_struct/v2v3xvemmm/hypotheses/ref.cpp_sa-llvm_sa.test.txt'
     fn = open(file,'r').readlines()
     count = 0 
     for j, string in enumerate(fn): 
@@ -22,6 +22,8 @@ if __name__ == '__main__':
                 print(result.stderr.decode('UTF-8')[:result.stderr.decode('UTF-8').index('\n')], flush=True)
             else:  
                 count += 1
-        
+    print(len(fn))
     print(count)
     print(count/len(fn))
+    subprocess.run(f"cd /home/carl/TransCoder; rm *.s", shell=True, 
+                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, executable='/bin/bash')

@@ -5,7 +5,7 @@ import os
 from multiprocessing import Pool, cpu_count
 import subprocess 
 from pathlib import Path
-ref = open('/home/carl/TransCoder/aws/output/bt_sa/rd1ctjncjj/hypotheses/ref.cpp_sa-llvm_sa.test.txt','r').readlines()
+ref = open('/home/carl/TransCoder/output/mt_sa_angha/5kykqqgj0s/hypotheses/ref.cpp_sa-llvm_sa.test.txt','r').readlines()
 def execute(i, file): 
     count = 0 
     fn = open(file,'r').readlines()
@@ -36,7 +36,7 @@ def execute(i, file):
 if __name__ == '__main__': 
     # if not os.path.isdir("/home/carl/TransCoder/temp"): 
     #     os.mkdir("/home/carl/TransCoder/temp")
-    files = Path('/home/carl/TransCoder/aws/output/bt_sa/rd1ctjncjj/hypotheses/').rglob('hyp*.cpp_sa-llvm_sa.test_beam0.txt')
+    files = Path('/home/carl/TransCoder/output/mt_sa_angha/5kykqqgj0s/hypotheses').rglob('hyp*.cpp_sa-llvm_sa.test_beam0.txt')
     print(files)
     with Pool(cpu_count()) as pool:
         print('here')
